@@ -22,7 +22,7 @@ export function BlogCard({ post, className }: { post: BlogPost; className?: stri
           </span>
         )}
       </div>
-      <h3 className="mt-4 font-heading text-lg font-semibold leading-snug text-navy transition-colors group-hover:text-accent-dark">
+      <h3 className="mt-4 font-heading text-lg font-semibold leading-snug text-navy transition-colors group-hover:text-accent-dark line-clamp-2">
         {post.title}
       </h3>
       <p className="mt-2 text-sm leading-relaxed text-ink/60 line-clamp-3">{post.excerpt}</p>

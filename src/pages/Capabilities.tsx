@@ -31,7 +31,7 @@ export default function Capabilities() {
 
       <div ref={scopeRef}>
         <Section className="pt-0 lg:pt-0">
-          <Container className="space-y-24 lg:space-y-32">
+          <Container className="space-y-14 sm:space-y-20 lg:space-y-32">
             {capabilities.map((capability, i) => (
               <div key={capability.id} className="capability-block">
                 <CapabilityCard capability={capability} flip={i % 2 === 1} />

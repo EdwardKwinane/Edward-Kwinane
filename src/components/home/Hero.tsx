@@ -37,7 +37,7 @@ export function Hero() {
               AI chatbots and full-stack applications — turning complex ideas into production-ready
               products.
             </p>
-            <div className="hero-reveal mt-8 flex items-center gap-4">
+            <div className="hero-reveal mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
               <Button asChild variant="accent" size="lg">
                 <Link to="/portfolio">
                   View my portfolio
@@ -64,7 +64,7 @@ export function Hero() {
           </div>
 
           <div className="hero-reveal">
-            <div className="rounded-2xl border border-surface-pale-4 bg-white p-6 shadow-[0_24px_60px_rgba(13,13,91,0.1)] lg:p-8">
+            <div className="rounded-2xl border border-surface-pale-4 bg-white p-4 shadow-[0_24px_60px_rgba(13,13,91,0.1)] sm:p-6 lg:p-8">
               <div className="mb-5 flex items-center justify-between">
                 <span className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
                   System status

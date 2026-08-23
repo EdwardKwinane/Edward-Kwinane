@@ -18,7 +18,7 @@ export function ArchitectureNode({
   return (
     <div
       className={cn(
-        "flow-node flex flex-col items-center justify-center gap-0.5 rounded-lg border px-4 text-center transition-colors duration-300",
+        "flow-node flex flex-col items-center justify-center gap-0.5 rounded-lg border px-3 text-center transition-colors duration-300 sm:px-4",
         compact ? "py-2.5" : "py-3.5",
         state === "active" &&
           "border-accent bg-accent text-white shadow-[0_8px_24px_rgba(254,89,0,0.35)]",

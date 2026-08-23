@@ -73,7 +73,7 @@ export default function About() {
       <div ref={scopeRef}>
         <Section className="pt-0 lg:pt-0">
           <Container>
-            <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
+            <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-16">
               <div className="about-reveal max-w-xl">
                 <h2 className="font-heading text-[28px] font-semibold leading-[36px] text-navy">
                   From architecture to production
@@ -105,11 +105,11 @@ export default function About() {
                   </p>
                   <dl className="mt-5 divide-y divide-surface-pale-3">
                     {profileFields.map((field) => (
-                      <div key={field.label} className="grid grid-cols-[120px_1fr] gap-4 py-3.5">
+                      <div key={field.label} className="flex flex-col gap-1 py-3.5 sm:grid sm:grid-cols-[120px_1fr] sm:gap-4 sm:gap-y-0">
                         <dt className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40 pt-0.5">
                           {field.label}
                         </dt>
-                        <dd className="text-sm font-medium text-navy">{field.value}</dd>
+                        <dd className="text-sm font-medium text-navy min-w-0 break-words">{field.value}</dd>
                       </div>
                     ))}
                   </dl>
@@ -131,7 +131,7 @@ export default function About() {
               {philosophy.map((item) => (
                 <li
                   key={item.index}
-                  className="about-reveal rounded-2xl border border-surface-pale-3 bg-surface p-6"
+                  className="about-reveal rounded-2xl border border-surface-pale-3 bg-surface p-4 sm:p-6"
                 >
                   <span className="font-heading text-3xl font-bold text-surface-pale-4">
                     {item.index}
@@ -161,7 +161,7 @@ export default function About() {
                 return (
                   <div
                     key={area.title}
-                    className="about-reveal flex flex-col rounded-2xl border border-surface-pale-3 bg-white p-8"
+                    className="about-reveal flex flex-col rounded-2xl border border-surface-pale-3 bg-white p-5 sm:p-8"
                   >
                     <span className="flex h-12 w-12 items-center justify-center rounded-md bg-navy text-white">
                       <Icon className="h-6 w-6" strokeWidth={1.5} />

@@ -77,13 +77,13 @@ export function HeroArchitecture({ className }: { className?: string }) {
           </div>
         ))}
 
-        <div className="my-2 flex w-full max-w-[420px] items-center justify-between gap-2">
+        <div className="my-2 flex w-full max-w-[280px] items-center justify-between gap-2 sm:max-w-[420px]">
           <span className="hidden h-px flex-1 bg-accent/40 sm:block" />
           <span className="flow-dot h-2 w-2 rounded-full bg-accent shadow-[0_0_8px_rgba(254,89,0,0.6)]" />
           <span className="hidden h-px flex-1 bg-accent/40 sm:block" />
         </div>
 
-        <div className="grid w-full max-w-[420px] grid-cols-3 gap-2">
+        <div className="grid w-full max-w-[280px] grid-cols-2 gap-2 sm:max-w-[420px] sm:grid-cols-3">
           {branches.map((b) => (
             <Node key={b.label} label={b.label} detail={b.detail} className="arch-node" compact />
           ))}

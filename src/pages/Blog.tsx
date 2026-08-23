@@ -39,7 +39,7 @@ export default function Blog() {
             to={`/blog/${featured.slug}`}
             className="group grid overflow-hidden rounded-2xl border border-surface-pale-3 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(13,13,91,0.12)] focus-ring lg:grid-cols-[1fr_380px]"
           >
-            <div className="relative flex min-h-[220px] items-center justify-center bg-navy p-8">
+            <div className="relative flex min-h-[140px] items-center justify-center bg-navy p-6 sm:min-h-[220px] sm:p-8">
               <div className="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(255,255,255,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.2)_1px,transparent_1px)] [background-size:32px_32px]" />
               <span className="relative font-technical text-sm font-bold uppercase tracking-tech text-accent">
                 Featured article
