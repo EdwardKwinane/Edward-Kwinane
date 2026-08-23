@@ -37,7 +37,7 @@ export function Hero() {
               AI chatbots and full-stack applications — turning complex ideas into production-ready
               products.
             </p>
-            <div className="hero-reveal mt-8 flex flex-wrap items-center gap-4">
+            <div className="hero-reveal mt-8 flex items-center gap-4">
               <Button asChild variant="accent" size="lg">
                 <Link to="/portfolio">
                   View my portfolio
