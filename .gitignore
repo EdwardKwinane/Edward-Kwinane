@@ -27,4 +27,4 @@ Thumbs.db
 *.tsbuildinfo
 
 # Vite cache
-.vite/
+.vite/.env.*
