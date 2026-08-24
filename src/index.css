@@ -4,21 +4,65 @@
 
 @layer base {
   :root {
-    --navy: #0d0d5b;
-    --navy-deep: #08083c;
-    --navy-light: #14147a;
-    --ink: #0b1c30;
-    --surface: #f8f9ff;
-    --surface-pale: #eff4ff;
-    --surface-pale-2: #e5eeff;
-    --surface-pale-3: #dce9ff;
-    --surface-pale-4: #d3e4fe;
-    --accent: #fe5900;
-    --accent-dark: #e04f00;
-    --error: #ba1a1a;
-    --error-container: #ffdad6;
-    --success: #047857;
-    --success-container: #d1fae5;
+    /* Kinetic Intelligence — Light (source of truth)
+       RGB triplets so Tailwind opacity modifiers (text-ink/70) keep working */
+    --c-navy: 13 13 91; /* #0D0D5B */
+    --c-navy-deep: 8 8 60; /* #08083C */
+    --c-navy-light: 20 20 122; /* #14147A */
+    --c-ink: 11 28 48; /* #0B1C30 */
+    --c-surface: 248 249 255; /* #F8F9FF */
+    --c-surface-alt: 255 255 255; /* #FFFFFF */
+    --c-surface-pale: 239 244 255; /* #EFF4FF */
+    --c-surface-pale-2: 229 238 255; /* #E5EEFF */
+    --c-surface-pale-3: 220 233 255; /* #DCE9FF */
+    --c-surface-pale-4: 211 228 254; /* #D3E4FE */
+    --c-accent: 254 89 0; /* #FE5900 */
+    --c-accent-dark: 224 79 0; /* #E04F00 */
+    --c-error: 186 26 26; /* #BA1A1A */
+    --c-error-container: 255 218 214; /* #FFDAD6 */
+    --c-success: 4 120 87; /* #047857 */
+    --c-success-container: 209 250 229; /* #D1FAE5 */
+    --c-success-fg: 255 255 255; /* icon/text on success fill */
+    --c-slate-border: 203 213 225; /* #CBD5E1 */
+
+    /* Strong navy fills (buttons, badges, sections) — independent from
+       the navy *text* role so both can respond to the theme */
+    --c-primary: 13 13 91; /* #0D0D5B */
+    --c-primary-hover: 20 20 122; /* #14147A */
+
+    /* Hero blueprint grid lines */
+    --c-grid-line: 13 13 91;
+
+    /* Semantic aliases */
+    --background: rgb(var(--c-surface));
+    --foreground: rgb(var(--c-ink));
+    --card: rgb(var(--c-surface-alt));
+    --surface-elevated: rgb(var(--c-surface-alt));
+    --primary: rgb(var(--c-primary));
+    --primary-foreground: #ffffff;
+    --accent: rgb(var(--c-accent));
+    --accent-foreground: #ffffff;
+    --border: rgb(var(--c-surface-pale-3));
+    --border-subtle: rgb(var(--c-surface-pale-2));
+    --muted: rgb(var(--c-surface-pale));
+    --muted-foreground: rgb(var(--c-ink) / 0.6);
+    --success: rgb(var(--c-success));
+    --warning: #b45309;
+    --error: rgb(var(--c-error));
+
+    /* Legacy names used across component styles */
+    --navy: rgb(var(--c-navy));
+    --navy-deep: rgb(var(--c-navy-deep));
+    --navy-light: rgb(var(--c-navy-light));
+    --ink: rgb(var(--c-ink));
+    --surface: rgb(var(--c-surface));
+    --surface-pale: rgb(var(--c-surface-pale));
+    --surface-pale-2: rgb(var(--c-surface-pale-2));
+    --surface-pale-3: rgb(var(--c-surface-pale-3));
+    --surface-pale-4: rgb(var(--c-surface-pale-4));
+    --accent-dark: rgb(var(--c-accent-dark));
+    --error-container: rgb(var(--c-error-container));
+    --success-container: rgb(var(--c-success-container));
 
     --color-bg: var(--surface);
     --color-text: var(--ink);
@@ -42,6 +86,59 @@
     --space-6: 48px;
     --space-8: 64px;
     --space-12: 96px;
+  }
+
+  /* Kinetic Intelligence — Dark ("after dark" palette) */
+  .dark {
+    --c-navy: 245 247 255; /* #F5F7FF primary dark text */
+    --c-navy-deep: 5 6 16; /* #050610 */
+    --c-navy-light: 200 208 240; /* #C8D0F0 */
+    --c-ink: 184 192 217; /* #B8C0D9 secondary dark text */
+    --c-surface: 8 10 24; /* #080A18 background */
+    --c-surface-alt: 13 16 36; /* #0D1024 card surface */
+    --c-surface-pale: 17 21 46; /* #11152E muted surface */
+    --c-surface-pale-2: 21 26 56; /* #151A38 elevated muted */
+    --c-surface-pale-3: 41 48 90; /* #29305A border */
+    --c-surface-pale-4: 58 66 114; /* #3A4272 strong border */
+    --c-accent: 254 89 0; /* #FE5900 unchanged */
+    --c-accent-dark: 255 106 26; /* #FF6A1A hover brightens in dark */
+    --c-error: 255 147 138; /* readable error text on dark */
+    --c-error-container: 66 25 28;
+    --c-success: 52 211 153; /* readable success text on dark */
+    --c-success-container: 15 61 46;
+    --c-success-fg: 5 30 23;
+    --c-slate-border: 41 48 90; /* #29305A */
+
+    --c-primary: 27 33 80; /* #1B2150 elevated indigo fill */
+    --c-primary-hover: 35 43 102; /* #232B66 */
+
+    --c-grid-line: 70 78 130;
+
+    --background: rgb(var(--c-surface));
+    --foreground: rgb(var(--c-ink));
+    --card: rgb(var(--c-surface-alt));
+    --surface-elevated: rgb(var(--c-surface-pale-2));
+    --primary: rgb(var(--c-primary));
+    --accent: rgb(var(--c-accent));
+    --border: rgb(var(--c-surface-pale-3));
+    --border-subtle: rgb(var(--c-surface-pale-2));
+    --muted: rgb(var(--c-surface-pale));
+    --muted-foreground: rgb(137 146 174); /* #8992AE */
+    --success: rgb(var(--c-success));
+    --error: rgb(var(--c-error));
+
+    --navy: rgb(var(--c-navy));
+    --navy-deep: rgb(var(--c-navy-deep));
+    --navy-light: rgb(var(--c-navy-light));
+    --ink: rgb(var(--c-ink));
+    --surface: rgb(var(--c-surface));
+    --surface-pale: rgb(var(--c-surface-pale));
+    --surface-pale-2: rgb(var(--c-surface-pale-2));
+    --surface-pale-3: rgb(var(--c-surface-pale-3));
+    --surface-pale-4: rgb(var(--c-surface-pale-4));
+    --accent-dark: rgb(var(--c-accent-dark));
+    --error-container: rgb(var(--c-error-container));
+    --success-container: rgb(var(--c-success-container));
   }
 
   * {
@@ -85,6 +182,25 @@
     background-color: var(--accent);
     color: #ffffff;
   }
+
+  html.dark {
+    color-scheme: dark;
+  }
+}
+
+/* Short, polished theme transition — applied only while switching */
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-switching *,
+  html.theme-switching *::before,
+  html.theme-switching *::after {
+    transition:
+      background-color 200ms ease,
+      border-color 200ms ease,
+      color 200ms ease,
+      fill 200ms ease,
+      stroke 200ms ease,
+      box-shadow 200ms ease !important;
+  }
 }
 
 @layer components {
@@ -126,9 +242,17 @@
   }
 
   .card-surface {
-    background-color: #ffffff;
+    background-color: rgb(var(--c-surface-alt));
     border: 1px solid var(--surface-pale-3);
     border-radius: var(--radius-lg);
+  }
+
+  /* Theme-aware blueprint grid (hero backgrounds) */
+  .grid-overlay {
+    background-image:
+      linear-gradient(rgb(var(--c-grid-line) / 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--c-grid-line) / 0.4) 1px, transparent 1px);
+    background-size: 48px 48px;
   }
 
   .card-pale {

@@ -5,7 +5,7 @@ import { BlogCard } from "./BlogCard";
 export function BlogGrid({ posts, className }: { posts: BlogPost[]; className?: string }) {
   if (!posts.length) {
     return (
-      <p className="rounded-2xl border border-dashed border-surface-pale-4 bg-white p-10 text-center text-sm text-ink/50">
+      <p className="rounded-2xl border border-dashed border-surface-pale-4 bg-surface-alt p-10 text-center text-sm text-ink/50">
         No articles in this category yet.
       </p>
     );

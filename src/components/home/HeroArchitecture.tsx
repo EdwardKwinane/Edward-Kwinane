@@ -104,7 +104,7 @@ export function HeroArchitecture({ className }: { className?: string }) {
         {systemLabels.map((s) => (
           <span
             key={s}
-            className="rounded-full border border-surface-pale-4 bg-white px-3 py-1 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60"
+            className="rounded-full border border-surface-pale-4 bg-surface-alt px-3 py-1 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60"
           >
             {s}
           </span>
@@ -132,7 +132,7 @@ function Node({
       className={cn(
         "flex flex-col items-center justify-center rounded-md border bg-surface-pale text-center transition-colors",
         compact ? "px-2 py-2.5" : "px-4 py-3.5",
-        accent ? "border-accent/40 bg-navy text-white" : "border-surface-pale-4",
+        accent ? "border-accent/40 bg-primary text-white" : "border-surface-pale-4",
         className
       )}
     >

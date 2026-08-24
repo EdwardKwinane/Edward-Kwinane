@@ -40,7 +40,7 @@ export default function Capabilities() {
           </Container>
         </Section>
 
-        <Section className="bg-navy pt-0 lg:pt-0">
+        <Section className="bg-primary pt-0 lg:pt-0">
           <Container>
             <div className="mx-auto max-w-2xl text-center">
               <p className="font-technical text-[13px] font-bold uppercase tracking-tech text-accent">

@@ -99,7 +99,7 @@ export default function About() {
               </div>
 
               <div className="about-reveal">
-                <div className="rounded-2xl border border-surface-pale-3 bg-white p-6 shadow-[0_16px_40px_rgba(13,13,91,0.08)] lg:p-8">
+                <div className="rounded-2xl border border-surface-pale-3 bg-surface-alt p-6 shadow-[0_16px_40px_rgba(13,13,91,0.08)] lg:p-8">
                   <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
                     Technical profile
                   </p>
@@ -119,7 +119,7 @@ export default function About() {
           </Container>
         </Section>
 
-        <Section className="bg-white pt-0 lg:pt-0">
+        <Section className="bg-surface-alt pt-0 lg:pt-0">
           <Container>
             <div className="max-w-2xl">
               <p className="eyebrow">Philosophy</p>
@@ -161,9 +161,9 @@ export default function About() {
                 return (
                   <div
                     key={area.title}
-                    className="about-reveal flex flex-col rounded-2xl border border-surface-pale-3 bg-white p-5 sm:p-8"
+                    className="about-reveal flex flex-col rounded-2xl border border-surface-pale-3 bg-surface-alt p-5 sm:p-8"
                   >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-md bg-navy text-white">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-white">
                       <Icon className="h-6 w-6" strokeWidth={1.5} />
                     </span>
                     <h3 className="mt-5 font-heading text-xl font-semibold text-navy">{area.title}</h3>

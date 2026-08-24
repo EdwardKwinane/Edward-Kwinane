@@ -13,6 +13,7 @@ import {
   SheetDescription,
 } from "@/components/ui/Sheet";
 import { Container } from "@/components/ui/Container";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 const navItems = [
   { label: "Home", to: "/" },
@@ -59,7 +60,7 @@ export function Navbar() {
       className={cn(
         "fixed inset-x-0 top-0 z-40 transition-colors duration-300",
         scrolled
-          ? "border-b border-surface-pale-3 bg-white/85 backdrop-blur-md"
+          ? "border-b border-surface-pale-3 bg-surface-alt/85 backdrop-blur-md"
           : "border-b border-transparent bg-transparent"
       )}
     >
@@ -91,6 +92,7 @@ export function Navbar() {
               Available for select projects
             </span>
           </span>
+          <ThemeToggle />
           <Button asChild variant="accent" size="sm" className="h-10">
             <Link to="/contact">
               Let's talk
@@ -149,15 +151,18 @@ function MobileNav() {
         </nav>
 
         <div className="mt-auto flex flex-col gap-4 border-t border-surface-pale-3 pt-6">
-          <span className="inline-flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              </span>
+              <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60">
+                Available for select projects
+              </span>
             </span>
-            <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60">
-              Available for select projects
-            </span>
-          </span>
+            <ThemeToggle />
+          </div>
           <SheetClose asChild>
             <Button asChild variant="accent">
               <Link to="/contact">

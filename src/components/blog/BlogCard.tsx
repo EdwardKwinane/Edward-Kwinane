@@ -10,7 +10,7 @@ export function BlogCard({ post, className }: { post: BlogPost; className?: stri
     <Link
       to={`/blog/${post.slug}`}
       className={cn(
-        "group flex h-full flex-col rounded-2xl border border-surface-pale-3 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(13,13,91,0.1)] focus-ring",
+        "group flex h-full flex-col rounded-2xl border border-surface-pale-3 bg-surface-alt p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(13,13,91,0.1)] focus-ring",
         className
       )}
     >

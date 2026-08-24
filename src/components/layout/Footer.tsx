@@ -13,7 +13,7 @@ const navItems = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-surface-pale-3 bg-white">
+    <footer className="border-t border-surface-pale-3 bg-surface-alt">
       <Container className="py-14">
         <div className="grid gap-10 md:grid-cols-12">
           <div className="md:col-span-5">

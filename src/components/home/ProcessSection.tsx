@@ -19,7 +19,7 @@ export function ProcessSection() {
   }, []);
 
   return (
-    <Section ref={scopeRef} className="bg-white">
+    <Section ref={scopeRef} className="bg-surface-alt">
       <Container>
         <div className="max-w-2xl">
           <p className="eyebrow">Process</p>

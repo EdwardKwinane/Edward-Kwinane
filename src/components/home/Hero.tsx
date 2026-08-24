@@ -24,7 +24,7 @@ export function Hero() {
 
   return (
     <section ref={scopeRef} className="relative overflow-hidden bg-surface pt-32 pb-16 lg:pt-40 lg:pb-24">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(13,13,91,0.4)_1px,transparent_1px),linear-gradient(90deg,rgba(13,13,91,0.4)_1px,transparent_1px)] [background-size:48px_48px]" />
+      <div className="grid-overlay pointer-events-none absolute inset-0 opacity-[0.05]" />
       <Container className="relative">
         <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
           <div className="max-w-xl">
@@ -64,14 +64,14 @@ export function Hero() {
           </div>
 
           <div className="hero-reveal">
-            <div className="rounded-2xl border border-surface-pale-4 bg-white p-4 shadow-[0_24px_60px_rgba(13,13,91,0.1)] sm:p-6 lg:p-8">
+            <div className="rounded-2xl border border-surface-pale-4 bg-surface-alt p-4 shadow-[0_24px_60px_rgba(13,13,91,0.1)] sm:p-6 lg:p-8">
               <div className="mb-5 flex items-center justify-between">
                 <span className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
                   System status
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-emerald-700">
+                  <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-success">
                     Operational
                   </span>
                 </span>

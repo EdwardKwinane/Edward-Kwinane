@@ -9,14 +9,14 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-navy text-white hover:bg-navy-light shadow-[0_0_0_rgba(13,13,91,0)] hover:shadow-[0_8px_24px_rgba(13,13,91,0.18)] hover:-translate-y-0.5",
+          "bg-primary text-white hover:bg-primary-hover shadow-[0_0_0_rgba(13,13,91,0)] hover:shadow-[0_8px_24px_rgba(13,13,91,0.18)] hover:-translate-y-0.5",
         accent:
           "bg-accent text-white hover:bg-accent-dark shadow-[0_0_0_rgba(254,89,0,0)] hover:shadow-[0_8px_24px_rgba(254,89,0,0.35)] hover:-translate-y-0.5",
         outline:
-          "border border-navy/20 bg-white text-navy hover:border-navy/50 hover:bg-surface-pale",
+          "border border-navy/20 bg-surface-alt text-navy hover:border-navy/50 hover:bg-surface-pale",
         ghost: "text-navy hover:bg-surface-pale",
         link: "text-navy underline-offset-4 hover:underline",
-        white: "bg-white text-navy hover:bg-surface-pale hover:-translate-y-0.5",
+        white: "bg-surface-alt text-navy hover:bg-surface-pale hover:-translate-y-0.5",
       },
       size: {
         sm: "h-9 px-4 text-[13px]",

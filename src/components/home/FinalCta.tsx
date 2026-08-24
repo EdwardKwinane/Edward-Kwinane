@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 
 export function FinalCta() {
   return (
-    <Section className="bg-navy">
+    <Section className="bg-primary">
       <Container>
         <div className="mx-auto max-w-3xl text-center">
           <p className="font-technical text-[13px] font-bold uppercase tracking-tech text-accent">

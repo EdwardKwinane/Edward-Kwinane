@@ -75,7 +75,7 @@ function TableOfContents({ post }: { post: BlogPost }) {
 
   return (
     <>
-      <div className="hidden rounded-2xl border border-surface-pale-3 bg-white p-6 lg:block">
+      <div className="hidden rounded-2xl border border-surface-pale-3 bg-surface-alt p-6 lg:block">
         <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
           On this page
         </p>
@@ -92,7 +92,7 @@ function TableOfContents({ post }: { post: BlogPost }) {
         </nav>
       </div>
 
-      <div className="rounded-2xl border border-surface-pale-3 bg-white lg:hidden">
+      <div className="rounded-2xl border border-surface-pale-3 bg-surface-alt lg:hidden">
         <button
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}

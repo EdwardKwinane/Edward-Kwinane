@@ -55,7 +55,7 @@ export default function PortfolioDetail() {
               {project.technologies.map((tech) => (
                 <span
                   key={tech}
-                  className="rounded-full border border-surface-pale-4 bg-white px-3 py-1 font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/60"
+                  className="rounded-full border border-surface-pale-4 bg-surface-alt px-3 py-1 font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/60"
                 >
                   {tech}
                 </span>
@@ -108,7 +108,7 @@ export default function PortfolioDetail() {
                 </dl>
               </div>
 
-              <div className="rounded-2xl bg-navy p-6 text-white">
+              <div className="rounded-2xl bg-primary p-6 text-white">
                 <p className="font-heading text-lg font-semibold">Have a similar problem?</p>
                 <p className="mt-2 text-sm text-white/70">Let's design and build the system together.</p>
                 <Button asChild variant="accent" size="sm" className="mt-5">

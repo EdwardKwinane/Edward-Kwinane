@@ -1,37 +1,47 @@
 import type { Config } from "tailwindcss";
 
+// All color tokens resolve to CSS variables defined in src/index.css
+// (:root for light theme, .dark overrides). RGB triplets keep Tailwind's
+// opacity modifiers (e.g. text-ink/70) working in both themes.
+const rgb = (token: string) => `rgb(var(--c-${token}) / <alpha-value>)`;
+
 const designTokens = {
   colors: {
     navy: {
-      DEFAULT: "#0D0D5B",
-      deep: "#08083C",
-      light: "#14147A",
+      DEFAULT: rgb("navy"),
+      deep: rgb("navy-deep"),
+      light: rgb("navy-light"),
     },
-    ink: "#0B1C30",
+    ink: rgb("ink"),
     surface: {
-      DEFAULT: "#F8F9FF",
-      alt: "#FFFFFF",
-      pale: "#EFF4FF",
-      pale2: "#E5EEFF",
-      pale3: "#DCE9FF",
-      pale4: "#D3E4FE",
+      DEFAULT: rgb("surface"),
+      alt: rgb("surface-alt"),
+      pale: rgb("surface-pale"),
+      pale2: rgb("surface-pale-2"),
+      pale3: rgb("surface-pale-3"),
+      pale4: rgb("surface-pale-4"),
+    },
+    primary: {
+      DEFAULT: rgb("primary"),
+      hover: rgb("primary-hover"),
     },
     accent: {
-      DEFAULT: "#FE5900",
-      dark: "#E04F00",
+      DEFAULT: rgb("accent"),
+      dark: rgb("accent-dark"),
       light: "#FF7A33",
       ambient: "rgba(254, 89, 0, 0.18)",
     },
     error: {
-      DEFAULT: "#BA1A1A",
-      container: "#FFDAD6",
+      DEFAULT: rgb("error"),
+      container: rgb("error-container"),
     },
     success: {
-      DEFAULT: "#047857",
-      container: "#D1FAE5",
+      DEFAULT: rgb("success"),
+      fg: rgb("success-fg"),
+      container: rgb("success-container"),
     },
     slate: {
-      border: "#CBD5E1",
+      border: rgb("slate-border"),
     },
   },
   fontFamily: {
@@ -84,6 +94,7 @@ const designTokens = {
 };
 
 export default {
+  darkMode: "class",
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: designTokens,

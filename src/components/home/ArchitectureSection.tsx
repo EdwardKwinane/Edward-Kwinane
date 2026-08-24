@@ -21,7 +21,7 @@ export function ArchitectureSection() {
   }, []);
 
   return (
-    <Section ref={scopeRef} className="bg-navy text-white">
+    <Section ref={scopeRef} className="bg-primary text-white">
       <Container>
         <div className="max-w-2xl">
           <p className="font-technical text-[13px] font-bold uppercase tracking-tech text-accent">

@@ -37,7 +37,7 @@ export function CapabilityCard({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-surface-pale-3 bg-white p-6 lg:p-8">
+      <div className="rounded-2xl border border-surface-pale-3 bg-surface-alt p-6 lg:p-8">
         <p className="mb-5 font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
           System flow
         </p>

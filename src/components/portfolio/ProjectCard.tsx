@@ -9,11 +9,11 @@ export function ProjectCard({ project, className }: { project: Project; classNam
     <Link
       to={`/portfolio/${project.slug}`}
       className={cn(
-        "group flex flex-col overflow-hidden rounded-2xl border border-surface-pale-3 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(13,13,91,0.12)] focus-ring",
+        "group flex flex-col overflow-hidden rounded-2xl border border-surface-pale-3 bg-surface-alt transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(13,13,91,0.12)] focus-ring",
         className
       )}
     >
-      <div className="relative flex aspect-[16/9] items-center justify-center overflow-hidden bg-navy">
+      <div className="relative flex aspect-[16/9] items-center justify-center overflow-hidden bg-primary">
         <div className="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(255,255,255,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.2)_1px,transparent_1px)] [background-size:32px_32px]" />
         <div className="relative flex flex-col items-center gap-1 text-center transition-transform duration-500 group-hover:scale-105">
           <span className="font-technical text-xs font-bold uppercase tracking-tech text-accent">
