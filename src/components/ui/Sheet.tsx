@@ -28,7 +28,8 @@ const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => (
-  <SheetOverlay>
+  <DialogPrimitive.Portal>
+    <SheetOverlay />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
@@ -43,7 +44,7 @@ const SheetContent = React.forwardRef<
         <span className="sr-only">Close menu</span>
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
-  </SheetOverlay>
+  </DialogPrimitive.Portal>
 ));
 SheetContent.displayName = DialogPrimitive.Content.displayName;
 
