@@ -5,6 +5,7 @@ export interface Technology {
 
 export interface Capability {
   id: string;
+  name?: string;
   index: string;
   eyebrow: string;
   headline: string;

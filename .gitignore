@@ -28,3 +28,12 @@ Thumbs.db
 
 # Vite cache
 .vite/.env.*
+
+# Sanity Studio
+sanity/.env
+sanity/.env.local
+sanity/.sanity/
+sanity/static/
+sanity/dist/
+sanity/desk/
+sanity/*.sanity.json

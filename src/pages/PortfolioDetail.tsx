@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Seo from "@/components/seo/Seo";
@@ -5,18 +6,51 @@ import { Container, Section } from "@/components/ui/Container";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ProjectCard } from "@/components/portfolio/ProjectCard";
-import { getProject } from "@/data/projects";
+import { fetchProject, fetchProjects, type Project } from "@/data/projects";
 
 export default function PortfolioDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const project = slug ? getProject(slug) : undefined;
+  const [project, setProject] = useState<Project | null>(null);
+  const [related, setRelated] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    async function load() {
+      const item = slug ? await fetchProject(slug) : undefined;
+      const all = await fetchProjects();
+      if (cancelled) return;
+      setProject(item ?? null);
+      setRelated(
+        item
+          ? all.filter((p) => item.related.includes(p.slug) && p.slug !== item.slug).slice(0, 2)
+          : []
+      );
+      setLoading(false);
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <section className="bg-surface pt-32 pb-14 lg:pt-40 lg:pb-20">
+        <Container>
+          <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/50">
+            Loading…</p>
+        </Container>
+      </section>
+    );
+  }
 
   if (!project) return <Navigate to="/portfolio" replace />;
 
-  const related = project.related
-    .map((s) => getProject(s))
-    .filter((p): p is NonNullable<typeof p> => Boolean(p))
-    .filter((p) => p.slug !== project.slug)
+  const relatedProjects = project.related
+    .map((s) => related.find((p) => p.slug === s))
+    .filter((p): p is Project => Boolean(p))
     .slice(0, 2);
 
   return (
@@ -123,14 +157,14 @@ export default function PortfolioDetail() {
         </Container>
       </Section>
 
-      {related.length > 0 && (
+      {relatedProjects.length > 0 && (
         <Section className="bg-surface pt-0 lg:pt-0">
           <Container>
             <h2 className="font-heading text-[28px] font-semibold leading-[36px] text-navy">
               Related work
             </h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2">
-              {related.map((p) => (
+              {relatedProjects.map((p) => (
                 <ProjectCard key={p.slug} project={p} />
               ))}
             </div>

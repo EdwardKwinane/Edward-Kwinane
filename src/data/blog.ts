@@ -1,3 +1,5 @@
+import type { PortableTextBlock } from "@portabletext/types";
+
 export type BlogCategory =
   | "AI ENGINEERING"
   | "VOICE AI"
@@ -19,8 +21,8 @@ export interface BlogPost {
   featured: boolean;
   placeholder: boolean;
   tags: string[];
-  tableOfContents: { id: string; label: string }[];
-  content: {
+  tableOfContents?: { id: string; label: string }[];
+  content?: {
     type: "p" | "h2" | "h3" | "ul" | "ol" | "code" | "callout" | "quote" | "diagram";
     id?: string;
     text?: string;
@@ -29,6 +31,9 @@ export interface BlogPost {
     title?: string;
   }[];
   related: string[];
+  coverImage?: string;
+  coverImageAlt?: string;
+  body?: PortableTextBlock[];
 }
 
 export const blogCategories: BlogCategory[] = [
@@ -279,4 +284,25 @@ export const blogPosts: BlogPost[] = [
 
 export function getBlogPost(slug: string) {
   return blogPosts.find((b) => b.slug === slug);
+}
+
+/* ------------------------------------------------------------------ */
+/* Sanity CMS data access — falls back to local placeholder data       */
+/* ------------------------------------------------------------------ */
+
+import {
+  getSanityPosts,
+  getSanityPostBySlug,
+} from "@/lib/sanity/queries";
+
+/** All posts. Returns CMS content, or local data when Sanity is unset/empty. */
+export async function fetchBlogPosts(): Promise<BlogPost[]> {
+  const items = await getSanityPosts();
+  return items.length ? items : blogPosts;
+}
+
+/** Single post by slug. Falls back to local data when Sanity is unset/empty. */
+export async function fetchBlogPost(slug: string): Promise<BlogPost | undefined> {
+  const item = await getSanityPostBySlug(slug);
+  return item ?? getBlogPost(slug);
 }

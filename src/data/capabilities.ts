@@ -1,5 +1,14 @@
 import type { Capability } from "./technologies";
 
+import { getSanityCapabilities } from "@/lib/sanity/queries";
+
+export interface CapabilityPreviewItem {
+  id: string;
+  title: string;
+  description: string;
+  labels: string[];
+}
+
 export const capabilities: Capability[] = [
   {
     id: "voice-agents",
@@ -88,7 +97,7 @@ export const capabilities: Capability[] = [
   },
 ];
 
-export const capabilitiesPreview = [
+export const capabilitiesPreview: CapabilityPreviewItem[] = [
   {
     id: "voice",
     title: "AI Voice Agents",
@@ -115,3 +124,26 @@ export const capabilitiesPreview = [
     labels: ["FULL-STACK", "API", "DEPLOYMENT"],
   },
 ];
+
+/* ------------------------------------------------------------------ */
+/* Sanity CMS data access — falls back to local placeholder data       */
+/* ------------------------------------------------------------------ */
+
+/** Full capabilities for the capabilities page. Falls back to local data. */
+export async function fetchCapabilities(): Promise<Capability[]> {
+  const items = await getSanityCapabilities();
+  return items.length ? items : capabilities;
+}
+
+/** Compact capability cards for the home page. Falls back to local data. */
+export async function fetchCapabilityPreview(): Promise<CapabilityPreviewItem[]> {
+  const items = await getSanityCapabilities();
+  if (!items.length) return capabilitiesPreview;
+
+  return items.slice(0, 4).map((cap) => ({
+    id: cap.id,
+    title: cap.name || cap.headline || "Capability",
+    description: cap.description,
+    labels: cap.labels,
+  }));
+}

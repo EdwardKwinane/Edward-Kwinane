@@ -1,3 +1,9 @@
+import {
+  getSanityProjects,
+  getSanityFeaturedProjects,
+  getSanityProjectBySlug,
+} from "@/lib/sanity/queries";
+
 export type ProjectCategory = "AI" | "VOICE" | "RAG" | "CHATBOTS" | "AGENTS" | "FULL-STACK";
 
 export interface ProjectSection {
@@ -20,6 +26,8 @@ export interface Project {
   };
   sections: ProjectSection[];
   related: string[];
+  coverImage?: string;
+  coverImageAlt?: string;
 }
 
 export const projectCategories: ProjectCategory[] = [
@@ -320,4 +328,28 @@ export const projects: Project[] = [
 
 export function getProject(slug: string) {
   return projects.find((p) => p.slug === slug);
+}
+
+/* ------------------------------------------------------------------ */
+/* Sanity CMS data access — falls back to local placeholder data       */
+/* ------------------------------------------------------------------ */
+
+/** All projects. Returns CMS content, or local data when Sanity is unset/empty. */
+export async function fetchProjects(): Promise<Project[]> {
+  const items = await getSanityProjects();
+  return items.length ? items : projects;
+}
+
+/** Featured projects for the home page. Falls back to the first local entries. */
+export async function fetchFeaturedProjects(): Promise<Project[]> {
+  const items = await getSanityFeaturedProjects();
+  if (items.length) return items;
+  const featured = projects.filter((p) => p.placeholder).slice(0, 4);
+  return featured;
+}
+
+/** Single project by slug. Falls back to local data when Sanity is unset/empty. */
+export async function fetchProject(slug: string): Promise<Project | undefined> {
+  const item = await getSanityProjectBySlug(slug);
+  return item ?? getProject(slug);
 }

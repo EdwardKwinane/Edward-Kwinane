@@ -1,18 +1,32 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Container, Section } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { ProjectGrid } from "@/components/portfolio/ProjectGrid";
-import { projects } from "@/data/projects";
+import { fetchFeaturedProjects, type Project } from "@/data/projects";
 import { revealElements } from "@/lib/gsap";
 
 export function FeaturedPortfolio() {
   const scopeRef = useRef<HTMLElement>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    revealElements(".featured-card", scopeRef.current ?? document);
+    let cancelled = false;
+    fetchFeaturedProjects().then((items) => {
+      if (cancelled) return;
+      setProjects(items);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  useEffect(() => {
+    if (projects.length) {
+      revealElements(".featured-card", scopeRef.current ?? document);
+    }
+  }, [projects]);
 
   return (
     <Section ref={scopeRef} className="bg-surface">
@@ -35,11 +49,13 @@ export function FeaturedPortfolio() {
           </Button>
         </div>
 
-        <ProjectGrid
-          projects={projects.slice(0, 4)}
-          columns={2}
-          className="featured-card mt-10"
-        />
+        {projects.length > 0 && (
+          <ProjectGrid
+            projects={projects.slice(0, 4)}
+            columns={2}
+            className="featured-card mt-10"
+          />
+        )}
       </Container>
     </Section>
   );

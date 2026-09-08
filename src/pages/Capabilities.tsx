@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import Seo from "@/components/seo/Seo";
@@ -6,15 +6,30 @@ import { PageHero } from "@/components/layout/PageHero";
 import { Container, Section } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { CapabilityCard } from "@/components/capabilities/CapabilityCard";
-import { capabilities } from "@/data/capabilities";
+import { fetchCapabilities } from "@/data/capabilities";
+import type { Capability } from "@/data/technologies";
 import { revealElements } from "@/lib/gsap";
 
 export default function Capabilities() {
   const scopeRef = useRef<HTMLDivElement>(null);
+  const [capabilities, setCapabilities] = useState<Capability[]>([]);
 
   useEffect(() => {
-    revealElements(".capability-block", scopeRef.current ?? document, { stagger: 0.08 });
+    let cancelled = false;
+    fetchCapabilities().then((items) => {
+      if (cancelled) return;
+      setCapabilities(items);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  useEffect(() => {
+    if (capabilities.length) {
+      revealElements(".capability-block", scopeRef.current ?? document, { stagger: 0.08 });
+    }
+  }, [capabilities]);
 
   return (
     <>

@@ -1,18 +1,32 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Container, Section } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { BlogCard } from "@/components/blog/BlogCard";
-import { blogPosts } from "@/data/blog";
+import { fetchBlogPosts, type BlogPost } from "@/data/blog";
 import { revealElements } from "@/lib/gsap";
 
 export function BlogPreview() {
   const scopeRef = useRef<HTMLElement>(null);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
-    revealElements(".blog-preview-card", scopeRef.current ?? document);
+    let cancelled = false;
+    fetchBlogPosts().then((items) => {
+      if (cancelled) return;
+      setPosts(items);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  useEffect(() => {
+    if (posts.length) {
+      revealElements(".blog-preview-card", scopeRef.current ?? document);
+    }
+  }, [posts]);
 
   return (
     <Section ref={scopeRef} className="bg-surface">
@@ -35,11 +49,13 @@ export function BlogPreview() {
           </Button>
         </div>
 
-        <div className="blog-preview-card mt-10 grid gap-6 md:grid-cols-3">
-          {blogPosts.slice(0, 3).map((post) => (
-            <BlogCard key={post.slug} post={post} />
-          ))}
-        </div>
+        {posts.length > 0 && (
+          <div className="blog-preview-card mt-10 grid gap-6 md:grid-cols-3">
+            {posts.slice(0, 3).map((post) => (
+              <BlogCard key={post.slug} post={post} />
+            ))}
+          </div>
+        )}
       </Container>
     </Section>
   );

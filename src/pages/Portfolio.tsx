@@ -1,16 +1,18 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Seo from "@/components/seo/Seo";
 import { PageHero } from "@/components/layout/PageHero";
 import { Container, Section } from "@/components/ui/Container";
 import { ProjectFilter } from "@/components/portfolio/ProjectFilter";
 import { ProjectGrid } from "@/components/portfolio/ProjectGrid";
-import { projects, type ProjectCategory } from "@/data/projects";
+import { fetchProjects, type Project, type ProjectCategory } from "@/data/projects";
 
 type FilterValue = "ALL" | ProjectCategory;
 
 export default function Portfolio() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const rawFilter = searchParams.get("category");
   const active: FilterValue = (["ALL", "AI", "VOICE", "RAG", "CHATBOTS", "AGENTS", "FULL-STACK"] as const).includes(
     rawFilter as FilterValue
@@ -18,9 +20,21 @@ export default function Portfolio() {
     ? (rawFilter as FilterValue)
     : "ALL";
 
+  useEffect(() => {
+    let cancelled = false;
+    fetchProjects().then((items) => {
+      if (cancelled) return;
+      setProjects(items);
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const filtered = useMemo(
     () => (active === "ALL" ? projects : projects.filter((p) => p.categories.includes(active))),
-    [active]
+    [active, projects]
   );
 
   function onChange(value: FilterValue) {
@@ -46,16 +60,19 @@ export default function Portfolio() {
           <ProjectFilter active={active} onChange={onChange} />
 
           <p className="mt-6 text-sm text-ink/50" aria-live="polite">
-            {filtered.length} {filtered.length === 1 ? "project" : "projects"}
-            {active !== "ALL" ? ` in ${active}` : ""}
+            {loading
+              ? "Loading projects…"
+              : `${filtered.length} ${filtered.length === 1 ? "project" : "projects"}${
+                  active !== "ALL" ? ` in ${active}` : ""
+                }`}
           </p>
 
           <ProjectGrid projects={filtered} className="mt-8" />
 
           <p className="mt-12 rounded-2xl border border-dashed border-surface-pale-4 bg-surface-pale p-6 text-sm leading-relaxed text-ink/55">
-            Project data lives in <code className="rounded bg-surface-alt px-1.5 py-0.5 text-xs">src/data/projects.ts</code> —
-            add or replace entries there and the pages update automatically. Current entries are
-            clearly labeled placeholders ready to be replaced with real work.
+            Project content is managed in Sanity Studio (<code className="rounded bg-surface-alt px-1.5 py-0.5 text-xs">npm run studio</code>)
+            and falls back to the placeholder entries in <code className="rounded bg-surface-alt px-1.5 py-0.5 text-xs">src/data/projects.ts</code>{" "}
+            when Sanity isn't configured.
           </p>
         </Container>
       </Section>

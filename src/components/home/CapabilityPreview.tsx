@@ -1,18 +1,35 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Mic, Database, MessageSquare, Layers } from "lucide-react";
 import { Container, Section } from "@/components/ui/Container";
-import { capabilitiesPreview } from "@/data/capabilities";
+import {
+  fetchCapabilityPreview,
+  type CapabilityPreviewItem,
+} from "@/data/capabilities";
 import { revealElements } from "@/lib/gsap";
 
 const icons = [Mic, Database, MessageSquare, Layers];
 
 export function CapabilityPreview() {
   const scopeRef = useRef<HTMLElement>(null);
+  const [capabilities, setCapabilities] = useState<CapabilityPreviewItem[]>([]);
 
   useEffect(() => {
-    revealElements(".cap-card", scopeRef.current ?? document);
+    let cancelled = false;
+    fetchCapabilityPreview().then((items) => {
+      if (cancelled) return;
+      setCapabilities(items);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  useEffect(() => {
+    if (capabilities.length) {
+      revealElements(".cap-card", scopeRef.current ?? document);
+    }
+  }, [capabilities]);
 
   return (
     <Section ref={scopeRef} className="bg-surface-alt">
@@ -25,8 +42,8 @@ export function CapabilityPreview() {
         </div>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {capabilitiesPreview.map((cap, i) => {
-            const Icon = icons[i];
+          {capabilities.map((cap, i) => {
+            const Icon = icons[i % icons.length];
             return (
               <Link
                 key={cap.id}

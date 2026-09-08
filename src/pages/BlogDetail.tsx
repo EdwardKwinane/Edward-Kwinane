@@ -7,10 +7,11 @@ import { Container, Section } from "@/components/ui/Container";
 import { Badge } from "@/components/ui/Badge";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { ArchitectureDiagram } from "@/components/architecture/ArchitectureDiagram";
-import { getBlogPost, blogPosts, type BlogPost } from "@/data/blog";
+import { fetchBlogPost, fetchBlogPosts, type BlogPost } from "@/data/blog";
+import { PortableTextRenderer } from "@/lib/sanity/components/PortableText";
 import { formatDate } from "@/lib/utils";
 
-function ContentBlock({ block }: { block: BlogPost["content"][number] }) {
+function ContentBlock({ block }: { block: NonNullable<BlogPost["content"]>[number] }) {
   switch (block.type) {
     case "p":
       return <p>{block.text}</p>;
@@ -80,7 +81,7 @@ function TableOfContents({ post }: { post: BlogPost }) {
           On this page
         </p>
         <nav className="mt-4 flex flex-col gap-1" aria-label="Table of contents">
-          {post.tableOfContents.map((item) => (
+          {(post.tableOfContents ?? []).map((item) => (
             <a
               key={item.id}
               href={`#${item.id}`}
@@ -103,7 +104,7 @@ function TableOfContents({ post }: { post: BlogPost }) {
         </button>
         {open && (
           <nav className="flex flex-col gap-1 border-t border-surface-pale-3 p-4" aria-label="Table of contents">
-            {post.tableOfContents.map((item) => (
+            {(post.tableOfContents ?? []).map((item) => (
               <a
                 key={item.id}
                 href={`#${item.id}`}
@@ -122,18 +123,50 @@ function TableOfContents({ post }: { post: BlogPost }) {
 
 export default function BlogDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const post = slug ? getBlogPost(slug) : undefined;
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [related, setRelated] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [slug]);
 
-  if (!post) return <Navigate to="/blog" replace />;
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    async function load() {
+      const item = slug ? await fetchBlogPost(slug) : undefined;
+      const all = await fetchBlogPosts();
+      if (cancelled) return;
+      setPost(item ?? null);
+      setRelated(
+        item
+          ? all
+              .filter((p) => p.slug !== item.slug)
+              .filter((p) => item.related.includes(p.slug) || p.category === item.category)
+              .slice(0, 2)
+          : []
+      );
+      setLoading(false);
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
 
-  const related = blogPosts
-    .filter((p) => p.slug !== post.slug)
-    .filter((p) => post.related.includes(p.slug) || p.category === post.category)
-    .slice(0, 2);
+  if (loading) {
+    return (
+      <section className="bg-surface pt-32 pb-12 lg:pt-40">
+        <Container>
+          <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/50">
+            Loading…</p>
+        </Container>
+      </section>
+    );
+  }
+
+  if (!post) return <Navigate to="/blog" replace />;
 
   return (
     <>
@@ -186,9 +219,11 @@ export default function BlogDetail() {
 
             <article className="order-1 lg:order-2">
               <div className="prose-article mx-auto max-w-2xl">
-                {post.content.map((block, i) => (
-                  <ContentBlock key={i} block={block} />
-                ))}
+                {post.body ? (
+                  <PortableTextRenderer body={post.body} />
+                ) : (
+                  post.content?.map((block, i) => <ContentBlock key={i} block={block} />)
+                )}
               </div>
 
               <div className="mx-auto mt-10 flex max-w-2xl flex-wrap gap-2 border-t border-surface-pale-3 pt-6">
