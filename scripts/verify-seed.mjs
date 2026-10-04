@@ -99,8 +99,9 @@ globalThis.__serve = (query, params) => {
     };
   }
   if (query.includes('*[_type == "project"]')) return ofType("project").map(projectSummary);
-  if (query.includes('_type == "post" && slug.current == $slug')) {
-    const doc = ofType("post").find((p) => p.slug?.current === params?.slug);
+  if (query.includes('slug.current == $slug')) {
+    const type = query.includes('_type == "project"') ? "project" : "post";
+    const doc = ofType(type).find((p) => p.slug?.current === params?.slug);
     if (!doc) return null;
     return {
       ...postSummary(doc),
@@ -110,7 +111,12 @@ globalThis.__serve = (query, params) => {
       related: (doc.related ?? []).map(deref).filter(Boolean).map(postSummary),
     };
   }
-  if (query.includes('*[_type == "post"]')) return ofType("post").map(postSummary);
+  if (query.includes('*[_type == "post"')) {
+    const requirePublished = query.includes("defined(publishedAt)");
+    return ofType("post")
+      .filter((p) => (requirePublished ? Boolean(p.publishedAt) : true))
+      .map(postSummary);
+  }
   if (query.includes('_type == "capability"')) {
     return ofType("capability")
       .slice()

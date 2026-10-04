@@ -1,6 +1,7 @@
 import { buildDocuments } from "./seed-documents.mjs";
 import { createClient } from "@sanity/client";
 import { readFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
@@ -60,16 +61,37 @@ const fileEnv = { ...readEnvFile(resolve(root, ".env")), ...readEnvFile(resolve(
 const projectId = fileEnv.VITE_SANITY_PROJECT_ID;
 const dataset = fileEnv.VITE_SANITY_DATASET ?? "production";
 const apiVersion = fileEnv.VITE_SANITY_API_VERSION ?? "2024-06-04";
-const token = option("token") ?? process.env.SANITY_AUTH_TOKEN;
 
 if (!projectId) {
   console.error("No VITE_SANITY_PROJECT_ID in .env — nothing to seed.");
   process.exit(1);
 }
 
+function cliConfigToken() {
+  const base = process.env.XDG_CONFIG_HOME || resolve(homedir(), ".config");
+  try {
+    const config = JSON.parse(readFileSync(resolve(base, "sanity", "config.json"), "utf-8"));
+    return typeof config.authToken === "string" && config.authToken.length > 20
+      ? config.authToken
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+const token =
+  option("token") ?? process.env.SANITY_AUTH_TOKEN ?? cliConfigToken();
+
 async function resolveClient() {
   if (token) {
-    return createClient({ projectId, dataset, apiVersion, token, useCdn: false });
+    return createClient({
+      projectId,
+      dataset,
+      apiVersion,
+      token,
+      useCdn: false,
+      perspective: "raw",
+    });
   }
   try {
     const { getCliClient } = await import("sanity/cli");
@@ -92,7 +114,7 @@ if (!client && !dryRun) {
       "Either run a one-time browser login:",
       "",
       "  npx sanity login",
-      "  npm run seed:studio",
+      "  npm run seed",
       "",
       "or supply a token (Editor role) from",
       "https://www.sanity.io/manage/project/" + projectId + "/tokens",
@@ -147,10 +169,16 @@ if (toCreate.length > 0) {
   for (const doc of toCreate) {
     transaction = transaction[overwrite ? "createOrReplace" : "createIfNotExists"](doc);
   }
-  await transaction.commit({ visibility: "async" });
+  await transaction.commit({ visibility: "sync" });
 }
 
 console.log(`\nWrote ${toCreate.length} document(s).`);
 
-const after = await client.fetch(`{counts: array::unique(*[]._type)}`);
+const after = await client.fetch(
+  `{"technology": count(*[_type == "technology"]),
+    "capability": count(*[_type == "capability"]),
+    "project": count(*[_type == "project"]),
+    "post": count(*[_type == "post"]),
+    "siteSettings": count(*[_type == "siteSettings"])}`
+);
 console.log(`Dataset now contains: ${JSON.stringify(after)}`);

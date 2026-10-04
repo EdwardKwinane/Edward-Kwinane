@@ -88,7 +88,7 @@ export async function buildDocuments({ projectId, dataset, apiVersion }) {
 
   const technologyNames = [...new Set(projects.flatMap((p) => p.technologies))];
   const techIdByName = new Map(
-    technologyNames.map((name) => [name, `technology.${slugify(name)}`])
+    technologyNames.map((name) => [name, `technology-${slugify(name)}`])
   );
 
   const technologyDocs = technologyNames.map((name, i) => ({
@@ -109,7 +109,7 @@ export async function buildDocuments({ projectId, dataset, apiVersion }) {
     const preview = previewByCapabilityId.get(cap.id);
     const name = cap.name ?? preview?.title ?? titleCase(cap.id);
     return {
-      _id: `capability.${cap.id}`,
+      _id: `capability-${cap.id}`,
       _type: "capability",
       name,
       slug: slugField(cap.id),
@@ -136,7 +136,7 @@ export async function buildDocuments({ projectId, dataset, apiVersion }) {
       warnings.push(`project "${p.slug}": ${dropped.length} empty section(s) skipped`);
     }
     return {
-      _id: `project.${p.slug}`,
+      _id: `project-${p.slug}`,
       _type: "project",
       title: p.title,
       slug: slugField(p.slug),
@@ -148,7 +148,7 @@ export async function buildDocuments({ projectId, dataset, apiVersion }) {
       technologies: (p.technologies ?? [])
         .map((name) => ref(techIdByName.get(name)))
         .filter(Boolean),
-      related: (p.related ?? []).map((slug) => ref(`project.${slug}`)),
+      related: (p.related ?? []).map((slug) => ref(`project-${slug}`)),
       sections: (p.sections ?? [])
         .filter((section) => section.heading?.trim() && section.body?.length)
         .map((section) => ({
@@ -181,7 +181,7 @@ export async function buildDocuments({ projectId, dataset, apiVersion }) {
     const minutes = Number.parseInt(post.readingTime ?? "", 10);
 
     return {
-      _id: `post.${post.slug}`,
+      _id: `post-${post.slug}`,
       _type: "post",
       title: post.title,
       slug: slugField(post.slug),
@@ -195,7 +195,7 @@ export async function buildDocuments({ projectId, dataset, apiVersion }) {
       estimatedReadingTime: Number.isFinite(minutes) && minutes > 0 ? minutes : undefined,
       publishedAt: post.date ? new Date(post.date).toISOString() : undefined,
       body,
-      related: (post.related ?? []).map((slug) => ref(`post.${slug}`)),
+      related: (post.related ?? []).map((slug) => ref(`post-${slug}`)),
     };
   });
 
@@ -220,6 +220,32 @@ export async function buildDocuments({ projectId, dataset, apiVersion }) {
   for (const doc of documents) {
     for (const [key, value] of Object.entries(doc)) {
       if (value === undefined) delete doc[key];
+    }
+  }
+
+  const knownIds = new Set(documents.map((doc) => doc._id));
+  for (const doc of documents) {
+    for (const value of Object.values(doc)) {
+      for (const item of Array.isArray(value) ? value : []) {
+        const target = item?._type === "reference" ? item._ref : undefined;
+        if (target && !knownIds.has(target)) {
+          warnings.push(
+            `${doc._id}: reference to "${target}" does not match any seeded document id`
+          );
+        }
+      }
+    }
+  }
+
+  if (new Set(documents.map((doc) => doc._id)).size !== documents.length) {
+    warnings.push("Duplicate document ids in the generated set.");
+  }
+
+  for (const doc of documents) {
+    if (doc._id.includes(".")) {
+      warnings.push(
+        `${doc._id}: id contains a dot, which Sanity hides from anonymous reads.`
+      );
     }
   }
 

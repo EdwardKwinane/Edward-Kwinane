@@ -14,6 +14,7 @@ const config: ClientConfig = {
   dataset,
   apiVersion,
   useCdn: true,
+  perspective: "published",
 };
 
 export const client = createClient(config);

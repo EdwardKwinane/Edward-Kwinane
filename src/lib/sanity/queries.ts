@@ -76,12 +76,12 @@ const POST_LIST_FIELDS = `
   seoImage,
 `;
 
-const postsListQuery = `*[_type == "post"]
+const postsListQuery = `*[_type == "post" && defined(publishedAt)]
   | order(coalesce(featured, false) desc, coalesce(publishedAt, "") desc) {
     ${POST_LIST_FIELDS}
   }`;
 
-const postBySlugQuery = `*[_type == "post" && slug.current == $slug][0] {
+const postBySlugQuery = `*[_type == "post" && defined(publishedAt) && slug.current == $slug][0] {
     ${POST_LIST_FIELDS}
     body,
     seoTitle,
