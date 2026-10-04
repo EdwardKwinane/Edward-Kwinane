@@ -52,7 +52,7 @@ export default function Blog() {
           {featured ? (
             <Link
               to={`/blog/${featured.slug}`}
-              className="group grid overflow-hidden rounded-2xl border border-surface-pale-3 bg-surface-alt transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(13,13,91,0.12)] focus-ring lg:grid-cols-[1fr_380px]"
+              className="group grid overflow-hidden rounded-2xl border border-surface-pale3 bg-surface-alt transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(13,13,91,0.12)] focus-ring lg:grid-cols-[1fr_380px]"
             >
               <div className="relative flex min-h-[140px] items-center justify-center bg-primary p-6 sm:min-h-[220px] sm:p-8">
                 {featured.coverImage ? (

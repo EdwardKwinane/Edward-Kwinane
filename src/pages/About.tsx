@@ -99,11 +99,11 @@ export default function About() {
               </div>
 
               <div className="about-reveal">
-                <div className="rounded-2xl border border-surface-pale-3 bg-surface-alt p-6 shadow-[0_16px_40px_rgba(13,13,91,0.08)] lg:p-8">
+                <div className="rounded-2xl border border-surface-pale3 bg-surface-alt p-6 shadow-[0_16px_40px_rgba(13,13,91,0.08)] lg:p-8">
                   <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
                     Technical profile
                   </p>
-                  <dl className="mt-5 divide-y divide-surface-pale-3">
+                  <dl className="mt-5 divide-y divide-surface-pale3">
                     {profileFields.map((field) => (
                       <div key={field.label} className="flex flex-col gap-1 py-3.5 sm:grid sm:grid-cols-[120px_1fr] sm:gap-4 sm:gap-y-0">
                         <dt className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40 pt-0.5">
@@ -131,9 +131,9 @@ export default function About() {
               {philosophy.map((item) => (
                 <li
                   key={item.index}
-                  className="about-reveal rounded-2xl border border-surface-pale-3 bg-surface p-4 sm:p-6"
+                  className="about-reveal rounded-2xl border border-surface-pale3 bg-surface p-4 sm:p-6"
                 >
-                  <span className="font-heading text-3xl font-bold text-surface-pale-4">
+                  <span className="font-heading text-3xl font-bold text-surface-pale4">
                     {item.index}
                   </span>
                   <p className="mt-3 text-sm font-medium leading-relaxed text-navy">{item.text}</p>
@@ -161,7 +161,7 @@ export default function About() {
                 return (
                   <div
                     key={area.title}
-                    className="about-reveal flex flex-col rounded-2xl border border-surface-pale-3 bg-surface-alt p-5 sm:p-8"
+                    className="about-reveal flex flex-col rounded-2xl border border-surface-pale3 bg-surface-alt p-5 sm:p-8"
                   >
                     <span className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-white">
                       <Icon className="h-6 w-6" strokeWidth={1.5} />
@@ -172,7 +172,7 @@ export default function About() {
                       {area.labels.map((label) => (
                         <span
                           key={label}
-                          className="rounded-full border border-surface-pale-4 bg-surface-pale px-3 py-1 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60"
+                          className="rounded-full border border-surface-pale4 bg-surface-pale px-3 py-1 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60"
                         >
                           {label}
                         </span>
@@ -183,7 +183,7 @@ export default function About() {
               })}
             </div>
 
-            <div className="mt-14 rounded-2xl border border-surface-pale-4 bg-surface-pale p-8 lg:p-10">
+            <div className="mt-14 rounded-2xl border border-surface-pale4 bg-surface-pale p-8 lg:p-10">
               <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
                 <div>
                   <h3 className="font-heading text-xl font-semibold text-navy lg:text-2xl">

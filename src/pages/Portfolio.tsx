@@ -69,7 +69,7 @@ export default function Portfolio() {
 
           <ProjectGrid projects={filtered} className="mt-8" />
 
-          <p className="mt-12 rounded-2xl border border-dashed border-surface-pale-4 bg-surface-pale p-6 text-sm leading-relaxed text-ink/55">
+          <p className="mt-12 rounded-2xl border border-dashed border-surface-pale4 bg-surface-pale p-6 text-sm leading-relaxed text-ink/55">
             Project content is managed in Sanity Studio (<code className="rounded bg-surface-alt px-1.5 py-0.5 text-xs">npm run studio</code>)
             and falls back to the placeholder entries in <code className="rounded bg-surface-alt px-1.5 py-0.5 text-xs">src/data/projects.ts</code>{" "}
             when Sanity isn't configured.

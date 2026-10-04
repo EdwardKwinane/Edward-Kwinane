@@ -64,7 +64,7 @@ export function Hero() {
           </div>
 
           <div className="hero-reveal">
-            <div className="rounded-2xl border border-surface-pale-4 bg-surface-alt p-4 shadow-[0_24px_60px_rgba(13,13,91,0.1)] sm:p-6 lg:p-8">
+            <div className="rounded-2xl border border-surface-pale4 bg-surface-alt p-4 shadow-[0_24px_60px_rgba(13,13,91,0.1)] sm:p-6 lg:p-8">
               <div className="mb-5 flex items-center justify-between">
                 <span className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
                   System status

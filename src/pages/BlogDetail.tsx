@@ -61,7 +61,7 @@ function ContentBlock({ block }: { block: NonNullable<BlogPost["content"]>[numbe
         detail: i === 0 ? "Entry point" : undefined,
       }));
       return (
-        <div className="my-6 rounded-2xl border border-surface-pale-4 bg-surface-pale p-6">
+        <div className="my-6 rounded-2xl border border-surface-pale4 bg-surface-pale p-6">
           <ArchitectureDiagram flow={flow} compact activeIndex={-1} />
         </div>
       );
@@ -76,7 +76,7 @@ function TableOfContents({ post }: { post: BlogPost }) {
 
   return (
     <>
-      <div className="hidden rounded-2xl border border-surface-pale-3 bg-surface-alt p-6 lg:block">
+      <div className="hidden rounded-2xl border border-surface-pale3 bg-surface-alt p-6 lg:block">
         <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
           On this page
         </p>
@@ -93,7 +93,7 @@ function TableOfContents({ post }: { post: BlogPost }) {
         </nav>
       </div>
 
-      <div className="rounded-2xl border border-surface-pale-3 bg-surface-alt lg:hidden">
+      <div className="rounded-2xl border border-surface-pale3 bg-surface-alt lg:hidden">
         <button
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
@@ -103,7 +103,7 @@ function TableOfContents({ post }: { post: BlogPost }) {
           <ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} />
         </button>
         {open && (
-          <nav className="flex flex-col gap-1 border-t border-surface-pale-3 p-4" aria-label="Table of contents">
+          <nav className="flex flex-col gap-1 border-t border-surface-pale3 p-4" aria-label="Table of contents">
             {(post.tableOfContents ?? []).map((item) => (
               <a
                 key={item.id}
@@ -195,7 +195,7 @@ export default function BlogDetail() {
               {post.title}
             </h1>
             <p className="mt-4 text-lg leading-relaxed text-ink/65">{post.subtitle}</p>
-            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-surface-pale-3 py-4 text-sm text-ink/55">
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-surface-pale3 py-4 text-sm text-ink/55">
               <span className="font-medium text-navy">{post.author}</span>
               <span className="inline-flex items-center gap-1.5">
                 <Calendar className="h-4 w-4" aria-hidden="true" />
@@ -226,11 +226,11 @@ export default function BlogDetail() {
                 )}
               </div>
 
-              <div className="mx-auto mt-10 flex max-w-2xl flex-wrap gap-2 border-t border-surface-pale-3 pt-6">
+              <div className="mx-auto mt-10 flex max-w-2xl flex-wrap gap-2 border-t border-surface-pale3 pt-6">
                 {post.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full border border-surface-pale-4 bg-surface-pale px-3 py-1 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60"
+                    className="rounded-full border border-surface-pale4 bg-surface-pale px-3 py-1 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60"
                   >
                     #{tag}
                   </span>

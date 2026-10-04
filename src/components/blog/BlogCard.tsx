@@ -14,9 +14,10 @@ import { Badge } from "@/components/ui/Badge";
  * All colour, type and radius values are the project's own tokens.
  *
  * `border-surface-pale3` is spelled without a dash because that is the key in
- * tailwind.config.ts. The `border-surface-pale-3` spelling used elsewhere in the
- * codebase emits no CSS at all and only appears to work because index.css sets
- * `* { border-color: var(--surface-pale-3) }`. Both resolve to the same colour.
+ * tailwind.config.ts. The dashed `border-surface-pale-3` spelling emits no CSS
+ * at all; it only appeared to work because index.css sets a global
+ * `* { border-color: var(--surface-pale-3) }` fallback. The codebase now uses
+ * the generated spelling throughout.
  */
 export function BlogCard({ post, className }: { post: BlogPost; className?: string }) {
   return (

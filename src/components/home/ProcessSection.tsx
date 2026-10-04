@@ -33,9 +33,9 @@ export function ProcessSection() {
 
         <ol className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {stages.map((stage) => (
-            <li key={stage.index} className="process-stage relative rounded-2xl border border-surface-pale-3 bg-surface p-6">
+            <li key={stage.index} className="process-stage relative rounded-2xl border border-surface-pale3 bg-surface p-6">
               <div className="flex items-center justify-between">
-                <span className="font-heading text-4xl font-bold text-surface-pale-4">{stage.index}</span>
+                <span className="font-heading text-4xl font-bold text-surface-pale4">{stage.index}</span>
                 <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
               </div>
               <h3 className="mt-4 font-technical text-[13px] font-bold uppercase tracking-tech text-navy">

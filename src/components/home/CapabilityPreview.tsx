@@ -48,7 +48,7 @@ export function CapabilityPreview() {
               <Link
                 key={cap.id}
                 to="/capabilities"
-                className="cap-card group flex flex-col rounded-2xl border border-surface-pale-3 bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:bg-surface-pale hover:shadow-[0_16px_40px_rgba(13,13,91,0.1)] focus-ring"
+                className="cap-card group flex flex-col rounded-2xl border border-surface-pale3 bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:bg-surface-pale hover:shadow-[0_16px_40px_rgba(13,13,91,0.1)] focus-ring"
               >
                 <span className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-white transition-colors duration-300 group-hover:bg-accent">
                   <Icon className="h-6 w-6" strokeWidth={1.5} />
@@ -59,7 +59,7 @@ export function CapabilityPreview() {
                   {cap.labels.map((label) => (
                     <span
                       key={label}
-                      className="rounded-full border border-surface-pale-4 bg-surface-alt px-2.5 py-0.5 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/55"
+                      className="rounded-full border border-surface-pale4 bg-surface-alt px-2.5 py-0.5 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/55"
                     >
                       {label}
                     </span>

@@ -207,7 +207,7 @@ export function Navbar() {
           style={{ maxWidth: "calc(100vw - 2rem)" }}
           className={cn(
             "pointer-events-auto relative flex h-14 items-center overflow-hidden rounded-pill",
-            "border border-surface-pale-3 bg-surface-alt/80 shadow-[0_10px_30px_-12px_rgba(11,28,48,0.28)] backdrop-blur-xl"
+            "border border-surface-pale3 bg-surface-alt/80 shadow-[0_10px_30px_-12px_rgba(11,28,48,0.28)] backdrop-blur-xl"
           )}
         >
           {/* Expanded row. `invisible` (not `hidden`) keeps its measured width
@@ -351,7 +351,7 @@ export function Navbar() {
             ))}
           </nav>
 
-          <div className="mt-auto flex flex-col gap-4 border-t border-surface-pale-3 pt-6">
+          <div className="mt-auto flex flex-col gap-4 border-t border-surface-pale3 pt-6">
             <div className="flex items-center justify-between">
               <span className="inline-flex items-center gap-2">
                 <span className="relative flex h-2 w-2">

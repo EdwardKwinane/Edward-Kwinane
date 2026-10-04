@@ -50,7 +50,7 @@ const components: PortableTextComponents = {
             src={src}
             alt={alt}
             loading="lazy"
-            className="w-full rounded-2xl border border-surface-pale-3"
+            className="w-full rounded-2xl border border-surface-pale3"
           />
           {caption ? (
             <figcaption className="mt-2 text-center font-technical text-[11px] uppercase tracking-tech text-ink/45">
