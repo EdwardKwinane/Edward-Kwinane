@@ -58,6 +58,45 @@ const CONTENT_TO_BLOCK = {
  * documents. Split out from the CLI so the mapping can be exercised without
  * write access to a dataset.
  */
+/**
+ * Studio refuses to edit a list whose items have no _key, so every array of
+ * objects a schema declares as a list needs one. Arrays of primitives (labels,
+ * tags) do not.
+ */
+const KEYED_ARRAY_FIELDS = {
+  project: ["sections", "technologies", "related"],
+  post: ["body", "related"],
+  capability: ["flow"],
+};
+
+function stableKey(seed) {
+  let hash = 2166136261;
+  const text = String(seed);
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+/** Adds a deterministic _key to any missing list item. Returns true if changed. */
+export function ensureArrayKeys(doc) {
+  const fields = KEYED_ARRAY_FIELDS[doc?._type] ?? [];
+  let changed = false;
+
+  for (const field of fields) {
+    const items = doc[field];
+    if (!Array.isArray(items)) continue;
+    doc[field] = items.map((item, index) => {
+      if (!item || typeof item !== "object" || item._key) return item;
+      changed = true;
+      return { ...item, _key: `${field}-${index}-${stableKey(JSON.stringify(item))}` };
+    });
+  }
+
+  return changed;
+}
+
 export async function buildDocuments({ projectId, dataset, apiVersion }) {
   const warnings = [];
 
@@ -217,6 +256,7 @@ export async function buildDocuments({ projectId, dataset, apiVersion }) {
     for (const [key, value] of Object.entries(doc)) {
       if (value === undefined) delete doc[key];
     }
+    ensureArrayKeys(doc);
   }
 
   const knownIds = new Set(documents.map((doc) => doc._id));
