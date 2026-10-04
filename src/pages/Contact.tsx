@@ -39,7 +39,7 @@ export default function Contact() {
       <Section className="pt-0 lg:pt-0">
         <Container>
           <div className="grid gap-10 lg:grid-cols-[1fr_380px] lg:gap-16">
-            <div className="rounded-2xl border border-surface-pale-3 bg-surface-alt p-6 lg:p-10">
+            <div className="rounded-2xl border border-surface-pale3 bg-surface-alt p-6 lg:p-10">
               <h2 className="font-heading text-xl font-semibold text-navy lg:text-2xl">
                 Tell me about the system
               </h2>
@@ -55,7 +55,7 @@ export default function Contact() {
               {contactChannels.map((channel) => {
                 const Icon = channel.icon;
                 return (
-                  <div key={channel.title} className="rounded-2xl border border-surface-pale-3 bg-surface-pale p-6">
+                  <div key={channel.title} className="rounded-2xl border border-surface-pale3 bg-surface-pale p-6">
                     <span className="flex h-11 w-11 items-center justify-center rounded-md bg-primary text-white">
                       <Icon className="h-5 w-5" strokeWidth={1.5} />
                     </span>

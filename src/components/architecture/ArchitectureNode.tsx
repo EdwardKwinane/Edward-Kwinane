@@ -23,8 +23,8 @@ export function ArchitectureNode({
         state === "active" &&
           "border-accent bg-accent text-white shadow-[0_8px_24px_rgba(254,89,0,0.35)]",
         state === "accent" &&
-          "border-accent/30 bg-surface-pale-3 text-navy",
-        state === "idle" && "border-surface-pale-4 bg-surface-pale text-navy",
+          "border-accent/30 bg-surface-pale3 text-navy",
+        state === "idle" && "border-surface-pale4 bg-surface-pale text-navy",
         className
       )}
     >

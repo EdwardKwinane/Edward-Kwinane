@@ -89,7 +89,7 @@ export default function PortfolioDetail() {
               {project.technologies.map((tech) => (
                 <span
                   key={tech}
-                  className="rounded-full border border-surface-pale-4 bg-surface-alt px-3 py-1 font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/60"
+                  className="rounded-full border border-surface-pale4 bg-surface-alt px-3 py-1 font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/60"
                 >
                   {tech}
                 </span>
@@ -104,7 +104,7 @@ export default function PortfolioDetail() {
           <div className="grid gap-10 lg:grid-cols-[1fr_280px] lg:gap-14">
             <article className="max-w-2xl">
               {project.sections.map((section, i) => (
-                <div key={section.heading} className="border-t border-surface-pale-3 py-8 first:border-t-0">
+                <div key={section.heading} className="border-t border-surface-pale3 py-8 first:border-t-0">
                   <h2 className="font-technical text-[13px] font-bold uppercase tracking-tech text-accent">
                     {String(i + 1).padStart(2, "0")} — {section.heading}
                   </h2>
@@ -120,7 +120,7 @@ export default function PortfolioDetail() {
             </article>
 
             <aside className="space-y-6 lg:sticky lg:top-28 lg:self-start">
-              <div className="rounded-2xl border border-surface-pale-3 bg-surface-pale p-6">
+              <div className="rounded-2xl border border-surface-pale3 bg-surface-pale p-6">
                 <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
                   Case study
                 </p>

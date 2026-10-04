@@ -22,7 +22,7 @@ export function CapabilityCard({
       )}
     >
       <div>
-        <span className="font-heading text-5xl font-bold text-surface-pale-4">{capability.index}</span>
+        <span className="font-heading text-5xl font-bold text-surface-pale4">{capability.index}</span>
         <p className="eyebrow mt-4">{capability.eyebrow}</p>
         <h2 className="mt-3 font-heading text-[28px] font-semibold leading-tight text-navy lg:text-[32px] lg:leading-[40px]">
           {capability.headline}
@@ -37,7 +37,7 @@ export function CapabilityCard({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-surface-pale-3 bg-surface-alt p-6 lg:p-8">
+      <div className="rounded-2xl border border-surface-pale3 bg-surface-alt p-6 lg:p-8">
         <p className="mb-5 font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
           System flow
         </p>

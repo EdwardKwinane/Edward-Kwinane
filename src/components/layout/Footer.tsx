@@ -20,7 +20,7 @@ export function Footer() {
   ].filter((link) => link.href);
 
   return (
-    <footer className="border-t border-surface-pale-3 bg-surface-alt">
+    <footer className="border-t border-surface-pale3 bg-surface-alt">
       <Container className="py-14">
         <div className="grid gap-10 md:grid-cols-12">
           <div className="md:col-span-5">
@@ -71,7 +71,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${label} profile`}
-                  className="flex h-10 w-10 items-center justify-center rounded-md border border-surface-pale-4 text-ink/60 transition-colors hover:border-navy hover:text-navy focus-ring"
+                  className="flex h-10 w-10 items-center justify-center rounded-md border border-surface-pale4 text-ink/60 transition-colors hover:border-navy hover:text-navy focus-ring"
                 >
                   <Icon className="h-5 w-5" />
                 </a>
@@ -81,7 +81,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-2 border-t border-surface-pale-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-2 border-t border-surface-pale3 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-ink/40">
             © {new Date().getFullYear()} {settings.ownerName}. All rights reserved.
           </p>

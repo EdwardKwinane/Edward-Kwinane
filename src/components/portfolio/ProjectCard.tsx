@@ -9,7 +9,7 @@ export function ProjectCard({ project, className }: { project: Project; classNam
     <Link
       to={`/portfolio/${project.slug}`}
       className={cn(
-        "group flex flex-col overflow-hidden rounded-2xl border border-surface-pale-3 bg-surface-alt transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(13,13,91,0.12)] focus-ring",
+        "group flex flex-col overflow-hidden rounded-2xl border border-surface-pale3 bg-surface-alt transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(13,13,91,0.12)] focus-ring",
         className
       )}
     >
@@ -47,7 +47,7 @@ export function ProjectCard({ project, className }: { project: Project; classNam
           {project.technologies.slice(0, 5).map((tech) => (
             <span
               key={tech}
-              className="rounded-full border border-surface-pale-4 bg-surface-pale px-2.5 py-0.5 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60"
+              className="rounded-full border border-surface-pale4 bg-surface-pale px-2.5 py-0.5 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60"
             >
               {tech}
             </span>
