@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Github, Linkedin } from "lucide-react";
 import { Container } from "@/components/ui/Container";
+import { useSiteSettings } from "@/data/site";
 
 const navItems = [
   { label: "Home", to: "/" },
@@ -12,19 +13,32 @@ const navItems = [
 ];
 
 export function Footer() {
+  const settings = useSiteSettings();
+  const socialLinks = [
+    { href: settings.githubUrl, label: "GitHub", Icon: Github },
+    { href: settings.linkedinUrl, label: "LinkedIn", Icon: Linkedin },
+  ].filter((link) => link.href);
+
   return (
     <footer className="border-t border-surface-pale-3 bg-surface-alt">
       <Container className="py-14">
         <div className="grid gap-10 md:grid-cols-12">
           <div className="md:col-span-5">
-            <p className="font-heading text-lg font-bold text-navy">Edward Kwinane</p>
+            <p className="font-heading text-lg font-bold text-navy">{settings.ownerName}</p>
             <p className="mt-1 font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/50">
-              AI Engineer · Digital Architect
+              {settings.roleLine}
             </p>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink/60">
-              I build AI-native products from concept to production — voice agents, RAG systems,
-              AI chatbots and full-stack applications.
+              {settings.footerTagline}
             </p>
+            {settings.email ? (
+              <a
+                href={`mailto:${settings.email}`}
+                className="mt-4 inline-block text-sm text-accent hover:underline focus-ring"
+              >
+                {settings.email}
+              </a>
+            ) : null}
           </div>
 
           <nav className="md:col-span-4" aria-label="Footer">
@@ -50,35 +64,29 @@ export function Footer() {
               Connect
             </p>
             <div className="mt-4 flex gap-3">
-              <a
-                href="https://github.com/edwardkwinane"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="GitHub profile (placeholder link)"
-                className="flex h-10 w-10 items-center justify-center rounded-md border border-surface-pale-4 text-ink/60 transition-colors hover:border-navy hover:text-navy focus-ring"
-              >
-                <Github className="h-5 w-5" />
-              </a>
-              <a
-                href="https://linkedin.com/in/edwardkwinane"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="LinkedIn profile (placeholder link)"
-                className="flex h-10 w-10 items-center justify-center rounded-md border border-surface-pale-4 text-ink/60 transition-colors hover:border-navy hover:text-navy focus-ring"
-              >
-                <Linkedin className="h-5 w-5" />
-              </a>
+              {socialLinks.map(({ href, label, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${label} profile`}
+                  className="flex h-10 w-10 items-center justify-center rounded-md border border-surface-pale-4 text-ink/60 transition-colors hover:border-navy hover:text-navy focus-ring"
+                >
+                  <Icon className="h-5 w-5" />
+                </a>
+              ))}
             </div>
-            <p className="mt-6 text-xs text-ink/40">
-              Designed &amp; engineered with an AI-native workflow.
-            </p>
+            <p className="mt-6 text-xs text-ink/40">{settings.footerText}</p>
           </div>
         </div>
 
         <div className="mt-12 flex flex-col gap-2 border-t border-surface-pale-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-ink/40">© {new Date().getFullYear()} Edward Kwinane. All rights reserved.</p>
+          <p className="text-xs text-ink/40">
+            © {new Date().getFullYear()} {settings.ownerName}. All rights reserved.
+          </p>
           <p className="font-technical text-[10px] uppercase tracking-tech text-ink/40">
-            Concept → Architecture → Build → Ship
+            {settings.footerSignoff}
           </p>
         </div>
       </Container>

@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { HeroArchitecture } from "./HeroArchitecture";
 import { gsap, prefersReducedMotion } from "@/lib/gsap";
+import { useSiteSettings } from "@/data/site";
 
 export function Hero() {
   const scopeRef = useRef<HTMLElement>(null);
+  const settings = useSiteSettings();
 
   useEffect(() => {
     const scope = scopeRef.current;
@@ -28,14 +30,12 @@ export function Hero() {
       <Container className="relative">
         <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
           <div className="max-w-xl">
-            <p className="eyebrow hero-reveal">AI Engineer · Digital Architect</p>
+            <p className="eyebrow hero-reveal">{settings.roleLine}</p>
             <h1 className="hero-reveal mt-4 font-heading text-[28px] font-bold leading-[36px] text-navy sm:text-[32px] sm:leading-[40px] lg:text-[48px] lg:leading-[56px]">
-              I build AI-native products from concept to production.
+              {settings.heroHeadline}
             </h1>
             <p className="hero-reveal mt-6 text-base leading-relaxed text-ink/70 lg:text-lg">
-              I design and build intelligent software systems across voice agents, RAG pipelines,
-              AI chatbots and full-stack applications — turning complex ideas into production-ready
-              products.
+              {settings.heroSubheadline}
             </p>
             <div className="hero-reveal mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
               <Button asChild variant="accent" size="lg">
@@ -52,7 +52,7 @@ export function Hero() {
               </Button>
             </div>
             <div className="hero-reveal mt-10 flex flex-wrap gap-x-6 gap-y-2">
-              {["Voice Agents", "RAG Systems", "AI Chatbots", "AI Agents", "Full-Stack"].map((t) => (
+              {settings.heroTags.map((t) => (
                 <span
                   key={t}
                   className="font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/40"

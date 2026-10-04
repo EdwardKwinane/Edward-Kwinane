@@ -123,6 +123,10 @@ globalThis.__serve = (query, params) => {
       .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
       .map(capabilityDoc);
   }
+  if (query.includes('_type == "siteSettings"')) {
+    const doc = ofType("siteSettings")[0];
+    return doc ? { ...doc } : null;
+  }
   throw new Error(`stub client cannot serve: ${query.slice(0, 90)}`);
 };
 
@@ -136,6 +140,7 @@ await esbuild.build({
       export { projects } from "@/data/projects";
       export { blogPosts } from "@/data/blog";
       export { capabilities, capabilitiesPreview, fetchCapabilityPreview, fetchCapabilities } from "@/data/capabilities";
+      export { siteDefaults, fetchSiteSettings } from "@/data/site";
     `,
     resolveDir: root,
     loader: "ts",
@@ -293,6 +298,9 @@ check(
   previewCms.map(({ id, ...rest }) => rest),
   m.capabilitiesPreview.map(({ id, ...rest }) => rest)
 );
+
+console.log("\nSite settings:");
+check("fetchSiteSettings", await m.fetchSiteSettings(), m.siteDefaults);
 
 console.log("\nCapabilities page:");
 const capsCms = await m.fetchCapabilities();

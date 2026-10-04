@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Loader2 } from "lucide-react";
+import { SiteSettingsProvider } from "@/data/site";
 
 const Home = lazy(() => import("@/pages/Home"));
 const About = lazy(() => import("@/pages/About"));
@@ -34,26 +35,28 @@ function PageFallback() {
 export default function App() {
   return (
     <BrowserRouter>
-      <ScrollToTop />
-      <div className="flex min-h-screen flex-col">
-        <Navbar />
-        <main className="flex-1">
-          <Suspense fallback={<PageFallback />}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/portfolio" element={<Portfolio />} />
-              <Route path="/portfolio/:slug" element={<PortfolioDetail />} />
-              <Route path="/capabilities" element={<Capabilities />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogDetail />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </main>
-        <Footer />
-      </div>
+      <SiteSettingsProvider>
+        <ScrollToTop />
+        <div className="flex min-h-screen flex-col">
+          <Navbar />
+          <main className="flex-1">
+            <Suspense fallback={<PageFallback />}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/portfolio" element={<Portfolio />} />
+                <Route path="/portfolio/:slug" element={<PortfolioDetail />} />
+                <Route path="/capabilities" element={<Capabilities />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogDetail />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </main>
+          <Footer />
+        </div>
+      </SiteSettingsProvider>
     </BrowserRouter>
   );
 }

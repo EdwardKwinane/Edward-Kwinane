@@ -287,7 +287,10 @@ export function getBlogPost(slug: string) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Sanity CMS data access — falls back to local placeholder data       */
+/* Sanity CMS data access                                               */
+/*                                                                     */
+/* The local `blogPosts` array above is the seed source for             */
+/* `npm run seed`, not a runtime fallback.                               */
 /* ------------------------------------------------------------------ */
 
 import {
@@ -295,14 +298,13 @@ import {
   getSanityPostBySlug,
 } from "@/lib/sanity/queries";
 
-/** All posts. Returns CMS content, or local data when Sanity is unset/empty. */
+/** All published posts from the CMS. */
 export async function fetchBlogPosts(): Promise<BlogPost[]> {
-  const items = await getSanityPosts();
-  return items.length ? items : blogPosts;
+  return getSanityPosts();
 }
 
-/** Single post by slug. Falls back to local data when Sanity is unset/empty. */
+/** Single published post by slug. */
 export async function fetchBlogPost(slug: string): Promise<BlogPost | undefined> {
   const item = await getSanityPostBySlug(slug);
-  return item ?? getBlogPost(slug);
+  return item ?? undefined;
 }

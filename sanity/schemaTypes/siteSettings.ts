@@ -22,6 +22,20 @@ export const siteSettings = defineType({
       description: "Default meta description for the site.",
     }),
     defineField({
+      name: "ownerName",
+      title: "Owner name",
+      type: "string",
+      description: "Used in the navbar and footer.",
+      initialValue: "Edward Kwinane",
+    }),
+    defineField({
+      name: "roleLine",
+      title: "Role line",
+      type: "string",
+      description: "Short title shown under the name, e.g. 'AI Engineer · Digital Architect'.",
+      initialValue: "AI Engineer · Digital Architect",
+    }),
+    defineField({
       name: "heroHeadline",
       title: "Hero headline",
       type: "string",
@@ -33,6 +47,13 @@ export const siteSettings = defineType({
       type: "text",
       rows: 3,
       description: "Supporting line under the hero headline.",
+    }),
+    defineField({
+      name: "heroTags",
+      title: "Hero tags",
+      type: "array",
+      description: "Small uppercase tags listed under the hero call to action.",
+      of: [{ type: "string" }],
     }),
     defineField({
       name: "availabilityText",
@@ -93,11 +114,24 @@ export const siteSettings = defineType({
       description: "Used when a page has no specific SEO image.",
     }),
     defineField({
+      name: "footerTagline",
+      title: "Footer tagline",
+      type: "text",
+      rows: 3,
+      description: "Short paragraph under the name in the footer.",
+    }),
+    defineField({
       name: "footerText",
       title: "Footer text",
       type: "text",
       rows: 3,
       description: "Short line shown in the footer.",
+    }),
+    defineField({
+      name: "footerSignoff",
+      title: "Footer signoff",
+      type: "string",
+      description: "Right-aligned line at the very bottom, e.g. 'Concept → Architecture → Build → Ship'.",
     }),
   ],
   preview: {

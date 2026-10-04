@@ -155,8 +155,11 @@ const siteSettingsQuery = `*[_type == "siteSettings"][0] {
     _id,
     siteTitle,
     siteDescription,
+    ownerName,
+    roleLine,
     heroHeadline,
     heroSubheadline,
+    "heroTags": coalesce(heroTags, []),
     availabilityText,
     email,
     location,
@@ -164,7 +167,9 @@ const siteSettingsQuery = `*[_type == "siteSettings"][0] {
     twitterUrl,
     githubUrl,
     resumeUrl,
-    footerText
+    footerTagline,
+    footerText,
+    footerSignoff
   }`;
 
 /* ------------------------------------------------------------------ */

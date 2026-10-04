@@ -331,25 +331,26 @@ export function getProject(slug: string) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Sanity CMS data access — falls back to local placeholder data       */
+/* Sanity CMS data access                                               */
+/*                                                                     */
+/* The local `projects` array above is the seed source for              */
+/* `npm run seed`, not a runtime fallback. The CMS is the only source   */
+/* of truth, so a failed fetch surfaces as an empty list instead of     */
+/* silently serving stale content.                                      */
 /* ------------------------------------------------------------------ */
 
-/** All projects. Returns CMS content, or local data when Sanity is unset/empty. */
+/** All projects from the CMS. */
 export async function fetchProjects(): Promise<Project[]> {
-  const items = await getSanityProjects();
-  return items.length ? items : projects;
+  return getSanityProjects();
 }
 
-/** Featured projects for the home page. Falls back to the first local entries. */
+/** Featured projects for the home page. Uses `featured`, else the first four. */
 export async function fetchFeaturedProjects(): Promise<Project[]> {
-  const items = await getSanityFeaturedProjects();
-  if (items.length) return items;
-  const featured = projects.filter((p) => p.placeholder).slice(0, 4);
-  return featured;
+  return getSanityFeaturedProjects();
 }
 
-/** Single project by slug. Falls back to local data when Sanity is unset/empty. */
+/** Single project by slug. */
 export async function fetchProject(slug: string): Promise<Project | undefined> {
   const item = await getSanityProjectBySlug(slug);
-  return item ?? getProject(slug);
+  return item ?? undefined;
 }

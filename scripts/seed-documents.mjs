@@ -63,9 +63,12 @@ export async function buildDocuments({ projectId, dataset, apiVersion }) {
 
   const outdir = resolve(root, "node_modules/.cache/sanity-seed");
   await esbuild.build({
-    entryPoints: ["src/data/projects.ts", "src/data/blog.ts", "src/data/capabilities.ts"].map((p) =>
-      resolve(root, p)
-    ),
+    entryPoints: [
+      "src/data/projects.ts",
+      "src/data/blog.ts",
+      "src/data/capabilities.ts",
+      "src/data/site.tsx",
+    ].map((p) => resolve(root, p)),
     bundle: true,
     packages: "external",
     format: "esm",
@@ -85,6 +88,7 @@ export async function buildDocuments({ projectId, dataset, apiVersion }) {
   const { capabilities, capabilitiesPreview } = await import(
     resolve(outdir, "capabilities.js")
   );
+  const { siteDefaults } = await import(resolve(outdir, "site.js"));
 
   const technologyNames = [...new Set(projects.flatMap((p) => p.technologies))];
   const techIdByName = new Map(
@@ -199,15 +203,7 @@ export async function buildDocuments({ projectId, dataset, apiVersion }) {
     };
   });
 
-  const siteSettingsDoc = {
-    _id: "siteSettings",
-    _type: "siteSettings",
-    siteTitle: "Edward Kwinane — AI Engineer & Digital Architect",
-    siteDescription:
-      "Edward Kwinane is an AI Engineer & Digital Architect specializing in AI voice agents, RAG systems, AI chatbots, AI agents and rapid full-stack product development.",
-    availabilityText: "Available for select projects",
-    footerText: "Designed & engineered with an AI-native workflow.",
-  };
+  const siteSettingsDoc = { _id: "siteSettings", _type: "siteSettings", ...siteDefaults };
 
   const documents = [
     ...technologyDocs,

@@ -140,8 +140,11 @@ export interface SanitySiteSettings {
   _type: "siteSettings";
   siteTitle?: string;
   siteDescription?: string;
+  ownerName?: string;
+  roleLine?: string;
   heroHeadline?: string;
   heroSubheadline?: string;
+  heroTags?: string[];
   availabilityText?: string;
   email?: string;
   location?: string;
@@ -149,5 +152,7 @@ export interface SanitySiteSettings {
   twitterUrl?: string;
   githubUrl?: string;
   resumeUrl?: string;
+  footerTagline?: string;
   footerText?: string;
+  footerSignoff?: string;
 }

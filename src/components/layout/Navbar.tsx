@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/Sheet";
 import { Container } from "@/components/ui/Container";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { useSiteSettings } from "@/data/site";
 
 const navItems = [
   { label: "Home", to: "/" },
@@ -27,6 +28,7 @@ const navItems = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
+  const settings = useSiteSettings();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -65,12 +67,16 @@ export function Navbar() {
       )}
     >
       <Container className="flex h-full items-center justify-between gap-4">
-        <Link to="/" className="group flex flex-col leading-none" aria-label="Edward Kwinane home">
+        <Link
+          to="/"
+          className="group flex flex-col leading-none"
+          aria-label={`${settings.ownerName} home`}
+        >
           <span className="font-heading text-[15px] font-bold tracking-wide text-navy group-hover:text-accent-dark transition-colors">
-            EDWARD KWINANE
+            {settings.ownerName.toUpperCase()}
           </span>
           <span className="mt-0.5 font-technical text-[9px] font-semibold uppercase tracking-tech text-ink/50">
-            AI Engineer · Digital Architect
+            {settings.roleLine}
           </span>
         </Link>
 
@@ -89,7 +95,7 @@ export function Navbar() {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
             </span>
             <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60">
-              Available for select projects
+              {settings.availabilityText}
             </span>
           </span>
           <ThemeToggle />
@@ -112,6 +118,7 @@ const MOBILE_NAV_ID = "mobile-navigation";
 function MobileNav() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const settings = useSiteSettings();
 
   useEffect(() => {
     setOpen(false);
@@ -160,10 +167,10 @@ function MobileNav() {
       </SheetTrigger>
       <SheetContent id={MOBILE_NAV_ID}>
         <SheetTitle className="font-heading text-lg font-bold text-navy">
-          Edward Kwinane
+          {settings.ownerName}
         </SheetTitle>
         <SheetDescription className="font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/50">
-          AI Engineer · Digital Architect
+          {settings.roleLine}
         </SheetDescription>
 
         <nav className="mt-2 flex flex-col gap-1" aria-label="Mobile">
@@ -193,7 +200,7 @@ function MobileNav() {
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
               </span>
               <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60">
-                Available for select projects
+                {settings.availabilityText}
               </span>
             </span>
             <ThemeToggle />

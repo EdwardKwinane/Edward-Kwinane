@@ -126,20 +126,20 @@ export const capabilitiesPreview: CapabilityPreviewItem[] = [
 ];
 
 /* ------------------------------------------------------------------ */
-/* Sanity CMS data access — falls back to local placeholder data       */
+/* Sanity CMS data access                                               */
+/*                                                                       */
+/* `capabilitiesPreview` above is the seed source for the home page card  */
+/* selection, not a runtime fallback.                                     */
 /* ------------------------------------------------------------------ */
 
-/** Full capabilities for the capabilities page. Falls back to local data. */
+/** Full capabilities for the capabilities page, from the CMS. */
 export async function fetchCapabilities(): Promise<Capability[]> {
-  const items = await getSanityCapabilities();
-  return items.length ? items : capabilities;
+  return getSanityCapabilities();
 }
 
-/** Compact capability cards for the home page. Falls back to local data. */
+/** Compact capability cards for the home page. Uses `featured`, else the first four. */
 export async function fetchCapabilityPreview(): Promise<CapabilityPreviewItem[]> {
   const items = await getSanityCapabilities();
-  if (!items.length) return capabilitiesPreview;
-
   const featured = items.filter((cap) => cap.featured);
   const shown = (featured.length ? featured : items).slice(0, 4);
 
