@@ -10,10 +10,82 @@ Personal portfolio and blog built with Vite, React, TypeScript, Tailwind CSS and
 - **CMS:** Sanity Studio (`sanity` v3) + `@sanity/client` for content queries
 - **Deployment:** Vercel
 
+## Developer setup (macOS)
+
+Full setup from a clean MacBook. GitHub is the source of truth; Vercel builds from GitHub.
+
+```bash
+# 1. Requirements — Node 24 LTS (matches the Vercel project's Node 24.x) and npm
+#    The official installer also adds nvm to your shell profile:
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+nvm install 24 && nvm alias default 24
+node --version    # v24.x — open a new terminal afterwards
+
+# 2. Clone the existing repository (never re-initialise it)
+cd ~/Developer
+gh repo clone EdwardKwinane/Edward-Kwinane
+cd Edward-Kwinane
+
+# 3. Install dependencies with the repo's package manager (package-lock.json → npm)
+npm ci
+
+# 4. Create local env file
+cp .env.example .env    # then fill in VITE_SANITY_PROJECT_ID
+
+# 5. Run
+npm run dev             # site  → http://localhost:5173
+npm run studio          # Studio → http://localhost:3333
+```
+
+`npm run dev` uses Vite's default port (5173). The only package manager this repo uses is
+npm — do not introduce pnpm/yarn, as `package-lock.json` is the committed lockfile.
+
+### Checks
+
+There are no lint or test scripts in this project. The available checks are:
+
+```bash
+npm run typecheck   # tsc for the app and the Sanity Studio
+npm run build       # typecheck + production build to dist/
+npm run preview     # serve the production build locally
+```
+
+### Day-to-day workflow
+
+`main` is the production branch. Branch, commit, push — Vercel deploys automatically.
+
+```bash
+git pull                                  # sync before starting
+git checkout -b feature/sanity-content     # feature/<short-description>
+npm run dev
+npm run typecheck && npm run build
+git add -A && git commit -m "feat: …"
+git push -u origin feature/sanity-content  # → Vercel preview deployment
+# test the preview URL, then open a PR and merge to main → production deploy
+```
+
+### How GitHub connects to Vercel
+
+`EdwardKwinane/Edward-Kwinane` is linked to the Vercel project `edward-kwinane`
+(team `eddiction-ai`). Pushing to `main` builds on Vercel and updates
+<https://edward-kwinane.vercel.app>; other branches get preview deployments. Never run
+`vercel --prod` — GitHub stays the source of truth.
+
+To inspect the Vercel project locally:
+
+```bash
+vercel link --project edward-kwinane --scope eddiction-ai
+vercel project inspect edward-kwinane --scope eddiction-ai
+vercel env ls --scope eddiction-ai
+```
+
+Build command is `npm run build`, framework preset Vite, Node 24.x, and the Sanity
+environment variables are configured on the Vercel project (not in the repo).
+
 ## Quick start
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -31,7 +103,8 @@ VITE_SANITY_DATASET=production
 ```
 
 Never commit `.env`. The Studio reads its own config from `sanity/.env`
-(`SANITY_PROJECT_ID` / `SANITY_DATASET`).
+(`SANITY_STUDIO_PROJECT_ID` / `SANITY_STUDIO_DATASET`), which is generated from the root
+`.env` by `scripts/prepare-env.mjs` every time you run a `studio` script.
 
 ## Content management (Sanity CMS)
 

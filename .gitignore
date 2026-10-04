@@ -21,7 +21,9 @@ Thumbs.db
 # Environment
 .env
 .env.local
+.env.production
 .env.*.local
+!.env.example
 
 # TypeScript
 *.tsbuildinfo
@@ -37,3 +39,6 @@ sanity/static/
 sanity/dist/
 sanity/desk/
 sanity/*.sanity.json
+
+# Vercel
+.vercel
