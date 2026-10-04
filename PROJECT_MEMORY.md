@@ -33,11 +33,43 @@ scripts/seed-documents.mjs  pure document builder, exported for the verifier
 scripts/seed-sanity.mjs     authenticated CLI wrapper
 scripts/verify-seed.mjs     26-check mapping regression harness
 scripts/repair-keys.mjs     adds missing _key to documents already in the dataset
+src/components/layout/Navbar.tsx  the site's only navigation
 ```
 
-`sanity/` contains a real, pre-existing Studio. **Never scaffold or overwrite it.**
+`Navbar.tsx` is the single source of truth for main navigation. It is a centred
+floating pill that collapses to a 48px menu button after ~150px of downward
+scroll and re-expands after ~80px upward, using `framer-motion`'s `useScroll` /
+`useMotionValueEvent`. `sanity/` contains a real, pre-existing Studio. **Never
+scaffold or overwrite it.**
 
 ## Decisions
+
+- **The navbar animates its width from a measured pixel value, never `"auto"`.**
+  The pill holds an inner `w-max` row whose border-box width is tracked with a
+  `ResizeObserver`, and the pill animates to that number.
+  *Reason:* three separate defects came from animating `width` to `"auto"` or
+  measuring the wrong box. Resolving `"auto"` mid-animation reads the element's
+  current (possibly already-clipped) width, so the pill never re-opened;
+  `ResizeObserverEntry.contentRect` is the content box, so the row's own padding
+  was missing and children were squeezed (the availability label wrapped to three
+  lines, the theme toggle collapsed to 20px); and with the row shrinkable, the
+  pill's `max-width` clamp squeezed the row, the observer measured the squeezed
+  width and the pill locked at the clamp. `shrink-0` on the row breaks that loop,
+  and `document.fonts.ready` triggers a re-measure because the webfont lands
+  after first layout.
+  *Consequence:* the pill is never `auto`; the header must stay
+  `display: flex; justify-center` or the pill falls back to being left-aligned.
+  *Date:* 2026-10-04
+
+- **The collapsed row is hidden with `visibility`, not `display`.** It keeps its
+  measured width stable and still removes itself from the tab order, the
+  accessibility tree and hit testing. Because hiding a focused control drops
+  focus to `<body>`, focus is handed to whichever control survives the transition
+  (menu button when collapsing, brand link when expanding).
+  *Reason:* `display: none` would change the row's measured width and re-trigger
+  the measurement loop; blocking collapse while focus was inside the pill meant a
+  mouse user who clicked the theme toggle could never collapse it again.
+  *Date:* 2026-10-04
 
 - **Sanity is the only runtime source.** Previously a failed fetch silently served local
   copy. Now a failure yields an empty list plus a console error.
@@ -83,6 +115,11 @@ scripts/repair-keys.mjs     adds missing _key to documents already in the datase
 - npm only. `package-lock.json` is the committed lockfile.
 - Never commit `.env` or any token.
 - Do not scaffold, overwrite or restructure the existing `sanity/` Studio.
+- The page is Sanity-driven, so any navbar copy comes from `useSiteSettings()` — do not
+  hard-code the owner name, role line or availability text.
+- GSAP (already used for scroll reveals) and Framer Motion (navbar only) coexist. Keep it
+  that way: GSAP owns page animations, Framer Motion owns the navbar. Measured bundle cost
+  of adding Framer Motion was ~1.5 kB gzip.
 - Preserve the lossless Portable Text mapping. Earlier hardcoded mappers silently dropped
   fields (`slug` was returned as an object, capability fields were unused, `featured` was
   ignored).
