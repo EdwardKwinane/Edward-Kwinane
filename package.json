@@ -9,6 +9,9 @@
     "build": "npm run typecheck && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit && tsc -p sanity/tsconfig.json --noEmit",
+    "seed": "node scripts/seed-sanity.mjs",
+    "seed:studio": "node scripts/prepare-env.mjs && cd sanity && sanity exec ../scripts/seed-sanity.mjs --with-user-token",
+    "verify:seed": "node scripts/verify-seed.mjs",
     "studio": "node scripts/prepare-env.mjs && cd sanity && sanity dev",
     "studio:build": "node scripts/prepare-env.mjs && cd sanity && sanity build",
     "studio:deploy": "node scripts/prepare-env.mjs && cd sanity && sanity deploy"

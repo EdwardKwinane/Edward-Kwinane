@@ -9,8 +9,11 @@ export interface Capability {
   index: string;
   eyebrow: string;
   headline: string;
+  shortDescription?: string;
   description: string;
   labels: string[];
+  previewLabels?: string[];
+  featured?: boolean;
   flow: { step: string; detail: string }[];
 }
 

@@ -39,6 +39,7 @@ const projectsListQuery = `*[_type == "project"]
 
 const projectBySlugQuery = `*[_type == "project" && slug.current == $slug][0] {
     ${PROJECT_LIST_FIELDS}
+    sections[]{heading, body},
     problem,
     requirements,
     solution,
@@ -67,6 +68,7 @@ const POST_LIST_FIELDS = `
   author,
   category,
   featured,
+  placeholder,
   estimatedReadingTime,
   "publishedAt": coalesce(publishedAt, _createdAt),
   "tags": coalesce(tags, []),
@@ -101,6 +103,7 @@ const capabilitiesQuery = `*[_type == "capability"]
     shortDescription,
     description,
     "labels": coalesce(labels, []),
+    "previewLabels": coalesce(previewLabels, []),
     "flow": coalesce(flow, []),
     icon,
     category,
@@ -194,6 +197,13 @@ async function fetchOne<T>(query: string, params?: QueryParams): Promise<T | nul
 /* Project mapping                                                    */
 /* ------------------------------------------------------------------ */
 
+function splitParagraphs(body: string): string[] {
+  return body
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
 const STATUS_MAP: Record<string, Project["status"]> = {
   shipped: "SHIPPED",
   "in-production": "IN PRODUCTION",
@@ -232,7 +242,7 @@ type ProjectSummarySource = Pick<
 function mapProjectSummary(p: ProjectSummarySource): Project {
   const status = mapStatus(p.status);
   return {
-    slug: p.slug?.current ?? p._id,
+    slug: p.slug ?? p._id,
     title: p.title,
     category: (p.category as ProjectCategory) ?? "AI",
     categories: (p.categories as ProjectCategory[]) ?? [],
@@ -249,13 +259,18 @@ function mapProjectSummary(p: ProjectSummarySource): Project {
 }
 
 function buildSections(p: SanityProject): ProjectSection[] {
+  const fromArray = (p.sections ?? [])
+    .filter((s) => s.heading?.trim() && s.body?.trim())
+    .map((s) => ({
+      heading: s.heading as string,
+      body: splitParagraphs(s.body as string),
+    }));
+  if (fromArray.length) return fromArray;
+
   const sections: ProjectSection[] = [];
   const add = (heading: string, body?: string) => {
     if (!body?.trim()) return;
-    const paragraphs = body
-      .split(/\n+/)
-      .map((line) => line.trim())
-      .filter(Boolean);
+    const paragraphs = splitParagraphs(body);
     if (paragraphs.length) sections.push({ heading, body: paragraphs });
   };
 
@@ -334,6 +349,7 @@ type PostSummarySource = Pick<
   | "author"
   | "category"
   | "featured"
+  | "placeholder"
   | "estimatedReadingTime"
   | "publishedAt"
   | "tags"
@@ -348,7 +364,7 @@ function mapPostSummary(p: PostSummarySource): BlogPost {
       ? estimateReadingTime(p.body)
       : "— min read";
   return {
-    slug: p.slug?.current ?? p._id,
+    slug: p.slug ?? p._id,
     title: p.title,
     subtitle: p.subtitle ?? "",
     category: (p.category as BlogPost["category"]) ?? "AI ENGINEERING",
@@ -357,7 +373,7 @@ function mapPostSummary(p: PostSummarySource): BlogPost {
     date: p.publishedAt ? new Date(p.publishedAt).toISOString() : "",
     readingTime,
     featured: Boolean(p.featured),
-    placeholder: false,
+    placeholder: Boolean(p.placeholder),
     tags: p.tags ?? [],
     related: [],
     coverImage: imageUrl(p.coverImage),
@@ -384,13 +400,16 @@ function mapBlogPostBody(p: SanityPost): BlogPost {
 
 function mapCapability(p: SanityCapability): Capability {
   return {
-    id: p.slug?.current ?? p._id,
+    id: p.slug ?? p._id,
     name: p.name,
     index: p.index ?? "",
     eyebrow: p.eyebrow ?? "",
     headline: p.headline ?? p.name,
+    shortDescription: p.shortDescription ?? "",
     description: p.description ?? p.shortDescription ?? "",
     labels: p.labels ?? [],
+    previewLabels: p.previewLabels ?? [],
+    featured: Boolean(p.featured),
     flow: (p.flow ?? []).map((f) => ({ step: f.step ?? "", detail: f.detail ?? "" })),
   };
 }

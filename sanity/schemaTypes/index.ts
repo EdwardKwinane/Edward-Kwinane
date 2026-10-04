@@ -1,5 +1,5 @@
 import { project } from "./project";
-import { post, codeBlock } from "./post";
+import { post, codeBlock, callout } from "./post";
 import { capability } from "./capability";
 import { technology } from "./technology";
 import { experience } from "./experience";
@@ -10,6 +10,7 @@ export const schemaTypes = [
   project,
   post,
   codeBlock,
+  callout,
   capability,
   technology,
   experience,

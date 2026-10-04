@@ -133,6 +133,36 @@ export const project = defineType({
       description: "Select existing technologies. Add new ones under Technologies in the Studio.",
     }),
     defineField({
+      name: "sections",
+      title: "Case study sections",
+      type: "array",
+      description:
+        "Optional. Renders in order on the project page and overrides the individual case study fields below. Use it when a project needs its own section headings.",
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({
+              name: "heading",
+              title: "Heading",
+              type: "string",
+              validation: (rule) => rule.required().error("Each section needs a heading."),
+            }),
+            defineField({
+              name: "body",
+              title: "Body",
+              type: "text",
+              rows: 6,
+              description: "One paragraph per blank line.",
+            }),
+          ],
+          preview: {
+            select: { title: "heading", subtitle: "body" },
+          },
+        },
+      ],
+    }),
+    defineField({
       name: "problem",
       title: "Problem",
       type: "text",

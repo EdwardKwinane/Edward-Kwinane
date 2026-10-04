@@ -13,7 +13,8 @@ export interface SanityTechnology {
   _id: string;
   _type: "technology";
   name: string;
-  slug?: { current?: string };
+  /** GROQ projects `"slug": slug.current`, so this is the plain slug string. */
+  slug?: string;
   category?: string;
   description?: string;
   website?: string;
@@ -25,7 +26,8 @@ export interface SanityProject {
   _id: string;
   _type: "project";
   title: string;
-  slug?: { current?: string };
+  /** GROQ projects `"slug": slug.current`, so this is the plain slug string. */
+  slug?: string;
   shortDescription?: string;
   fullDescription?: string;
   /** Resolved by GROQ as coalesce(shortDescription, fullDescription, ""). */
@@ -37,6 +39,7 @@ export interface SanityProject {
   featured?: boolean;
   technologies?: Array<{ name?: string }>;
   related?: SanityProject[];
+  sections?: Array<{ heading?: string; body?: string }>;
   problem?: string;
   requirements?: string;
   solution?: string;
@@ -58,7 +61,8 @@ export interface SanityPost {
   _id: string;
   _type: "post";
   title: string;
-  slug?: { current?: string };
+  /** GROQ projects `"slug": slug.current`, so this is the plain slug string. */
+  slug?: string;
   subtitle?: string;
   excerpt?: string;
   coverImage?: SanityImage;
@@ -67,6 +71,7 @@ export interface SanityPost {
   tags?: string[];
   featured?: boolean;
   estimatedReadingTime?: number;
+  placeholder?: boolean;
   body?: PortableTextBlock[];
   related?: SanityPost[];
   publishedAt?: string;
@@ -81,13 +86,15 @@ export interface SanityCapability {
   _id: string;
   _type: "capability";
   name: string;
-  slug?: { current?: string };
+  /** GROQ projects `"slug": slug.current`, so this is the plain slug string. */
+  slug?: string;
   index?: string;
   eyebrow?: string;
   headline?: string;
   shortDescription?: string;
   description?: string;
   labels?: string[];
+  previewLabels?: string[];
   flow?: { step?: string; detail?: string }[];
   icon?: string;
   category?: string;

@@ -140,10 +140,13 @@ export async function fetchCapabilityPreview(): Promise<CapabilityPreviewItem[]>
   const items = await getSanityCapabilities();
   if (!items.length) return capabilitiesPreview;
 
-  return items.slice(0, 4).map((cap) => ({
+  const featured = items.filter((cap) => cap.featured);
+  const shown = (featured.length ? featured : items).slice(0, 4);
+
+  return shown.map((cap) => ({
     id: cap.id,
     title: cap.name || cap.headline || "Capability",
-    description: cap.description,
-    labels: cap.labels,
+    description: cap.shortDescription || cap.description,
+    labels: cap.previewLabels?.length ? cap.previewLabels : cap.labels,
   }));
 }

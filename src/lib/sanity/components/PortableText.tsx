@@ -68,6 +68,23 @@ const components: PortableTextComponents = {
         </pre>
       );
     },
+    callout: ({ value }) => {
+      if (!value?.text) return null;
+      const title = typeof value?.title === "string" ? value.title : "";
+      return (
+        <div
+          role="note"
+          className="my-6 rounded-xl border border-accent/30 bg-surface-pale p-5"
+        >
+          {title ? (
+            <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-accent-dark">
+              {title}
+            </p>
+          ) : null}
+          <p className="mt-2 text-sm leading-relaxed text-ink/70">{value.text}</p>
+        </div>
+      );
+    },
   },
 };
 

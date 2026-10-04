@@ -44,7 +44,7 @@ export const capability = defineType({
       title: "Short description",
       type: "text",
       rows: 3,
-      description: "Used on the home page capability cards.",
+      description: "Used on the home page capability cards. Falls back to the full description.",
     }),
     defineField({
       name: "description",
@@ -58,6 +58,14 @@ export const capability = defineType({
       title: "Labels",
       type: "array",
       description: "Short uppercase tags, e.g. VOICE SYSTEMS, REAL-TIME, TOOLS.",
+      of: [{ type: "string" }],
+    }),
+    defineField({
+      name: "previewLabels",
+      title: "Preview labels",
+      type: "array",
+      description:
+        "Optional. Tags shown on the home page capability card. Falls back to the labels above.",
       of: [{ type: "string" }],
     }),
     defineField({
@@ -155,7 +163,8 @@ export const capability = defineType({
       name: "featured",
       title: "Featured",
       type: "boolean",
-      description: "Featured capabilities appear on the home page.",
+      description:
+        "Featured capabilities appear on the home page, in display order. Leave a gap to skip one (e.g. show 1, 2, 3 and 5 on the home page but all five on the capabilities page).",
       initialValue: false,
     }),
     defineField({

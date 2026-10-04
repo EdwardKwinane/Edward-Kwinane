@@ -43,6 +43,37 @@ export const codeBlock = defineType({
   },
 });
 
+export const callout = defineType({
+  name: "callout",
+  title: "Callout",
+  type: "object",
+  description: "A highlighted note that sits between paragraphs.",
+  fields: [
+    defineField({
+      name: "title",
+      title: "Title",
+      type: "string",
+      description: "Short uppercase label, e.g. 'PLACEHOLDER ARTICLE'.",
+    }),
+    defineField({
+      name: "text",
+      title: "Text",
+      type: "text",
+      rows: 3,
+      validation: (rule) => rule.required().error("Callout text is required."),
+    }),
+  ],
+  preview: {
+    select: { title: "title", subtitle: "text" },
+    prepare({ title, subtitle }) {
+      return {
+        title: title ?? "Callout",
+        subtitle: subtitle ?? "",
+      };
+    },
+  },
+});
+
 const linkAnnotation = defineField({
   name: "link",
   title: "Link",
@@ -144,6 +175,14 @@ export const post = defineType({
       initialValue: false,
     }),
     defineField({
+      name: "placeholder",
+      title: "Placeholder content",
+      type: "boolean",
+      description:
+        "Marks template or unfinished content. Shows a 'Placeholder content' badge on the article.",
+      initialValue: false,
+    }),
+    defineField({
       name: "estimatedReadingTime",
       title: "Estimated reading time (minutes)",
       type: "number",
@@ -194,6 +233,7 @@ export const post = defineType({
           ],
         },
         { type: "codeBlock" },
+        { type: "callout" },
       ],
     }),
     defineField({
