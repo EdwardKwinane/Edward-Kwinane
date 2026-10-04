@@ -218,7 +218,25 @@ const check = (label, actual, expected) => {
   }
 };
 
-console.log("Project detail — sections round-trip:");
+// Studio refuses to edit a list whose items have no _key, and the seeded
+// queries project _key away, so nothing else here would notice. Portable Text
+// spans are the exception: they live in children/markDefs and need no key.
+const NON_LIST_ARRAY_KEYS = new Set(["children", "markDefs"]);
+const unkeyed = [];
+for (const doc of documents) {
+  for (const [field, value] of Object.entries(doc)) {
+    if (field.startsWith("_") || !Array.isArray(value)) continue;
+    if (NON_LIST_ARRAY_KEYS.has(field)) continue;
+    value.forEach((item, index) => {
+      if (item && typeof item === "object" && !item._key) {
+        unkeyed.push(`${doc._id}.${field}[${index}]`);
+      }
+    });
+  }
+}
+check(`every list item has a _key (${documents.length} documents)`, unkeyed, []);
+
+console.log("\nProject detail — sections round-trip:");
 for (const local of m.projects) {
   const cms = await m.getSanityProjectBySlug(local.slug);
   check(local.slug, cms?.sections, local.sections);
