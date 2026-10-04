@@ -2,6 +2,9 @@
 
 Personal portfolio and blog built with Vite, React, TypeScript, Tailwind CSS and Sanity CMS.
 
+> Working on this repo as an agent? Read [`PROJECT_MEMORY.md`](./PROJECT_MEMORY.md) first — it
+> records the decisions and constraints that are easy to get wrong.
+
 ## Stack
 
 - **Frontend:** React 18, Vite 5, TypeScript, Tailwind CSS
@@ -42,13 +45,19 @@ npm — do not introduce pnpm/yarn, as `package-lock.json` is the committed lock
 
 ### Checks
 
-There are no lint or test scripts in this project. The available checks are:
+There is no lint script and no unit test runner. The available checks are:
 
 ```bash
 npm run typecheck   # tsc for the app and the Sanity Studio
 npm run build       # typecheck + production build to dist/
 npm run preview     # serve the production build locally
+npm run verify:seed # 26 checks that the seeded documents map onto the site correctly
 ```
+
+`verify:seed` is not a unit test suite — it builds the expected documents with
+`scripts/seed-documents.mjs`, serves them through a stub of `src/lib/sanity/queries.ts`, and
+asserts the mappers output the site's domain types unchanged. It compares only the fields the
+queries project, so it cannot see anything they drop.
 
 ### Day-to-day workflow
 
@@ -89,8 +98,9 @@ npm ci
 npm run dev
 ```
 
-The site works without any configuration — it falls back to placeholder content in
-`src/data/`. To pull real content from Sanity, add a `.env` file (see below).
+Content is fetched from Sanity on every page load. Set `VITE_SANITY_PROJECT_ID` (see below) to
+see real content; without it the pages render empty, because the local arrays in `src/data/`
+are the seed source only and are never served as a runtime fallback.
 
 ## Environment variables
 
@@ -143,13 +153,17 @@ npm run studio:deploy  # deploy to manage.sanity.io studio host
 ### How content flows to the site
 
 - `src/lib/sanity/client.ts` — configured `@sanity/client` instance guarded by
-  `isSanityConfigured` (false when `VITE_SANITY_PROJECT_ID` is missing).
+  `isSanityConfigured`, pinned to `perspective: "published"` so drafts cannot leak.
 - `src/lib/sanity/queries.ts` — GROQ queries + mappers returning the site's own
   domain types (`Project`, `BlogPost`, `Capability`, `Technology`, …).
-- `src/data/*.ts` — local placeholder data plus async wrappers
-  (`fetchProjects`, `fetchBlogPosts`, `fetchCapabilities`, …) that try Sanity first
-  and fall back to the local data when Sanity is unconfigured or empty. This keeps
-  every page working even before content is created.
+- `src/data/*.ts` — async fetchers (`fetchProjects`, `fetchBlogPosts`, `fetchCapabilities`,
+  …) that read Sanity and nothing else. The local arrays in these files are the **seed source**
+  for `npm run seed`, not a runtime fallback: a failed fetch returns an empty list and logs
+  the error rather than quietly serving stale content.
+- `src/data/site.tsx` — `siteDefaults` plus `fetchSiteSettings`, a context provider and a
+  hook. Fetched once at app root and consumed by the hero, navbar, final CTA, footer and SEO
+  components. `siteDefaults` is also what the seed writes, so the copy is defined once and a
+  partially filled document cannot blank the site.
 - Pages and home sections load via `useEffect` + `useState` with light loading
   states, so nothing blocks on the network.
 
@@ -173,12 +187,38 @@ npm run studio:deploy  # deploy to manage.sanity.io studio host
 | `npm run studio`     | Run Sanity Studio locally                     |
 | `npm run studio:build` | Build the Studio for production            |
 | `npm run studio:deploy` | Deploy the Studio to Sanity               |
+| `npm run seed`       | Write the seeded documents to Sanity          |
+| `npm run verify:seed` | Check the seeded documents map to site types |
+| `npm run repair:keys` | Add missing `_key` to list items in the dataset |
+
+### Seeding content
+
+The dataset was seeded from the local arrays in `src/data/`:
+
+```bash
+npm run seed -- --dry-run   # report what would be written
+npm run seed                # create missing documents only
+npm run seed -- --overwrite # rewrite every seeded document — discards Studio edits
+```
+
+Documents get deterministic IDs (`technology-<slug>`, `capability-<id>`, `project-<slug>`,
+`post-<slug>`) so re-seeding updates rather than duplicates. Dotted IDs are avoided on
+purpose; see [`PROJECT_MEMORY.md`](./PROJECT_MEMORY.md).
+
+Two rules the seed enforces, because breaking them breaks the Studio or the site:
+
+- **Every object item in a list needs a `_key`.** Documents created through the mutations API
+  do not get one automatically, and Studio then refuses to edit the list ("Missing keys").
+  `ensureArrayKeys` in `scripts/seed-documents.mjs` adds them. For documents already in the
+  dataset use `npm run repair:keys` (`--dry-run` supported).
+- **A post needs `publishedAt`** to appear publicly. Both post queries filter on it, so a
+  post without it is a draft that never shows up.
 
 ## Project structure
 
 ```
 src/
-  data/            placeholder data + Sanity-backed fetch wrappers
+  data/            Sanity fetchers, site defaults, and the seed source arrays
   lib/sanity/      client, queries, types, image helpers, PortableText renderer
   pages/           route components (Portfolio, Blog, Capabilities, About, …)
   components/      layout, home sections, portfolio/blog/capability UI
@@ -186,4 +226,10 @@ sanity/
   schemaTypes/     Sanity schemas (project, post, capability, …)
   sanity.config.ts Studio config
   sanity.cli.ts    CLI config
+scripts/
+  seed-*.mjs       document builder and authenticated seeding CLI
+  verify-seed.mjs  mapping regression harness
+  repair-keys.mjs  adds missing _key to existing documents
+  prepare-env.mjs  generates sanity/.env for the Studio
+PROJECT_MEMORY.md  durable context and decisions for agents
 ```
