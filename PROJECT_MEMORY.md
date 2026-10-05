@@ -11,16 +11,25 @@ from `main`.
 
 ## Current State
 
-As of `c1accfb`, the site is fully CMS-driven. Sanity (`78vf85td` / `production`) is the
+As of `cbac009` the site is fully CMS-driven. Sanity (`78vf85td` / `production`) is the
 **only** runtime source of content — there is no local fallback.
 
 - **Seeded dataset:** 22 technology, 5 capability, 5 project, 6 post, 1 siteSettings
-  (41 content documents including drafts).
+  (41 content documents including drafts). The dataset also holds a 7th post that is not in
+  `src/data/blog.ts`, so `blogFilterCategories` and the seed array are already behind the CMS.
 - `siteSettings` is the single source for hero copy, availability text, owner name, role
   line, hero tags, footer copy, social URLs and default SEO metadata.
 - All list items carry a `_key`, so Studio can edit every seeded document.
 - Placeholder content is clearly labelled (`status: "placeholder"`, `placeholder: true`) and
   **has not been replaced with real work yet.**
+
+**Live at** `https://edward-kwinane.vercel.app`. `edwardkwinane.com` does **not** resolve;
+`robots.txt` and `sitemap.xml` were pointing at it until PR #4.
+
+Two PRs are open against `main`, touching disjoint files so either order merges cleanly:
+- **#4 `feat/seo-foundations`** — canonical URLs, `og:image`, JSON-LD, sitemap/robots domain.
+- **#5 `fix/a11y-contrast-and-targets`** — WCAG contrast, footer tap targets, skip link,
+  heading skip, dead-code removal.
 
 ## Architecture
 
@@ -39,8 +48,11 @@ src/components/layout/Navbar.tsx  the site's only navigation
 `Navbar.tsx` is the single source of truth for main navigation. It is a centred
 floating pill that collapses to a 48px menu button after ~150px of downward
 scroll and re-expands after ~80px upward, using `framer-motion`'s `useScroll` /
-`useMotionValueEvent`. `sanity/` contains a real, pre-existing Studio. **Never
-scaffold or overwrite it.**
+`useMotionValueEvent`. `BlogCard` likewise serves all three of its call sites
+(blog grid, related posts, homepage preview) because those contexts differ only in
+their parent grid.
+
+`sanity/` contains a real, pre-existing Studio. **Never scaffold or overwrite it.**
 
 ## Decisions
 
@@ -108,6 +120,20 @@ scaffold or overwrite it.**
   project narratives, metrics and articles must come from the user.
   *Date:* 2026-10-04
 
+- **Accent has three roles and cannot be one colour.** `--c-accent` (#FE5900) cannot both
+  carry white text as a fill (needs 4.5:1) and be readable as text on a surface: darkening
+  helps on light backgrounds and *hurts* on dark ones. So `--c-accent-fill` (#C74300, both
+  themes) carries white text, `--c-accent-dark` (#C44500 light / #FF6A1A dark) is accent
+  text, and `--c-accent` stays decorative. Do not collapse these back into one token.
+  *Reason:* white on #FE5900 measured 3.16:1 and accent text on `--surface` 3.01:1.
+  *Date:* 2026-10-04, PR #5
+
+- **SEO metadata is injected by `Seo.tsx` in a `useEffect`, so it is absent from the initial
+  HTML.** Social tags are therefore also declared statically in `index.html`. Canonical and
+  `og:url` derive from `window.location.origin`, so attaching a custom domain later only
+  requires editing `robots.txt` and `sitemap.xml`.
+  *Date:* 2026-10-04, PR #4
+
 ## Constraints
 
 - `main` is the production branch. Branch, commit, push — Vercel deploys automatically. Never
@@ -141,12 +167,37 @@ scaffold or overwrite it.**
 - A Sanity dataset write can take 2–5+ minutes to appear through the CDN.
 - There is no lint script and no unit test runner. `typecheck`, `build` and `verify:seed` are
   the available checks.
+- **The global `* { border-color: var(--surface-pale-3) }` rule in `index.css` masks missing
+  border-colour tokens.** Any element that sets a border width without a colour silently
+  inherits pale-3 instead of failing visibly. Removing it would surface future omissions but
+  changes appearance everywhere; untested.
+- **`fetchArray` / `fetchOne` swallow errors and return `[]` / `null`.** A CMS outage is
+  therefore indistinguishable from genuinely empty content — pages render "no items" with no
+  error state. `console.warn` is the only signal.
+- **The `vercel.json` SPA rewrite returns HTTP 200 for unknown paths**, so every 404 is a
+  soft 404.
+- **`experience`, `testimonial` and `technology` schemas are registered in Studio but nothing
+  renders them.** `getSanityExperience()`, `getSanityTestimonials()` and
+  `getSanityTechnologies()` have working GROQ and no consumers, and `src/data/technologies.ts`
+  has no CMS fetcher at all. Content entered in Studio for these types is invisible on the site.
+- **Outbound Sanity access from the agent sandbox is intermittent** (proxy 404s, no ICMP).
+  A failed fetch looks identical to a code bug; check `curl` the GROQ URL before investigating.
+- A contrast checker must **alpha-composite translucent backgrounds** before computing a
+  ratio. Comparing raw RGB of `bg-accent/10` against same-coloured text yields a spurious
+  ratio of exactly 1.0.
 
 ## Verification
 
-Last run on `c1accfb`: `npm run typecheck`, `npm run build`, `npm run verify:seed` (26 checks)
-and `npm run seed -- --dry-run` all passed. All 9 routes rendered byte-identical to the
-pre-change baseline on desktop and mobile.
+On `cbac009` (`npm run typecheck`, `npm run build`, `npm run verify:seed`) all pass.
+
+Browser behaviour was verified by driving the locally installed Chrome with `playwright-core`
+from a scratch directory outside the repo, so no test dependency is added to the project.
+Suites used: 216 navigation checks, 42 responsive/theme smoke checks, 41 SEO assertions,
+and an alpha-composited contrast sweep. All green against dev, dev-with-env, and production.
+
+Note: `vite preview` serves a build **without** the Sanity env vars, so CMS-dependent pages
+render empty there. For those, either run `set -a; . ./.env; set +a` before `npm run build`, or
+test against the dev server.
 
 ## Open Questions
 
@@ -155,7 +206,20 @@ pre-change baseline on desktop and mobile.
 - `siteSettings.email` is unset, so the footer contact link is intentionally hidden.
 - The GitHub and LinkedIn URLs currently in the dataset are unverified guesses.
 
+- **The contact form cannot receive anything.** `ContactForm.tsx` simulates submission with a
+  `setTimeout`. Every primary CTA funnels there, so no leads can be captured. A destination
+  endpoint must be chosen by the user; do not guess a provider.
+- The GitHub and LinkedIn URLs in the dataset are still unverified guesses.
+- `sitemap.xml` is hand-maintained and has already drifted once (a post was missing). All 18
+  URLs were verified against production in PR #4, but nothing prevents future drift.
+
 ## Next Action
 
-Replace the placeholder projects and articles with real content supplied by the user, in
-Studio (`npm run studio`). If the user prefers, delete the six placeholder posts instead.
+Review and merge PR #4 and PR #5 — they touch disjoint files and can merge in either order.
+Then get the user's decision on the contact-form endpoint, which blocks the single largest
+conversion gap.
+
+Beyond that, replace the placeholder projects and articles with real content in Studio
+(`npm run studio`) — all six projects carry `placeholder: true`, and the case studies are
+thin (one measured 271 words across nine sections), which is the main credibility risk on a
+portfolio whose job is proof.
