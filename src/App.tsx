@@ -24,6 +24,21 @@ function ScrollToTop() {
   return null;
 }
 
+/**
+ * First tab stop on every page. Without it a keyboard user traverses the whole
+ * navigation before reaching page content.
+ */
+function SkipToContent() {
+  return (
+    <a
+      href="#main"
+      className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:inline-flex focus:h-11 focus:items-center focus:rounded-md focus:bg-accent-fill focus:px-4 focus:font-heading focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg"
+    >
+      Skip to content
+    </a>
+  );
+}
+
 function PageFallback() {
   return (
     <div className="flex min-h-[50vh] items-center justify-center" role="status" aria-label="Loading page">
@@ -37,9 +52,10 @@ export default function App() {
     <BrowserRouter>
       <SiteSettingsProvider>
         <ScrollToTop />
+        <SkipToContent />
         <div className="flex min-h-screen flex-col">
           <Navbar />
-          <main className="flex-1">
+          <main id="main" tabIndex={-1} className="flex-1">
             <Suspense fallback={<PageFallback />}>
               <Routes>
                 <Route path="/" element={<Home />} />
