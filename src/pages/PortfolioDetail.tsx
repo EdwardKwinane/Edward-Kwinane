@@ -53,6 +53,35 @@ export default function PortfolioDetail() {
     .filter((p): p is Project => Boolean(p))
     .slice(0, 2);
 
+  const projectSchema = {
+    "@type": "CreativeWork",
+    name: project.title,
+    description: project.description,
+    url: `${window.location.origin}/portfolio/${project.slug}`,
+    image: `${window.location.origin}/og-image.png`,
+    keywords: project.technologies.join(", ") || undefined,
+    creator: { "@id": `${window.location.origin}/#person` },
+  };
+
+  const breadcrumbSchema = {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: window.location.origin },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Portfolio",
+        item: `${window.location.origin}/portfolio`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: project.title,
+        item: `${window.location.origin}/portfolio/${project.slug}`,
+      },
+    ],
+  };
+
   return (
     <>
       <Seo
@@ -60,6 +89,7 @@ export default function PortfolioDetail() {
         description={project.description}
         path={`/portfolio/${project.slug}`}
         type="article"
+        structuredData={[projectSchema, breadcrumbSchema]}
       />
       <section className="bg-surface pt-32 pb-14 lg:pt-40 lg:pb-20">
         <Container>

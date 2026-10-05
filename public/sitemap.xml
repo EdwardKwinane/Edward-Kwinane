@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  NOTE: previously pointed at edwardkwinane.com, which does not resolve.
+  This file is hand-maintained; every URL below was verified against the live site.
+  A 7th blog post was missing and has been added. Consider generating this from the
+  Sanity dataset so it cannot drift again.
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://edwardkwinane.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://edwardkwinane.com/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://edwardkwinane.com/portfolio</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://edwardkwinane.com/capabilities</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://edwardkwinane.com/blog</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://edwardkwinane.com/contact</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://edwardkwinane.com/portfolio/ai-voice-agent</loc><priority>0.7</priority></url>
-  <url><loc>https://edwardkwinane.com/portfolio/intelligent-rag-platform</loc><priority>0.7</priority></url>
-  <url><loc>https://edwardkwinane.com/portfolio/ai-chatbot-product</loc><priority>0.7</priority></url>
-  <url><loc>https://edwardkwinane.com/portfolio/ai-full-stack-product</loc><priority>0.7</priority></url>
-  <url><loc>https://edwardkwinane.com/portfolio/ai-automation-system</loc><priority>0.7</priority></url>
-  <url><loc>https://edwardkwinane.com/blog/why-architecture-still-matters-in-the-ai-era</loc><priority>0.6</priority></url>
-  <url><loc>https://edwardkwinane.com/blog/building-reliable-rag-pipelines</loc><priority>0.6</priority></url>
-  <url><loc>https://edwardkwinane.com/blog/from-idea-to-production</loc><priority>0.6</priority></url>
-  <url><loc>https://edwardkwinane.com/blog/voice-agents-need-orchestration</loc><priority>0.6</priority></url>
-  <url><loc>https://edwardkwinane.com/blog/agents-with-guardrails</loc><priority>0.6</priority></url>
-  <url><loc>https://edwardkwinane.com/blog/full-stack-with-ai-layers</loc><priority>0.6</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/portfolio</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/capabilities</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/blog</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/contact</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/portfolio/ai-voice-agent</loc><priority>0.7</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/portfolio/intelligent-rag-platform</loc><priority>0.7</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/portfolio/ai-chatbot-product</loc><priority>0.7</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/portfolio/ai-full-stack-product</loc><priority>0.7</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/portfolio/ai-automation-system</loc><priority>0.7</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/blog/why-architecture-still-matters-in-the-ai-era</loc><priority>0.6</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/blog/building-reliable-rag-pipelines</loc><priority>0.6</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/blog/from-idea-to-production</loc><priority>0.6</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/blog/voice-agents-need-orchestration</loc><priority>0.6</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/blog/agents-with-guardrails</loc><priority>0.6</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/blog/full-stack-with-ai-layers</loc><priority>0.6</priority></url>
+  <url><loc>https://edward-kwinane.vercel.app/blog/how-ai-automation-is-transforming-e-commerce-operations</loc><priority>0.6</priority></url>
 </urlset>

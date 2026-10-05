@@ -168,6 +168,32 @@ export default function BlogDetail() {
 
   if (!post) return <Navigate to="/blog" replace />;
 
+  const articleSchema = {
+    "@type": "Article",
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.date || undefined,
+    author: { "@type": "Person", name: post.author },
+    publisher: { "@id": `${window.location.origin}/#person` },
+    mainEntityOfPage: `${window.location.origin}/blog/${post.slug}`,
+    image: `${window.location.origin}/og-image.png`,
+    keywords: post.tags.join(", ") || undefined,
+  };
+
+  const breadcrumbSchema = {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: window.location.origin },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${window.location.origin}/blog` },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: post.title,
+        item: `${window.location.origin}/blog/${post.slug}`,
+      },
+    ],
+  };
+
   return (
     <>
       <Seo
@@ -175,6 +201,7 @@ export default function BlogDetail() {
         description={post.excerpt}
         path={`/blog/${post.slug}`}
         type="article"
+        structuredData={[articleSchema, breadcrumbSchema]}
       />
       <section className="bg-surface pt-32 pb-12 lg:pt-40">
         <Container>
