@@ -21,7 +21,7 @@ export function ArchitectureNode({
         "flow-node flex flex-col items-center justify-center gap-0.5 rounded-lg border px-3 text-center transition-colors duration-300 sm:px-4",
         compact ? "py-2.5" : "py-3.5",
         state === "active" &&
-          "border-accent bg-accent text-white shadow-[0_8px_24px_rgba(254,89,0,0.35)]",
+          "border-accent bg-accent-fill text-white shadow-[0_8px_24px_rgba(199,67,0,0.35)]",
         state === "accent" &&
           "border-accent/30 bg-surface-pale3 text-navy",
         state === "idle" && "border-surface-pale4 bg-surface-pale text-navy",

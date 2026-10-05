@@ -45,12 +45,15 @@ export function Footer() {
             <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/50">
               Navigation
             </p>
-            <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3">
+            <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1">
               {navItems.map((item) => (
                 <li key={item.to}>
+                  {/* inline-flex + min-h keeps each target 24px+ tall, the WCAG
+                      2.5.8 (AA) minimum. As a bare inline text link these
+                      measured 17px tall on mobile. */}
                   <Link
                     to={item.to}
-                    className="text-sm text-ink/70 transition-colors hover:text-accent"
+                    className="inline-flex min-h-[24px] items-center rounded-sm text-sm text-ink/70 transition-colors hover:text-accent focus-ring"
                   >
                     {item.label}
                   </Link>

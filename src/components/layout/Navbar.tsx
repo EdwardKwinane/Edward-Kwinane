@@ -193,7 +193,7 @@ export function Navbar() {
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
       "relative whitespace-nowrap rounded-pill px-2.5 py-2 text-sm font-medium transition-colors focus-ring hover:text-accent",
-      isActive ? "text-accent" : "text-ink/75"
+      isActive ? "text-accent-dark" : "text-ink/75"
     );
 
   return (
@@ -341,7 +341,7 @@ export function Navbar() {
                   className={({ isActive }) =>
                     cn(
                       "rounded-md px-3 py-3 font-heading text-base font-semibold transition-colors",
-                      isActive ? "bg-surface-pale text-accent" : "text-navy hover:bg-surface-pale"
+                      isActive ? "bg-surface-pale text-accent-dark" : "text-navy hover:bg-surface-pale"
                     )
                   }
                 >

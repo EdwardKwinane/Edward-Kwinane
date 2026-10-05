@@ -57,6 +57,9 @@ export default function Portfolio() {
 
       <Section className="pt-0 lg:pt-0">
         <Container>
+          {/* Introduces the grid for screen readers and heading navigation.
+              Without it the page runs h1 -> h3, skipping h2 entirely. */}
+          <h2 className="sr-only">Projects</h2>
           <ProjectFilter active={active} onChange={onChange} />
 
           <p className="mt-6 text-sm text-ink/50" aria-live="polite">
