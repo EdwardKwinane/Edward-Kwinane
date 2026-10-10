@@ -2,6 +2,7 @@ import Seo from "@/components/seo/Seo";
 import { Hero } from "@/components/home/Hero";
 import { CapabilityPreview } from "@/components/home/CapabilityPreview";
 import { FeaturedPortfolio } from "@/components/home/FeaturedPortfolio";
+import { ToolsSection } from "@/components/home/ToolsSection";
 import { ArchitectureSection } from "@/components/home/ArchitectureSection";
 import { ProcessSection } from "@/components/home/ProcessSection";
 import { BlogPreview } from "@/components/home/BlogPreview";
@@ -18,6 +19,7 @@ export default function Home() {
       <Hero />
       <CapabilityPreview />
       <FeaturedPortfolio />
+      <ToolsSection />
       <ArchitectureSection />
       <ProcessSection />
       <BlogPreview />
