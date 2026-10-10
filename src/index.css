@@ -247,6 +247,84 @@
     border-radius: var(--radius-lg);
   }
 
+  /* ------------------------------------------------------------------
+     Glassmorphism
+     A backdrop-blurred panel only reads if there is something behind it,
+     so `.glass-field` supplies the wash and `.glass-panel` / `.glass-card`
+     sit on top of it. Every colour is a token, so both themes work
+     without a second set of rules.
+     ------------------------------------------------------------------ */
+
+  /* The wash behind a glass region. Deliberately restrained: two soft
+     radial tints, no hard edges, no imagery. */
+  .glass-field {
+    background-color: rgb(var(--c-surface));
+    background-image:
+      radial-gradient(48rem 30rem at 8% -8%, rgb(var(--c-surface-pale-2) / 0.85), transparent 62%),
+      radial-gradient(40rem 26rem at 96% 4%, rgb(var(--c-accent) / 0.08), transparent 60%),
+      radial-gradient(36rem 30rem at 50% 108%, rgb(var(--c-surface-pale-2) / 0.6), transparent 64%);
+  }
+
+  /* Primary panel. `--c-navy-deep` is the one navy token that stays dark in
+     both themes, so the drop shadow does not invert. */
+  .glass-panel {
+    background-color: rgb(var(--c-surface-alt) / 0.62);
+    border: 1px solid rgb(var(--c-surface-pale-4) / 0.7);
+    border-radius: var(--radius-2xl);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    backdrop-filter: blur(18px) saturate(150%);
+    box-shadow:
+      0 24px 60px rgb(var(--c-navy-deep) / 0.1),
+      0 2px 8px rgb(var(--c-navy-deep) / 0.04),
+      inset 0 1px 0 rgb(255 255 255 / 0.55);
+  }
+
+  /* Nested surface inside a panel: less fill, tighter radius. */
+  .glass-card {
+    background-color: rgb(var(--c-surface-alt) / 0.5);
+    border: 1px solid rgb(var(--c-surface-pale-3) / 0.8);
+    border-radius: var(--radius-xl);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45);
+  }
+
+  /* Fallback for engines without backdrop-filter: a more opaque fill, so the
+     panel still reads as a distinct surface instead of a translucent smear. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-panel {
+      background-color: rgb(var(--c-surface-alt) / 0.96);
+    }
+    .glass-card {
+      background-color: rgb(var(--c-surface-alt) / 0.94);
+    }
+  }
+
+  /* Dark theme needs a lighter hairline and a softer inner highlight, because
+     a white top-edge at full strength reads as a seam on a dark panel. */
+  .dark .glass-panel {
+    background-color: rgb(var(--c-surface-alt) / 0.58);
+    border-color: rgb(var(--c-surface-pale-4) / 0.5);
+    box-shadow:
+      0 24px 60px rgb(0 0 0 / 0.45),
+      0 2px 8px rgb(0 0 0 / 0.3),
+      inset 0 1px 0 rgb(255 255 255 / 0.08);
+  }
+
+  .dark .glass-card {
+    background-color: rgb(var(--c-surface-alt) / 0.45);
+    border-color: rgb(var(--c-surface-pale-3) / 0.7);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
+  }
+
+  .dark .glass-field {
+    background-color: rgb(var(--c-surface));
+    background-image:
+      radial-gradient(48rem 30rem at 8% -8%, rgb(var(--c-surface-pale) / 0.9), transparent 62%),
+      radial-gradient(40rem 26rem at 96% 4%, rgb(var(--c-accent) / 0.1), transparent 60%),
+      radial-gradient(36rem 30rem at 50% 108%, rgb(var(--c-surface-pale) / 0.7), transparent 64%);
+  }
+
   /* Theme-aware blueprint grid (hero backgrounds) */
   .grid-overlay {
     background-image:
