@@ -11,16 +11,29 @@ from `main`.
 
 ## Current State
 
-As of `c1accfb`, the site is fully CMS-driven. Sanity (`78vf85td` / `production`) is the
+As of `acbc601` the site is fully CMS-driven. Sanity (`78vf85td` / `production`) is the
 **only** runtime source of content — there is no local fallback.
 
-- **Seeded dataset:** 22 technology, 5 capability, 5 project, 6 post, 1 siteSettings
-  (41 content documents including drafts).
+- **Seeded dataset:** 22 technology, 5 capability, 5 project, 7 post, 1 siteSettings
+  (40 content documents including drafts). The dataset also holds a 7th post that is not in
+  `src/data/blog.ts`, so `blogFilterCategories` and the seed array are already behind the CMS.
 - `siteSettings` is the single source for hero copy, availability text, owner name, role
   line, hero tags, footer copy, social URLs and default SEO metadata.
 - All list items carry a `_key`, so Studio can edit every seeded document.
-- Placeholder content is clearly labelled (`status: "placeholder"`, `placeholder: true`) and
-  **has not been replaced with real work yet.**
+- Placeholder content is clearly labelled and **has not been replaced with real work yet:**
+  all 5 projects are `status: "placeholder"` with a null `fullDescription`, and 6 of 7 posts
+  carry `placeholder: true`. Note the flag is `status: "placeholder"` on projects, not the
+  `placeholder: true` boolean — querying only the boolean reports 0 and looks like progress
+  that has not happened.
+
+**Live at** `https://edward-kwinane.vercel.app`. `edwardkwinane.com` does **not** resolve;
+PR #4 repointed `robots.txt` and `sitemap.xml` at the real domain and added canonical URLs,
+`og:image` and JSON-LD.
+
+Merged and deployed: **#4** (SEO), **#5** (contrast + a11y), **#7** (Tools & Technologies
+marquee), **#8** (About glassmorphism + profile photo), **#9** (LinkedIn URL).
+
+Still open: **#6** (this file) and **#10** (README deploy guard) — documentation only.
 
 ## Architecture
 
@@ -34,13 +47,33 @@ scripts/seed-sanity.mjs     authenticated CLI wrapper
 scripts/verify-seed.mjs     26-check mapping regression harness
 scripts/repair-keys.mjs     adds missing _key to documents already in the dataset
 src/components/layout/Navbar.tsx  the site's only navigation
+src/data/tool-stack.ts     typed, vendored brand marks for the marquee (no CMS, no network)
+src/components/ui/LogoMarquee.tsx  reusable children-based infinite marquee
+src/components/home/ToolsSection.tsx  "Tools & Technologies" block on the homepage
+public/images/profile.png   About profile photo (transparent cut-out, recomposed)
 ```
 
 `Navbar.tsx` is the single source of truth for main navigation. It is a centred
 floating pill that collapses to a 48px menu button after ~150px of downward
 scroll and re-expands after ~80px upward, using `framer-motion`'s `useScroll` /
-`useMotionValueEvent`. `sanity/` contains a real, pre-existing Studio. **Never
-scaffold or overwrite it.**
+`useMotionValueEvent`. `BlogCard` likewise serves all three of its call sites
+(blog grid, related posts, homepage preview) because those contexts differ only in
+their parent grid.
+
+`LogoMarquee` is deliberately **generic and children-based**: the caller passes the logo row
+once and the component renders it twice internally to make the loop seamless, so callers must
+not duplicate the array. Position is integrated from the frame delta rather than driven by a
+repeating tween, so changing speed on hover never restarts or re-seeks the animation. Under
+`prefers-reduced-motion` it renders a static wrapped row instead. It measures one copy with a
+`ResizeObserver` and translates by exactly that width, which is why the trailing padding of a
+copy must equal the gap between its items.
+
+`tool-stack.ts` is **not** CMS-backed and deliberately so. The 22 `technology` documents in
+Sanity are placeholder concepts derived from placeholder projects (`WebRTC`, `STT`, `Vector
+DB`), not real brands, so the marquee ships verified brands vendored from Simple Icons and
+rendered with `currentColor` so one fill covers both themes.
+
+`sanity/` contains a real, pre-existing Studio. **Never scaffold or overwrite it.**
 
 ## Decisions
 
@@ -108,10 +141,75 @@ scaffold or overwrite it.**
   project narratives, metrics and articles must come from the user.
   *Date:* 2026-10-04
 
+- **Accent has three roles and cannot be one colour.** `--c-accent` (#FE5900) cannot both
+  carry white text as a fill (needs 4.5:1) and be readable as text on a surface: darkening
+  helps on light backgrounds and *hurts* on dark ones. So `--c-accent-fill` (#C74300, both
+  themes) carries white text, `--c-accent-dark` (#C44500 light / #FF6A1A dark) is accent
+  text, and `--c-accent` stays decorative. Do not collapse these back into one token.
+  *Reason:* white on #FE5900 measured 3.16:1 and accent text on `--surface` 3.01:1.
+  *Date:* 2026-10-04, PR #5
+
+- **SEO metadata is injected by `Seo.tsx` in a `useEffect`, so it is absent from the initial
+  HTML.** Social tags are therefore also declared statically in `index.html`. Canonical and
+  `og:url` derive from `window.location.origin`, so attaching a custom domain later only
+  requires editing `robots.txt` and `sitemap.xml`.
+  *Date:* 2026-10-04, PR #4
+
+- **Muted text uses a single ink opacity, `text-ink/65`.** An audit that alpha-composites
+  every translucent ancestor found 165 AA failures site-wide, almost all from four utility
+  steps — `text-ink/40`, `/45`, `/50`, `/55`, `/60` — measuring 2.5–4.4:1 against the 4.5:1
+  required for body text. Solving for the minimum passing alpha per element, in **both**
+  themes, gave one consistent answer: everything needs the ink token at ≥ 0.62. All four
+  steps collapse to `/65`, which the expertise copy already used, so no new value is
+  introduced. 57 occurrences across 26 files.
+  *Reason:* the same fix at one value clears both themes, so no per-theme branching is needed.
+  Four cases could not use any ink alpha and took individual values: the big index numerals
+  (`text-ink/50`, 3:1 bar for 30–72px bold), the ProjectCard placeholder badge (white, it
+  overlays a cover that composites to dark navy in both themes), and ArchitectureNode's active
+  detail (full white).
+  *Consequence:* do not reintroduce sub-0.62 ink opacities for text. Borders, dividers and
+  `bg-`/`ring-` uses of the pale tokens are unaffected — only `text-ink/NN` is constrained.
+  *Date:* 2026-10-11, PR #5
+
+- **Glassmorphism lives as four CSS utilities, not a component library.** `.glass-field`
+  (the wash), `.glass-panel`, `.glass-card` and an `@supports not (backdrop-filter)`
+  fallback live in `@layer components` beside `.card-surface`. Every colour is a token, with
+  separate `.dark` values because a full-strength white top-edge reads as a seam on a dark
+  panel.
+  *Reason:* a backdrop-blurred panel is invisible over a flat fill, so the field has to supply
+  something to blur. Shadows use `--c-navy-deep` because `--c-navy` inverts to near-white in
+  dark, which would produce a glow rather than a shadow.
+  *Consequence:* the project uses **no `dark:` Tailwind variants anywhere** — dark mode is done
+  with `.dark` selector rules. Do not introduce `dark:` variants; they are not the convention.
+  *Date:* 2026-10-10, PR #8
+
+- **The About profile photo is a transparent-background cut-out, so padding must stay
+  transparent.** `man.png` has alpha 0 in its corners; the head already touches the top edge
+  (y=4), so no crop can create headroom. `public/images/profile.png` is that same image
+  recomposed on a **transparent** canvas with headroom above the head, cropped
+  head-and-shoulders from measured alpha bounds (head y 4–360, widest x 292–553) and
+  downsampled to 256px — 4× the 64px display tile.
+  *Reason:* padding with white would render as a white box on the dark theme.
+  *Consequence:* regenerate with that method if the photo is ever replaced. `man.png` itself
+  is a local working file and stays untracked.
+  *Date:* 2026-10-10, PR #8
+
 ## Constraints
 
-- `main` is the production branch. Branch, commit, push — Vercel deploys automatically. Never
-  run `vercel --prod`.
+- `main` is the production branch. Branch, commit, push — Vercel deploys automatically. **Never
+  promote a deployment to production by hand**, and that means *both* `vercel --prod` and
+  `vercel redeploy <url>`.
+  *Reason:* on 2026-10-11 `vercel redeploy` re-promoted the preview built from
+  `feat/seo-foundations` (open, unmerged PR #4) to production, silently dropping the
+  already-merged Tools & Technologies section. The deployment carried
+  `meta.githubCommitRef: feat/seo-foundations` and `meta.action: "redeploy"`.
+  *Corroboration:* the Vercel Git integration is **not** at fault — every feature branch
+  auto-deploys as a preview, verified across all recent deployments. So there is no project
+  setting to change; the control is process. Do not "fix" this by altering production or Git
+  settings, which would risk a correctly-configured auto-deploy.
+  *Recovery:* `git checkout main && git pull && vercel --prod`, though the next merge to
+  `main` overwrites any hand-made deployment anyway.
+  *Date:* 2026-10-11, PR #10
 - npm only. `package-lock.json` is the committed lockfile.
 - Never commit `.env` or any token.
 - Do not scaffold, overwrite or restructure the existing `sanity/` Studio.
@@ -141,21 +239,97 @@ scaffold or overwrite it.**
 - A Sanity dataset write can take 2–5+ minutes to appear through the CDN.
 - There is no lint script and no unit test runner. `typecheck`, `build` and `verify:seed` are
   the available checks.
+- **The global `* { border-color: var(--surface-pale-3) }` rule in `index.css` masks missing
+  border-colour tokens.** Any element that sets a border width without a colour silently
+  inherits pale-3 instead of failing visibly. Removing it would surface future omissions but
+  changes appearance everywhere; untested.
+- **`fetchArray` / `fetchOne` swallow errors and return `[]` / `null`.** A CMS outage is
+  therefore indistinguishable from genuinely empty content — pages render "no items" with no
+  error state. `console.warn` is the only signal.
+- **The `vercel.json` SPA rewrite returns HTTP 200 for unknown paths**, so every 404 is a
+  soft 404.
+- **`experience`, `testimonial` and `technology` schemas are registered in Studio but nothing
+  renders them.** `getSanityExperience()`, `getSanityTestimonials()` and
+  `getSanityTechnologies()` have working GROQ and no consumers, and `src/data/technologies.ts`
+  has no CMS fetcher at all. Content entered in Studio for these types is invisible on the site.
+- **Outbound Sanity access from the agent sandbox is intermittent** (proxy 404s, no ICMP).
+  A failed fetch looks identical to a code bug; check `curl` the GROQ URL before investigating.
+- A contrast checker must **alpha-composite translucent backgrounds** before computing a
+  ratio. Comparing raw RGB of `bg-accent/10` against same-coloured text yields a spurious
+  ratio of exactly 1.0.
+- **A contrast checker must also start the background walk at the element itself, not its
+  parent.** A button carries its own `bg-accent`, so skipping it makes white button text read
+  1.0:1 against the page and every accent button looks broken.
+- **A contrast checker must read theme tokens inside the themed page.** Reading `--c-ink` once
+  and reusing it for both themes silently applies light-theme ink to dark surfaces and reports
+  ~1.03:1 for values that actually pass.
+- **Toggling Tailwind classes at runtime to test candidates does not work.** Tailwind only
+  emits classes it found in the source, so an injected `text-ink/25` is a no-op and every
+  candidate measures identically. Set `element.style.color` with explicit RGB instead.
+- **Dead modules are now removed** (`Card.tsx`, `use-reduced-motion.ts` — both had zero
+  importers — landed in PR #5). `.card-surface` and `.card-pale` in `index.css` are still
+  defined but referenced by no component. Note `.flow-line` looks unused in JSX but *is* live —
+  `gsap.ts` selects it via `querySelector`, so grepping className in `.tsx` files alone gives
+  false positives. Check with a real reference search before deleting anything.
+- **During the hero architecture's orange pulse, the 10px node detail dips to ~3.9:1.** It is a
+  decorative 0.4s animation frame, clean under `prefers-reduced-motion`, and removing it would
+  mean snapping the cross-fade instead of tweening it. Accepted deliberately.
 
 ## Verification
 
-Last run on `c1accfb`: `npm run typecheck`, `npm run build`, `npm run verify:seed` (26 checks)
-and `npm run seed -- --dry-run` all passed. All 9 routes rendered byte-identical to the
-pre-change baseline on desktop and mobile.
+On `9ed4516` (`npm run typecheck`, `npm run build`, `npm run verify:seed`) all pass.
+
+Browser behaviour was verified by driving the locally installed Chrome with `playwright-core`
+from a scratch directory outside the repo, so no test dependency is added to the project.
+Suites used: 216 navigation checks, 42 responsive/theme smoke checks, 41 SEO assertions,
+and an alpha-composited contrast sweep. All green against dev, dev-with-env, and production.
+
+Note: `vite preview` serves a build **without** the Sanity env vars, so CMS-dependent pages
+render empty there. For those, either run `set -a; . ./.env; set +a` before `npm run build`, or
+test against the dev server.
+
+**The contrast sweep is the reusable tool here.** Walk every route in both themes, require
+`networkidle` first (a Sanity outage renders empty content and would look like a regression),
+then for each element that directly renders text: composite its translucent background stack,
+compute the ratio, and skip anything below 4.5:1 (3:1 for ≥24px or ≥18.66px bold). Run it once
+with `reducedMotion: "reduce"` for the steady state and once with animation running — the
+difference is the transient frame described under Known Risks. Scan `main` before starting:
+it produced 165 failures; PR #5 brings that to 0.
 
 ## Open Questions
 
 - Real project case studies and blog posts are still placeholders and need the user's real
   content.
 - `siteSettings.email` is unset, so the footer contact link is intentionally hidden.
-- The GitHub and LinkedIn URLs currently in the dataset are unverified guesses.
+
+- **The contact form cannot receive anything.** `ContactForm.tsx` simulates submission with a
+  `setTimeout`, and it says so in its own success message and helper text. Every primary CTA
+  funnels there, so no leads can be captured. A destination endpoint must be chosen by the
+  user; do not guess a provider.
+- `sitemap.xml` is hand-maintained and has already drifted once (a post was missing). It holds
+  17 URLs against 9 routes today; PR #4 verified all of them, but nothing prevents future drift.
+- **LinkedIn and GitHub URLs are now resolved.** `linkedinUrl` is
+  `https://www.linkedin.com/in/edward-kwinane` (user-confirmed in a browser) and `githubUrl`
+  is `https://github.com/edwardkwinane`, which the GitHub API confirms as the account
+  `EdwardKwinane` named "Edward Kwinane" that owns this repo. Neither needs attention.
+  *Note:* `linkedin.com` bot-challenges every request from the agent sandbox (reCAPTCHA or
+  HTTP 999, including for a known-good control profile), so that URL cannot be verified
+  programmatically here — only in a real browser.
 
 ## Next Action
 
-Replace the placeholder projects and articles with real content supplied by the user, in
-Studio (`npm run studio`). If the user prefers, delete the six placeholder posts instead.
+The codebase itself is in good shape: contrast is at 0 AA failures, SEO is shipped, and the
+outage that prompted this pass is documented. **Everything still outstanding needs the user,
+not an agent.**
+
+1. **Contact form endpoint.** `ContactForm.tsx` simulates submission, so every CTA on the
+   site dead-ends. This is the single largest conversion gap. The user must choose a provider
+   (Formspree, Resend, a serverless function, …) — do not guess one.
+2. **Real content.** All five projects are still placeholders with empty descriptions, and six
+   of seven posts are placeholders. This is the main credibility risk on a portfolio whose job
+   is proof, and inventing it is explicitly forbidden.
+3. **`siteSettings.email`** is unset, so the footer contact link is hidden by design.
+
+Lower priority, and only worth doing with the user's agreement: generating `sitemap.xml`
+rather than maintaining it by hand, adding a lint script or test runner, and rendering the
+empty `experience` / `testimonial` / `technology` schemas.
