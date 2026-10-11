@@ -193,7 +193,7 @@ export function Navbar() {
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
       "relative whitespace-nowrap rounded-pill px-2.5 py-2 text-sm font-medium transition-colors focus-ring hover:text-accent",
-      isActive ? "text-accent" : "text-ink/75"
+      isActive ? "text-accent-dark" : "text-ink/75"
     );
 
   return (
@@ -236,7 +236,7 @@ export function Navbar() {
               <span className="whitespace-nowrap font-heading text-[15px] font-bold uppercase tracking-wide text-navy transition-colors group-hover:text-accent-dark">
                 {settings.ownerName}
               </span>
-              <span className="mt-0.5 hidden whitespace-nowrap font-technical text-[9px] font-semibold uppercase tracking-tech text-ink/50 sm:block">
+              <span className="mt-0.5 hidden whitespace-nowrap font-technical text-[9px] font-semibold uppercase tracking-tech text-ink/65 sm:block">
                 {settings.roleLine}
               </span>
             </Link>
@@ -270,7 +270,7 @@ export function Navbar() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
               </span>
-              <span className="whitespace-nowrap font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60">
+              <span className="whitespace-nowrap font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65">
                 {settings.availabilityText}
               </span>
             </span>
@@ -328,7 +328,7 @@ export function Navbar() {
           <SheetTitle className="font-heading text-lg font-bold text-navy">
             {settings.ownerName}
           </SheetTitle>
-          <SheetDescription className="font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/50">
+          <SheetDescription className="font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/65">
             {settings.roleLine}
           </SheetDescription>
 
@@ -341,7 +341,7 @@ export function Navbar() {
                   className={({ isActive }) =>
                     cn(
                       "rounded-md px-3 py-3 font-heading text-base font-semibold transition-colors",
-                      isActive ? "bg-surface-pale text-accent" : "text-navy hover:bg-surface-pale"
+                      isActive ? "bg-surface-pale text-accent-dark" : "text-navy hover:bg-surface-pale"
                     )
                   }
                 >
@@ -358,7 +358,7 @@ export function Navbar() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 </span>
-                <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60">
+                <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65">
                   {settings.availabilityText}
                 </span>
               </span>

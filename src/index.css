@@ -17,7 +17,8 @@
     --c-surface-pale-3: 220 233 255; /* #DCE9FF */
     --c-surface-pale-4: 211 228 254; /* #D3E4FE */
     --c-accent: 254 89 0; /* #FE5900 */
-    --c-accent-dark: 224 79 0; /* #E04F00 */
+    --c-accent-dark: 196 69 0; /* #C44500 — readable accent text on light surfaces (4.76:1 on --surface, 5.00:1 on --surface-alt, 4.54:1 on --surface-pale) */
+    --c-accent-fill: 199 67 0; /* #C74300 — accent surface that carries white text (4.96:1); --c-accent only reaches 3.16:1 */
     --c-error: 186 26 26; /* #BA1A1A */
     --c-error-container: 255 218 214; /* #FFDAD6 */
     --c-success: 4 120 87; /* #047857 */
@@ -61,6 +62,7 @@
     --surface-pale-3: rgb(var(--c-surface-pale-3));
     --surface-pale-4: rgb(var(--c-surface-pale-4));
     --accent-dark: rgb(var(--c-accent-dark));
+    --accent-fill: rgb(var(--c-accent-fill));
     --error-container: rgb(var(--c-error-container));
     --success-container: rgb(var(--c-success-container));
 
@@ -101,7 +103,8 @@
     --c-surface-pale-3: 41 48 90; /* #29305A border */
     --c-surface-pale-4: 58 66 114; /* #3A4272 strong border */
     --c-accent: 254 89 0; /* #FE5900 unchanged */
-    --c-accent-dark: 255 106 26; /* #FF6A1A hover brightens in dark */
+    --c-accent-dark: 255 106 26; /* #FF6A1A brightens on dark surfaces (6.87:1) */
+    --c-accent-fill: 199 67 0; /* #C74300 unchanged so white text still clears 4.5:1 in dark */
     --c-error: 255 147 138; /* readable error text on dark */
     --c-error-container: 66 25 28;
     --c-success: 52 211 153; /* readable success text on dark */
@@ -137,6 +140,7 @@
     --surface-pale-3: rgb(var(--c-surface-pale-3));
     --surface-pale-4: rgb(var(--c-surface-pale-4));
     --accent-dark: rgb(var(--c-accent-dark));
+    --accent-fill: rgb(var(--c-accent-fill));
     --error-container: rgb(var(--c-error-container));
     --success-container: rgb(var(--c-success-container));
   }
@@ -218,7 +222,7 @@
     line-height: 16px;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: var(--accent);
+    color: var(--accent-dark);
     font-weight: 700;
   }
 

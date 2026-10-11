@@ -53,7 +53,7 @@ const components: PortableTextComponents = {
             className="w-full rounded-2xl border border-surface-pale3"
           />
           {caption ? (
-            <figcaption className="mt-2 text-center font-technical text-[11px] uppercase tracking-tech text-ink/45">
+            <figcaption className="mt-2 text-center font-technical text-[11px] uppercase tracking-tech text-ink/65">
               {caption}
             </figcaption>
           ) : null}

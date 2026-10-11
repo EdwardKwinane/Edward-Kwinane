@@ -53,7 +53,7 @@ export function BlogCard({ post, className }: { post: BlogPost; className?: stri
             <Badge variant="pale">{post.category}</Badge>
           </span>
           {post.placeholder && (
-            <span className="shrink-0 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/40">
+            <span className="shrink-0 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65">
               Placeholder
             </span>
           )}
@@ -63,10 +63,10 @@ export function BlogCard({ post, className }: { post: BlogPost; className?: stri
           {post.title}
         </h3>
 
-        <p className="mt-2 text-sm leading-relaxed text-ink/60 line-clamp-3">{post.excerpt}</p>
+        <p className="mt-2 text-sm leading-relaxed text-ink/65 line-clamp-3">{post.excerpt}</p>
 
         <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-5">
-          <span className="whitespace-nowrap font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/45">
+          <span className="whitespace-nowrap font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65">
             {formatDate(post.date)}
             <span aria-hidden="true" className="px-1.5">
               ·

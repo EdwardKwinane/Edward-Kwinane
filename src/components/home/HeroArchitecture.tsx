@@ -104,7 +104,7 @@ export function HeroArchitecture({ className }: { className?: string }) {
         {systemLabels.map((s) => (
           <span
             key={s}
-            className="rounded-full border border-surface-pale4 bg-surface-alt px-3 py-1 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60"
+            className="rounded-full border border-surface-pale4 bg-surface-alt px-3 py-1 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65"
           >
             {s}
           </span>
@@ -145,7 +145,7 @@ function Node({
         {label}
       </span>
       {detail && (
-        <span className={cn("mt-1 text-[10px] leading-tight", accent ? "text-white/70" : "text-ink/50")}>
+        <span className={cn("mt-1 text-[10px] leading-tight", accent ? "text-white/70" : "text-ink/65")}>
           {detail}
         </span>
       )}

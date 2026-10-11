@@ -22,7 +22,7 @@ export function CapabilityCard({
       )}
     >
       <div>
-        <span className="font-heading text-5xl font-bold text-surface-pale4">{capability.index}</span>
+        <span className="font-heading text-5xl font-bold text-ink/50">{capability.index}</span>
         <p className="eyebrow mt-4">{capability.eyebrow}</p>
         <h2 className="mt-3 font-heading text-[28px] font-semibold leading-tight text-navy lg:text-[32px] lg:leading-[40px]">
           {capability.headline}
@@ -38,7 +38,7 @@ export function CapabilityCard({
       </div>
 
       <div className="rounded-2xl border border-surface-pale3 bg-surface-alt p-6 lg:p-8">
-        <p className="mb-5 font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
+        <p className="mb-5 font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65">
           System flow
         </p>
         <ArchitectureDiagram flow={capability.flow} compact activeIndex={-1} className="[&_*]:!transition-none" />
