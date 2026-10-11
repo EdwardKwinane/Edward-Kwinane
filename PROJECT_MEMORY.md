@@ -11,7 +11,7 @@ from `main`.
 
 ## Current State
 
-As of `9ed4516` the site is fully CMS-driven. Sanity (`78vf85td` / `production`) is the
+As of `acbc601` the site is fully CMS-driven. Sanity (`78vf85td` / `production`) is the
 **only** runtime source of content — there is no local fallback.
 
 - **Seeded dataset:** 22 technology, 5 capability, 5 project, 7 post, 1 siteSettings
@@ -27,17 +27,13 @@ As of `9ed4516` the site is fully CMS-driven. Sanity (`78vf85td` / `production`)
   that has not happened.
 
 **Live at** `https://edward-kwinane.vercel.app`. `edwardkwinane.com` does **not** resolve;
-`robots.txt` and `sitemap.xml` still point at it until PR #4 merges.
+PR #4 repointed `robots.txt` and `sitemap.xml` at the real domain and added canonical URLs,
+`og:image` and JSON-LD.
 
-Four PRs are open against `main`:
-- **#4 `feat/seo-foundations`** — canonical URLs, `og:image`, JSON-LD, sitemap/robots domain.
-- **#5 `fix/a11y-contrast-and-targets`** — WCAG contrast, footer tap targets, skip link,
-  heading skip, dead-code removal. Now also carries the site-wide contrast sweep (see below).
-- **#6 `docs/project-memory`** — this file.
-- **#10 `docs/vercel-deploy-guard`** — records the hand-promotion hazard in the README.
+Merged and deployed: **#4** (SEO), **#5** (contrast + a11y), **#7** (Tools & Technologies
+marquee), **#8** (About glassmorphism + profile photo), **#9** (LinkedIn URL).
 
-PRs #7 (Tools & Technologies marquee), #8 (About glassmorphism + profile photo) and #9
-(LinkedIn URL) are merged and deployed.
+Still open: **#6** (this file) and **#10** (README deploy guard) — documentation only.
 
 ## Architecture
 
@@ -270,10 +266,11 @@ rendered with `currentColor` so one fill covers both themes.
 - **Toggling Tailwind classes at runtime to test candidates does not work.** Tailwind only
   emits classes it found in the source, so an injected `text-ink/25` is a no-op and every
   candidate measures identically. Set `element.style.color` with explicit RGB instead.
-- **Dead modules confirmed:** `src/hooks/use-reduced-motion.ts` and `src/components/ui/Card.tsx`
-  have no importers, and `.card-surface` / `.card-pale` in `index.css` are referenced by no
-  component. Note `.flow-line` looks unused in JSX but *is* live — `gsap.ts` selects it via
-  `querySelector`, so grepping className in `.tsx` files alone will produce false positives.
+- **Dead modules are now removed** (`Card.tsx`, `use-reduced-motion.ts` — both had zero
+  importers — landed in PR #5). `.card-surface` and `.card-pale` in `index.css` are still
+  defined but referenced by no component. Note `.flow-line` looks unused in JSX but *is* live —
+  `gsap.ts` selects it via `querySelector`, so grepping className in `.tsx` files alone gives
+  false positives. Check with a real reference search before deleting anything.
 - **During the hero architecture's orange pulse, the 10px node detail dips to ~3.9:1.** It is a
   decorative 0.4s animation frame, clean under `prefers-reduced-motion`, and removing it would
   mean snapping the cross-fade instead of tweening it. Accepted deliberately.
@@ -321,16 +318,18 @@ it produced 165 failures; PR #5 brings that to 0.
 
 ## Next Action
 
-Review and merge PR #4 and PR #5 — they touch disjoint files and can merge in either order.
-PR #5 has been updated with the site-wide contrast sweep and now has `main` merged into it,
-so it also carries the merged homepage work; check its 33-file diff rather than treating it
-as the small a11y patch it started as. PR #10 and PR #6 are documentation and can land any
-time.
+The codebase itself is in good shape: contrast is at 0 AA failures, SEO is shipped, and the
+outage that prompted this pass is documented. **Everything still outstanding needs the user,
+not an agent.**
 
-Then get the user's decision on the contact-form endpoint, which blocks the single largest
-conversion gap.
+1. **Contact form endpoint.** `ContactForm.tsx` simulates submission, so every CTA on the
+   site dead-ends. This is the single largest conversion gap. The user must choose a provider
+   (Formspree, Resend, a serverless function, …) — do not guess one.
+2. **Real content.** All five projects are still placeholders with empty descriptions, and six
+   of seven posts are placeholders. This is the main credibility risk on a portfolio whose job
+   is proof, and inventing it is explicitly forbidden.
+3. **`siteSettings.email`** is unset, so the footer contact link is hidden by design.
 
-Beyond that, replace the placeholder projects and articles with real content in Studio
-(`npm run studio`) — all five projects are still `status: "placeholder"` with empty
-descriptions, and six of seven posts are placeholders, which remains the main credibility
-risk on a portfolio whose job is proof.
+Lower priority, and only worth doing with the user's agreement: generating `sitemap.xml`
+rather than maintaining it by hand, adding a lint script or test runner, and rendering the
+empty `experience` / `testimonial` / `technology` schemas.
