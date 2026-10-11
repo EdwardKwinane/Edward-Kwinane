@@ -77,8 +77,29 @@ git push -u origin feature/sanity-content  # → Vercel preview deployment
 
 `EdwardKwinane/Edward-Kwinane` is linked to the Vercel project `edward-kwinane`
 (team `eddiction-ai`). Pushing to `main` builds on Vercel and updates
-<https://edward-kwinane.vercel.app>; other branches get preview deployments. Never run
-`vercel --prod` — GitHub stays the source of truth.
+<https://edward-kwinane.vercel.app>; other branches get preview deployments. GitHub
+stays the source of truth.
+
+**Never promote a deployment to production by hand.** Both of these bypass the
+branch and ship unreviewed work to the live site:
+
+```bash
+vercel --prod          # builds the current checkout as production
+vercel redeploy <url>  # re-promotes an existing deployment, e.g. a branch preview
+```
+
+`vercel redeploy` is the subtler of the two: it takes a preview that was built from a
+feature branch and publishes it as production, so the commit in production is whatever
+that branch happened to be at. On 2026-10-11 this shipped the unmerged `feat/seo-foundations`
+work and silently removed the Tools & Technologies section that had already merged.
+
+Recovering is `git checkout main && git pull && vercel --prod`, but the next merge to
+`main` overwrites any hand-made deployment anyway. To confirm what is actually live:
+
+```bash
+vercel ls edward-kwinane                      # target should be Production + main
+vercel api /v13/deployments/<id>              # meta.githubCommitRef and meta.action
+```
 
 To inspect the Vercel project locally:
 
