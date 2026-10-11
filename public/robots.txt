@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://edwardkwinane.com/sitemap.xml
+# NOTE: this must match the domain the site is actually served from. It previously
+# pointed at edwardkwinane.com, which does not resolve. Canonical URLs elsewhere
+# are derived from window.location.origin, so attaching a custom domain to the
+# Vercel project only requires updating this file and sitemap.xml.
+Sitemap: https://edward-kwinane.vercel.app/sitemap.xml
