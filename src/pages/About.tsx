@@ -139,7 +139,7 @@ export default function About() {
                         <p className="font-heading text-lg font-semibold text-navy">
                           {settings.ownerName}
                         </p>
-                        <p className="mt-0.5 font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/50">
+                        <p className="mt-0.5 font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/65">
                           {settings.roleLine}
                         </p>
                       </div>

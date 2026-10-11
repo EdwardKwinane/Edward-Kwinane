@@ -255,7 +255,7 @@
      without a second set of rules.
      ------------------------------------------------------------------ */
 
-  /* The wash behind a glass region. Deliberately restrained: two soft
+  /* The wash behind a glass region. Deliberately restrained: three soft
      radial tints, no hard edges, no imagery. */
   .glass-field {
     background-color: rgb(var(--c-surface));
