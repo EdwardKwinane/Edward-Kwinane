@@ -67,16 +67,6 @@ export default function About() {
     revealElements(".about-reveal", scopeRef.current ?? document, { stagger: 0.1 });
   }, []);
 
-  /* Derived from the CMS owner name rather than hard-coded, and falls back to a
-     neutral monogram so the tile is never empty. */
-  const initials =
-    settings.ownerName
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((word) => word.charAt(0).toUpperCase())
-      .join("") || "EK";
-
   /* Same CMS fields the footer renders, and the same "hide when unset" rule,
      so no placeholder handle is ever displayed. */
   const socialLinks = [
@@ -129,12 +119,18 @@ export default function About() {
                 <div className="about-reveal">
                   <div className="glass-card p-6 sm:p-8">
                     <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                      <span
-                        aria-hidden="true"
-                        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary font-heading text-lg font-bold tracking-wide text-white shadow-[0_10px_30px_rgba(13,13,91,0.25)] sm:h-16 sm:w-16 sm:text-xl"
-                      >
-                        {initials}
-                      </span>
+                      {/* Intrinsic 256x256 keeps the box reserved before the
+                          file loads, so the header never shifts. The asset is a
+                          transparent-background cut-out, so it sits directly on
+                          the glass card in both themes. */}
+                      <img
+                        src="/images/profile.png"
+                        alt={`Portrait of ${settings.ownerName}`}
+                        width={256}
+                        height={256}
+                        decoding="async"
+                        className="h-14 w-14 shrink-0 rounded-full object-cover object-center ring-1 ring-surface-pale4 shadow-[0_10px_30px_rgba(13,13,91,0.18)] sm:h-16 sm:w-16"
+                      />
                       <div className="min-w-0">
                         <p className="font-heading text-lg font-semibold text-navy">
                           {settings.ownerName}
