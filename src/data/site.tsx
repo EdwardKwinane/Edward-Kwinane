@@ -43,7 +43,7 @@ export const siteDefaults: SiteSettings = {
   footerSignoff: "Concept → Architecture → Build → Ship",
   email: "",
   location: "",
-  linkedinUrl: "https://linkedin.com/in/edwardkwinane",
+  linkedinUrl: "https://www.linkedin.com/in/edward-kwinane",
   githubUrl: "https://github.com/edwardkwinane",
   twitterUrl: "",
 };
