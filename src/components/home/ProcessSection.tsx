@@ -35,7 +35,7 @@ export function ProcessSection() {
           {stages.map((stage) => (
             <li key={stage.index} className="process-stage relative rounded-2xl border border-surface-pale3 bg-surface p-6">
               <div className="flex items-center justify-between">
-                <span className="font-heading text-4xl font-bold text-surface-pale4">{stage.index}</span>
+                <span className="font-heading text-4xl font-bold text-ink/50">{stage.index}</span>
                 <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
               </div>
               <h3 className="mt-4 font-technical text-[13px] font-bold uppercase tracking-tech text-navy">

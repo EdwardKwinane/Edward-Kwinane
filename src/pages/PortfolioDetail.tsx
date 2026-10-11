@@ -39,7 +39,7 @@ export default function PortfolioDetail() {
     return (
       <section className="bg-surface pt-32 pb-14 lg:pt-40 lg:pb-20">
         <Container>
-          <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/50">
+          <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65">
             Loading…</p>
         </Container>
       </section>
@@ -53,6 +53,35 @@ export default function PortfolioDetail() {
     .filter((p): p is Project => Boolean(p))
     .slice(0, 2);
 
+  const projectSchema = {
+    "@type": "CreativeWork",
+    name: project.title,
+    description: project.description,
+    url: `${window.location.origin}/portfolio/${project.slug}`,
+    image: `${window.location.origin}/og-image.png`,
+    keywords: project.technologies.join(", ") || undefined,
+    creator: { "@id": `${window.location.origin}/#person` },
+  };
+
+  const breadcrumbSchema = {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: window.location.origin },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Portfolio",
+        item: `${window.location.origin}/portfolio`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: project.title,
+        item: `${window.location.origin}/portfolio/${project.slug}`,
+      },
+    ],
+  };
+
   return (
     <>
       <Seo
@@ -60,12 +89,13 @@ export default function PortfolioDetail() {
         description={project.description}
         path={`/portfolio/${project.slug}`}
         type="article"
+        structuredData={[projectSchema, breadcrumbSchema]}
       />
       <section className="bg-surface pt-32 pb-14 lg:pt-40 lg:pb-20">
         <Container>
           <Link
             to="/portfolio"
-            className="inline-flex items-center gap-2 font-technical text-[11px] font-bold uppercase tracking-tech text-ink/50 transition-colors hover:text-accent focus-ring"
+            className="inline-flex items-center gap-2 font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65 transition-colors hover:text-accent focus-ring"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to portfolio
@@ -74,7 +104,7 @@ export default function PortfolioDetail() {
           <div className="mt-8 max-w-3xl">
             <div className="flex flex-wrap items-center gap-3">
               <Badge variant="navy">{project.category}</Badge>
-              <span className="font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/40">
+              <span className="font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/65">
                 {project.status}
               </span>
               {project.placeholder && <Badge variant="orange">Placeholder content</Badge>}
@@ -89,7 +119,7 @@ export default function PortfolioDetail() {
               {project.technologies.map((tech) => (
                 <span
                   key={tech}
-                  className="rounded-full border border-surface-pale4 bg-surface-alt px-3 py-1 font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/60"
+                  className="rounded-full border border-surface-pale4 bg-surface-alt px-3 py-1 font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/65"
                 >
                   {tech}
                 </span>
@@ -121,20 +151,20 @@ export default function PortfolioDetail() {
 
             <aside className="space-y-6 lg:sticky lg:top-28 lg:self-start">
               <div className="rounded-2xl border border-surface-pale3 bg-surface-pale p-6">
-                <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
+                <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65">
                   Case study
                 </p>
                 <dl className="mt-4 space-y-3 text-sm">
                   <div className="flex justify-between gap-4">
-                    <dt className="text-ink/50">Category</dt>
+                    <dt className="text-ink/65">Category</dt>
                     <dd className="font-medium text-navy">{project.category}</dd>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <dt className="text-ink/50">Status</dt>
+                    <dt className="text-ink/65">Status</dt>
                     <dd className="font-medium text-navy">{project.status}</dd>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <dt className="text-ink/50">Systems</dt>
+                    <dt className="text-ink/65">Systems</dt>
                     <dd className="text-right font-medium text-navy">
                       {project.categories.join(" · ")}
                     </dd>

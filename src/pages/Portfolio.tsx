@@ -57,9 +57,12 @@ export default function Portfolio() {
 
       <Section className="pt-0 lg:pt-0">
         <Container>
+          {/* Introduces the grid for screen readers and heading navigation.
+              Without it the page runs h1 -> h3, skipping h2 entirely. */}
+          <h2 className="sr-only">Projects</h2>
           <ProjectFilter active={active} onChange={onChange} />
 
-          <p className="mt-6 text-sm text-ink/50" aria-live="polite">
+          <p className="mt-6 text-sm text-ink/65" aria-live="polite">
             {loading
               ? "Loading projects…"
               : `${filtered.length} ${filtered.length === 1 ? "project" : "projects"}${
@@ -69,7 +72,7 @@ export default function Portfolio() {
 
           <ProjectGrid projects={filtered} className="mt-8" />
 
-          <p className="mt-12 rounded-2xl border border-dashed border-surface-pale4 bg-surface-pale p-6 text-sm leading-relaxed text-ink/55">
+          <p className="mt-12 rounded-2xl border border-dashed border-surface-pale4 bg-surface-pale p-6 text-sm leading-relaxed text-ink/65">
             Project content is managed in Sanity Studio (<code className="rounded bg-surface-alt px-1.5 py-0.5 text-xs">npm run studio</code>)
             and falls back to the placeholder entries in <code className="rounded bg-surface-alt px-1.5 py-0.5 text-xs">src/data/projects.ts</code>{" "}
             when Sanity isn't configured.

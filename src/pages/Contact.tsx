@@ -43,7 +43,7 @@ export default function Contact() {
               <h2 className="font-heading text-xl font-semibold text-navy lg:text-2xl">
                 Tell me about the system
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-ink/60">
+              <p className="mt-2 text-sm leading-relaxed text-ink/65">
                 The more context you share about the problem, the sharper the first conversation.
               </p>
               <div className="mt-8">
@@ -62,7 +62,7 @@ export default function Contact() {
                     <h3 className="mt-4 font-heading text-base font-semibold text-navy">
                       {channel.title}
                     </h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-ink/60">
+                    <p className="mt-1.5 text-sm leading-relaxed text-ink/65">
                       {channel.description}
                     </p>
                   </div>

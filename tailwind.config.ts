@@ -29,6 +29,9 @@ const designTokens = {
       DEFAULT: rgb("accent"),
       dark: rgb("accent-dark"),
       light: "#FF7A33",
+      // Surface that carries white text. --c-accent only reaches 3.16:1 with
+      // white, which fails WCAG AA; this clears 4.5:1 in both themes.
+      fill: rgb("accent-fill"),
       ambient: "rgba(254, 89, 0, 0.18)",
     },
     error: {
