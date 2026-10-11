@@ -23,8 +23,11 @@ export function ProjectCard({ project, className }: { project: Project; classNam
             {project.visual.sublabel}
           </span>
         </div>
+        {/* This badge sits on the cover, which composites to a dark navy in both
+            themes. accent-dark measures 3.22:1 there, so the label is forced to
+            white (16.1:1 light / 13.9:1 dark). */}
         {project.placeholder && (
-          <Badge variant="orange" className="absolute right-3 top-3">
+          <Badge variant="orange" className="absolute right-3 top-3 text-white">
             Placeholder
           </Badge>
         )}
@@ -33,7 +36,7 @@ export function ProjectCard({ project, className }: { project: Project; classNam
       <div className="flex flex-1 flex-col gap-4 p-6">
         <div className="flex items-center justify-between gap-2">
           <Badge variant="navy">{project.category}</Badge>
-          <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/40">
+          <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65">
             {project.status}
           </span>
         </div>
@@ -47,7 +50,7 @@ export function ProjectCard({ project, className }: { project: Project; classNam
           {project.technologies.slice(0, 5).map((tech) => (
             <span
               key={tech}
-              className="rounded-full border border-surface-pale4 bg-surface-pale px-2.5 py-0.5 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60"
+              className="rounded-full border border-surface-pale4 bg-surface-pale px-2.5 py-0.5 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65"
             >
               {tech}
             </span>

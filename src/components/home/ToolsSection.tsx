@@ -4,7 +4,7 @@ import { tools, type Tool } from "@/data/tool-stack";
 
 function ToolLogo({ tool }: { tool: Tool }) {
   return (
-    <span className="flex shrink-0 items-center gap-3 text-ink/55 transition-colors duration-300 hover:text-ink">
+    <span className="flex shrink-0 items-center gap-3 text-ink/65 transition-colors duration-300 hover:text-ink">
       <svg
         viewBox="0 0 24 24"
         /* Decorative: the name beside it is the accessible label. */

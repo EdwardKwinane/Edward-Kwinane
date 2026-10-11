@@ -78,7 +78,7 @@ export default function Blog() {
                   {featured.title}
                 </h2>
                 <p className="mt-3 text-base leading-relaxed text-ink/65">{featured.subtitle}</p>
-                <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-ink/50">
+                <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-ink/65">
                   <span className="font-medium text-navy">{featured.author}</span>
                   <span className="inline-flex items-center gap-1.5">
                     <Calendar className="h-4 w-4" aria-hidden="true" />
@@ -96,7 +96,7 @@ export default function Blog() {
               </div>
             </Link>
           ) : loading ? (
-            <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/50">
+            <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65">
               Loading articles…
             </p>
           ) : null}

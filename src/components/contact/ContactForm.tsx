@@ -180,7 +180,7 @@ export function ContactForm() {
           "Start the conversation →"
         )}
       </Button>
-      <p className="text-xs text-ink/40">
+      <p className="text-xs text-ink/65">
         This form is a demo with simulated submission. Connect it to a real endpoint to receive messages.
       </p>
     </form>

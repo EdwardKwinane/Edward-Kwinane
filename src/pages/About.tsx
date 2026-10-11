@@ -141,7 +141,7 @@ export default function About() {
                       </div>
                     </div>
 
-                    <p className="mt-7 font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
+                    <p className="mt-7 font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65">
                       Technical profile
                     </p>
                     <dl className="mt-3 divide-y divide-surface-pale3">
@@ -150,7 +150,7 @@ export default function About() {
                           key={field.label}
                           className="flex flex-col gap-1 py-3.5 sm:grid sm:grid-cols-[120px_1fr] sm:gap-4 sm:gap-y-0"
                         >
-                          <dt className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40 pt-0.5">
+                          <dt className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65 pt-0.5">
                             {field.label}
                           </dt>
                           <dd className="text-sm font-medium text-navy min-w-0 break-words">
@@ -175,7 +175,7 @@ export default function About() {
                           aria-label={`${label} profile`}
                           className="group flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-surface-pale focus-ring"
                         >
-                          <Icon className="h-5 w-5 shrink-0 text-ink/50 transition-colors group-hover:text-navy" />
+                          <Icon className="h-5 w-5 shrink-0 text-ink/65 transition-colors group-hover:text-navy" />
                           <span className="text-sm font-medium text-ink/75 transition-colors group-hover:text-navy">
                             {label}
                           </span>
@@ -204,7 +204,7 @@ export default function About() {
                   key={item.index}
                   className="about-reveal glass-card p-4 sm:p-6"
                 >
-                  <span className="font-heading text-3xl font-bold text-surface-pale4">
+                  <span className="font-heading text-3xl font-bold text-ink/50">
                     {item.index}
                   </span>
                   <p className="mt-3 text-sm font-medium leading-relaxed text-navy">{item.text}</p>
@@ -243,7 +243,7 @@ export default function About() {
                       {area.labels.map((label) => (
                         <span
                           key={label}
-                          className="rounded-full border border-surface-pale4 bg-surface-pale px-3 py-1 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60"
+                          className="rounded-full border border-surface-pale4 bg-surface-pale px-3 py-1 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65"
                         >
                           {label}
                         </span>

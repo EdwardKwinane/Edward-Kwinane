@@ -25,10 +25,10 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-12">
           <div className="md:col-span-5">
             <p className="font-heading text-lg font-bold text-navy">{settings.ownerName}</p>
-            <p className="mt-1 font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/50">
+            <p className="mt-1 font-technical text-[11px] font-semibold uppercase tracking-tech text-ink/65">
               {settings.roleLine}
             </p>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink/60">
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink/65">
               {settings.footerTagline}
             </p>
             {settings.email ? (
@@ -42,7 +42,7 @@ export function Footer() {
           </div>
 
           <nav className="md:col-span-4" aria-label="Footer">
-            <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/50">
+            <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65">
               Navigation
             </p>
             <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1">
@@ -63,7 +63,7 @@ export function Footer() {
           </nav>
 
           <div className="md:col-span-3">
-            <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/50">
+            <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65">
               Connect
             </p>
             <div className="mt-4 flex gap-3">
@@ -74,21 +74,21 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${label} profile`}
-                  className="flex h-10 w-10 items-center justify-center rounded-md border border-surface-pale4 text-ink/60 transition-colors hover:border-navy hover:text-navy focus-ring"
+                  className="flex h-10 w-10 items-center justify-center rounded-md border border-surface-pale4 text-ink/65 transition-colors hover:border-navy hover:text-navy focus-ring"
                 >
                   <Icon className="h-5 w-5" />
                 </a>
               ))}
             </div>
-            <p className="mt-6 text-xs text-ink/40">{settings.footerText}</p>
+            <p className="mt-6 text-xs text-ink/65">{settings.footerText}</p>
           </div>
         </div>
 
         <div className="mt-12 flex flex-col gap-2 border-t border-surface-pale3 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-ink/40">
+          <p className="text-xs text-ink/65">
             © {new Date().getFullYear()} {settings.ownerName}. All rights reserved.
           </p>
-          <p className="font-technical text-[10px] uppercase tracking-tech text-ink/40">
+          <p className="font-technical text-[10px] uppercase tracking-tech text-ink/65">
             {settings.footerSignoff}
           </p>
         </div>

@@ -40,7 +40,7 @@ export function ArchitectureNode({
         <span
           className={cn(
             "text-[11px] leading-tight",
-            state === "active" ? "text-white/90" : "text-ink/55"
+            state === "active" ? "text-white" : "text-ink/65"
           )}
         >
           {detail}

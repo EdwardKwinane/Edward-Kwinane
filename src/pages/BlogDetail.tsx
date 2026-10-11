@@ -77,7 +77,7 @@ function TableOfContents({ post }: { post: BlogPost }) {
   return (
     <>
       <div className="hidden rounded-2xl border border-surface-pale3 bg-surface-alt p-6 lg:block">
-        <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/40">
+        <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65">
           On this page
         </p>
         <nav className="mt-4 flex flex-col gap-1" aria-label="Table of contents">
@@ -159,7 +159,7 @@ export default function BlogDetail() {
     return (
       <section className="bg-surface pt-32 pb-12 lg:pt-40">
         <Container>
-          <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/50">
+          <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65">
             Loading…</p>
         </Container>
       </section>
@@ -180,7 +180,7 @@ export default function BlogDetail() {
         <Container>
           <Link
             to="/blog"
-            className="inline-flex items-center gap-2 font-technical text-[11px] font-bold uppercase tracking-tech text-ink/50 transition-colors hover:text-accent focus-ring"
+            className="inline-flex items-center gap-2 font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65 transition-colors hover:text-accent focus-ring"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to blog
@@ -195,7 +195,7 @@ export default function BlogDetail() {
               {post.title}
             </h1>
             <p className="mt-4 text-lg leading-relaxed text-ink/65">{post.subtitle}</p>
-            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-surface-pale3 py-4 text-sm text-ink/55">
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-surface-pale3 py-4 text-sm text-ink/65">
               <span className="font-medium text-navy">{post.author}</span>
               <span className="inline-flex items-center gap-1.5">
                 <Calendar className="h-4 w-4" aria-hidden="true" />
@@ -230,7 +230,7 @@ export default function BlogDetail() {
                 {post.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full border border-surface-pale4 bg-surface-pale px-3 py-1 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/60"
+                    className="rounded-full border border-surface-pale4 bg-surface-pale px-3 py-1 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65"
                   >
                     #{tag}
                   </span>

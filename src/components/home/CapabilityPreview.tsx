@@ -59,7 +59,7 @@ export function CapabilityPreview() {
                   {cap.labels.map((label) => (
                     <span
                       key={label}
-                      className="rounded-full border border-surface-pale4 bg-surface-alt px-2.5 py-0.5 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/55"
+                      className="rounded-full border border-surface-pale4 bg-surface-alt px-2.5 py-0.5 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65"
                     >
                       {label}
                     </span>
