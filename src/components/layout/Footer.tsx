@@ -34,7 +34,7 @@ export function Footer() {
             {settings.email ? (
               <a
                 href={`mailto:${settings.email}`}
-                className="mt-4 inline-block text-sm text-accent hover:underline focus-ring"
+                className="mt-4 inline-block text-sm text-accent-dark hover:underline focus-ring"
               >
                 {settings.email}
               </a>
