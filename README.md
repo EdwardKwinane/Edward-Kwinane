@@ -211,6 +211,18 @@ npm run studio:deploy  # deploy to manage.sanity.io studio host
 | `npm run seed`       | Write the seeded documents to Sanity          |
 | `npm run verify:seed` | Check the seeded documents map to site types |
 | `npm run repair:keys` | Add missing `_key` to list items in the dataset |
+| `npm run sitemap`    | Regenerate `public/sitemap.xml` from the dataset |
+| `npm run verify:sitemap` | Fail if `public/sitemap.xml` has drifted from the dataset |
+
+### Sitemap
+
+`public/sitemap.xml` is **generated**, not hand-edited — it was maintained by hand and had
+already drifted once, with a published blog post missing from it. `npm run sitemap` rebuilds
+it from the same Sanity query the site uses, including the `defined(publishedAt)` filter that
+keeps drafts out of public listings. `npm run verify:sitemap` is the read-only form: it exits
+1 and names the exact missing and stale URLs if the file has drifted, so adding a post without
+regenerating becomes a failing check rather than a silent omission. Run it after publishing
+new content in Studio, and add it to CI alongside `verify:seed`.
 
 ### Seeding content
 

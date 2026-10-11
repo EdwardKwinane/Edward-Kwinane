@@ -11,6 +11,8 @@
     "typecheck": "tsc -b --noEmit && tsc -p sanity/tsconfig.json --noEmit",
     "seed": "node scripts/seed-sanity.mjs",
     "verify:seed": "node scripts/verify-seed.mjs",
+    "sitemap": "node scripts/generate-sitemap.mjs",
+    "verify:sitemap": "node scripts/generate-sitemap.mjs --check",
     "repair:keys": "node scripts/repair-keys.mjs",
     "studio": "node scripts/prepare-env.mjs && cd sanity && sanity dev",
     "studio:build": "node scripts/prepare-env.mjs && cd sanity && sanity build",

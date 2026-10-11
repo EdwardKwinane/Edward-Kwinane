@@ -245,12 +245,6 @@
     }
   }
 
-  .card-surface {
-    background-color: rgb(var(--c-surface-alt));
-    border: 1px solid var(--surface-pale-3);
-    border-radius: var(--radius-lg);
-  }
-
   /* ------------------------------------------------------------------
      Glassmorphism
      A backdrop-blurred panel only reads if there is something behind it,
@@ -335,12 +329,6 @@
       linear-gradient(rgb(var(--c-grid-line) / 0.4) 1px, transparent 1px),
       linear-gradient(90deg, rgb(var(--c-grid-line) / 0.4) 1px, transparent 1px);
     background-size: 48px 48px;
-  }
-
-  .card-pale {
-    background-color: var(--surface-pale);
-    border: 1px solid var(--surface-pale-3);
-    border-radius: var(--radius-lg);
   }
 
   .focus-ring {
