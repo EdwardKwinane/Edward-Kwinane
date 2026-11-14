@@ -42,7 +42,8 @@
     "react-router-dom": "^6.28.0",
     "sanity": "^3.99.0",
     "styled-components": "^6.5.3",
-    "tailwind-merge": "^2.5.5"
+    "tailwind-merge": "^2.5.5",
+    "vanilla-cookieconsent": "^3.3.0"
   },
   "allowScripts": {
     "esbuild": true

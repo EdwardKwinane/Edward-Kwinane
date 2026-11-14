@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Github, Linkedin } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { useSiteSettings } from "@/data/site";
+import { openCookiePreferences } from "@/lib/consent/cookieConsent";
 
 const navItems = [
   { label: "Home", to: "/" },
@@ -88,9 +89,18 @@ export function Footer() {
           <p className="text-xs text-ink/65">
             © {new Date().getFullYear()} {settings.ownerName}. All rights reserved.
           </p>
-          <p className="font-technical text-[10px] uppercase tracking-tech text-ink/65">
-            {settings.footerSignoff}
-          </p>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={openCookiePreferences}
+              className="rounded-sm text-xs text-ink/65 underline-offset-2 transition-colors hover:text-accent focus-ring"
+            >
+              Cookie settings
+            </button>
+            <p className="font-technical text-[10px] uppercase tracking-tech text-ink/65">
+              {settings.footerSignoff}
+            </p>
+          </div>
         </div>
       </Container>
     </footer>

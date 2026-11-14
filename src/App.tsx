@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { MetaPixel } from "@/components/analytics/MetaPixel";
 import { Loader2 } from "lucide-react";
 import { SiteSettingsProvider } from "@/data/site";
 
@@ -51,6 +52,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <SiteSettingsProvider>
+        <MetaPixel />
         <ScrollToTop />
         <SkipToContent />
         <div className="flex min-h-screen flex-col">

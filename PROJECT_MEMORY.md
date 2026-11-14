@@ -194,6 +194,11 @@ rendered with `currentColor` so one fill covers both themes.
   is a local working file and stays untracked.
   *Date:* 2026-10-10, PR #8
 
+- **Meta Pixel is integrated via `src/lib/analytics/metaPixel.ts` + `src/components/analytics/MetaPixel.tsx`.** The Pixel ID comes from `VITE_META_PIXEL_ID` only (Vite-native, single source), is never hardcoded, and `<MetaPixel />` is mounted inside `BrowserRouter` in `App.tsx`. PageView fires on initial mount and per client-side route change, deduplicated by `pathname + search` against a ref; module-level `initialised` flag plus `window.fbq` existence guard ensure the Pixel initialises exactly once. The contact form still simulates submission — do NOT wire `Lead` until it sends real messages.
+  *Reason:* the task assumed Next.js; the project is a Vite + React Router SPA, so `next/script` patterns don't apply — `react-router-dom`'s `useLocation` is the client-side navigation signal.
+  *Consequence:* **Consent gating is implemented.** CookieConsent v3 by Orest Bida (`vanilla-cookieconsent` v3.3.0, MIT) is bundled and configured in `src/lib/consent/cookieConsent.ts` (opt-in; Necessary read-only / Analytics unused / Marketing; `cc_cookie` 182 days; footer "Cookie settings" reopens preferences). The Pixel initialises only on a Marketing grant (`onFirstConsent` + `onChange` — note: the library does NOT fire `onChange` for a visitor's first consent action) and `revoke()` stops tracking + clears `_fbp`/`_fbc` on withdrawal (`fr` on .facebook.com is not reachable). `hideFromBots: false` because its `navigator.webdriver` check would break Playwright. Do not add a second consent system.
+  *Date:* 2026-11-14
+
 ## Constraints
 
 - `main` is the production branch. Branch, commit, push — Vercel deploys automatically. **Never
