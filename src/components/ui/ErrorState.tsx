@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./Button";
@@ -16,9 +16,13 @@ interface ErrorStateProps {
  * Shared recoverable-error state.
  *
  * Deliberately visitor-safe: no stack traces, GROQ, URLs or API details are
- * rendered, ever. The heading is programmatically focusable so the state is
- * announced when it appears, and the retry control keeps a full 44px tap
- * target per the existing a11y work.
+ * rendered, ever. Announcement to assistive technology is handled by
+ * `role="alert"` — focus is intentionally NOT moved on mount, because these
+ * states render inline per section and async error resolution times vary, so
+ * stealing focus would yank keyboard visitors away from where they were. The
+ * heading keeps `tabIndex={-1}` so a deliberate programmatic focus is still
+ * possible. The retry control keeps a full 44px tap target per the existing
+ * a11y work.
  */
 export function ErrorState({
   title = "This content couldn't be loaded",
@@ -27,13 +31,7 @@ export function ErrorState({
   retryLabel = "Try again",
   className,
 }: ErrorStateProps) {
-  const headingRef = useRef<HTMLHeadingElement>(null);
   const [retrying, setRetrying] = useState(false);
-
-  // Announce the error to assistive technology as soon as it mounts.
-  useEffect(() => {
-    headingRef.current?.focus();
-  }, []);
 
   function handleRetry() {
     setRetrying(true);
@@ -49,11 +47,7 @@ export function ErrorState({
       )}
     >
       <AlertTriangle aria-hidden="true" className="h-8 w-8 text-accent-dark" />
-      <h2
-        ref={headingRef}
-        tabIndex={-1}
-        className="focus-ring font-heading text-2xl font-semibold text-navy"
-      >
+      <h2 tabIndex={-1} className="focus-ring font-heading text-2xl font-semibold text-navy">
         {title}
       </h2>
       <p className="max-w-md text-sm leading-relaxed text-ink/65">{description}</p>
