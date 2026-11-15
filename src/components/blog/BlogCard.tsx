@@ -20,6 +20,8 @@ import { Badge } from "@/components/ui/Badge";
  * the generated spelling throughout.
  */
 export function BlogCard({ post, className }: { post: BlogPost; className?: string }) {
+  const dateLabel = formatDate(post.date);
+
   return (
     <Link
       to={`/blog/${post.slug}`}
@@ -67,10 +69,14 @@ export function BlogCard({ post, className }: { post: BlogPost; className?: stri
 
         <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-5">
           <span className="whitespace-nowrap font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65">
-            {formatDate(post.date)}
-            <span aria-hidden="true" className="px-1.5">
-              ·
-            </span>
+            {dateLabel && (
+              <>
+                {dateLabel}
+                <span aria-hidden="true" className="px-1.5">
+                  ·
+                </span>
+              </>
+            )}
             {post.readingTime}
           </span>
           <span className="inline-flex shrink-0 items-center gap-1.5 font-heading text-sm font-semibold text-navy transition-colors duration-300 motion-reduce:transition-none group-hover:text-accent-dark">

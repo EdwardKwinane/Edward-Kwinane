@@ -65,17 +65,6 @@ export function Hero() {
 
           <div className="hero-reveal">
             <div className="rounded-2xl border border-surface-pale4 bg-surface-alt p-4 shadow-[0_24px_60px_rgba(13,13,91,0.1)] sm:p-6 lg:p-8">
-              <div className="mb-5 flex items-center justify-between">
-                <span className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65">
-                  System status
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-success">
-                    Operational
-                  </span>
-                </span>
-              </div>
               <HeroArchitecture />
             </div>
           </div>

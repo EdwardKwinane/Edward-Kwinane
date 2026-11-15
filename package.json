@@ -14,6 +14,7 @@
     "sitemap": "node scripts/generate-sitemap.mjs",
     "verify:sitemap": "node scripts/generate-sitemap.mjs --check",
     "test:e2e": "playwright test",
+    "test:e2e:sanity": "playwright test --config=playwright.sanity.config.ts",
     "test:e2e:report": "playwright show-report",
     "repair:keys": "node scripts/repair-keys.mjs",
     "studio": "node scripts/prepare-env.mjs && cd sanity && sanity dev",

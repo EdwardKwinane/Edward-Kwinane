@@ -101,6 +101,16 @@ function headingId(children: unknown): string {
 }
 
 export function PortableTextRenderer({ body }: { body?: PortableTextBlock[] }) {
-  if (!body || body.length === 0) return null;
-  return <PortableText value={body} components={components} />;
+  // Editor-entered content must never crash the page: drop anything that is
+  // not a well-formed block instead of handing it to the renderer.
+  const blocks = Array.isArray(body)
+    ? body.filter(
+        (block): block is PortableTextBlock =>
+          block !== null &&
+          typeof block === "object" &&
+          typeof (block as { _type?: unknown })._type === "string"
+      )
+    : [];
+  if (blocks.length === 0) return null;
+  return <PortableText value={blocks} components={components} />;
 }

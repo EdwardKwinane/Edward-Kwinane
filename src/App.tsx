@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { MetaPixel } from "@/components/analytics/MetaPixel";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Loader2 } from "lucide-react";
 import { SiteSettingsProvider } from "@/data/site";
 
@@ -60,15 +61,15 @@ export default function App() {
           <main id="main" tabIndex={-1} className="flex-1">
             <Suspense fallback={<PageFallback />}>
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/portfolio" element={<Portfolio />} />
-                <Route path="/portfolio/:slug" element={<PortfolioDetail />} />
-                <Route path="/capabilities" element={<Capabilities />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/blog/:slug" element={<BlogDetail />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
+                <Route path="/about" element={<ErrorBoundary><About /></ErrorBoundary>} />
+                <Route path="/portfolio" element={<ErrorBoundary><Portfolio /></ErrorBoundary>} />
+                <Route path="/portfolio/:slug" element={<ErrorBoundary><PortfolioDetail /></ErrorBoundary>} />
+                <Route path="/capabilities" element={<ErrorBoundary><Capabilities /></ErrorBoundary>} />
+                <Route path="/blog" element={<ErrorBoundary><Blog /></ErrorBoundary>} />
+                <Route path="/blog/:slug" element={<ErrorBoundary><BlogDetail /></ErrorBoundary>} />
+                <Route path="/contact" element={<ErrorBoundary><Contact /></ErrorBoundary>} />
+                <Route path="*" element={<ErrorBoundary><NotFound /></ErrorBoundary>} />
               </Routes>
             </Suspense>
           </main>

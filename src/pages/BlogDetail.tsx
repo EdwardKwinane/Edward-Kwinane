@@ -11,6 +11,8 @@ import { ArchitectureDiagram } from "@/components/architecture/ArchitectureDiagr
 import { fetchBlogPost, fetchBlogPosts, type BlogPost } from "@/data/blog";
 import { PortableTextRenderer } from "@/lib/sanity/components/PortableText";
 import { formatDate } from "@/lib/utils";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 function ContentBlock({ block }: { block: NonNullable<BlogPost["content"]>[number] }) {
   switch (block.type) {
@@ -122,11 +124,16 @@ function TableOfContents({ post }: { post: BlogPost }) {
   );
 }
 
+type Phase =
+  | { kind: "loading" }
+  | { kind: "error" }
+  | { kind: "not-found" }
+  | { kind: "ready"; post: BlogPost; related: BlogPost[] };
+
 export default function BlogDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const [post, setPost] = useState<BlogPost | null>(null);
-  const [related, setRelated] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [phase, setPhase] = useState<Phase>({ kind: "loading" });
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
@@ -134,44 +141,94 @@ export default function BlogDetail() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    setPhase({ kind: "loading" });
+
     async function load() {
-      const item = slug ? await fetchBlogPost(slug) : undefined;
-      const all = await fetchBlogPosts();
+      // The post is fetched first; the list is only fetched once the detail
+      // has actually resolved, so an outage never issues a second unnecessary
+      // request.
+      const itemResult = slug
+        ? await fetchBlogPost(slug)
+        : { status: "not-found" } as const;
       if (cancelled) return;
-      setPost(item ?? null);
-      setRelated(
-        item
-          ? all
-              .filter((p) => p.slug !== item.slug)
-              .filter((p) => item.related.includes(p.slug) || p.category === item.category)
-              .slice(0, 2)
-          : []
-      );
-      setLoading(false);
+
+      if (itemResult.status !== "success") {
+        if (itemResult.status === "not-found") {
+          setPhase({ kind: "not-found" });
+        } else {
+          // Recoverable failure or malformed data: an ErrorState, never a
+          // fake NotFound. The URL stays untouched, so valid content is never
+          // deindexed because of a temporary CMS outage.
+          setPhase({ kind: "error" });
+        }
+        return;
+      }
+
+      const post = itemResult.data;
+
+      const listResult = await fetchBlogPosts();
+      if (cancelled) return;
+      const all = listResult.status === "success" ? listResult.data : [];
+
+      const related = all
+        .filter((p) => p.slug !== post.slug)
+        .filter((p) => post.related.includes(p.slug) || p.category === post.category)
+        .slice(0, 2);
+
+      setPhase({ kind: "ready", post, related });
     }
-    load();
+
+    void load();
+
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [slug, attempt]);
 
-  if (loading) {
+  const retry = () => setAttempt((a) => a + 1);
+
+  if (phase.kind === "loading") {
     return (
-      <section className="bg-surface pt-32 pb-12 lg:pt-40">
-        <Container>
-          <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65">
-            Loading…</p>
-        </Container>
-      </section>
+      <>
+        <Seo
+          title="Article"
+          description="Loading the article from the CMS."
+          path={slug ? `/blog/${slug}` : "/blog"}
+          noindex
+        />
+        <section className="bg-surface pt-32 pb-12 lg:pt-40">
+          <Container>
+            <LoadingState label="Loading article…" className="border-0 bg-transparent py-8" />
+          </Container>
+        </section>
+      </>
     );
   }
 
-  // An unknown slug is a missing page: render the NotFound view in place so
-  // the URL stays honest and the page is marked noindex, instead of silently
-  // redirecting to the listing. (A server-side HTTP 404 is not possible for
-  // CMS-addressed slugs in a static SPA without server infrastructure.)
-  if (!post) return <NotFound />;
+  if (phase.kind === "error") {
+    return (
+      <>
+        <Seo
+          title="Temporarily unavailable"
+          description="This article couldn't be loaded right now."
+          path={slug ? `/blog/${slug}` : "/blog"}
+          noindex
+        />
+        <section className="bg-surface pt-32 pb-12 lg:pt-40">
+          <Container>
+            <ErrorState onRetry={retry} />
+          </Container>
+        </section>
+      </>
+    );
+  }
+
+  // A successful response with no matching document is a genuine 404: render
+  // NotFound in place so the URL stays honest and the page keeps noindex.
+  if (phase.kind === "not-found") return <NotFound />;
+
+  const { post, related } = phase;
+  const dateLabel = formatDate(post.date);
 
   const articleSchema = {
     "@type": "Article",
@@ -229,10 +286,12 @@ export default function BlogDetail() {
             <p className="mt-4 text-lg leading-relaxed text-ink/65">{post.subtitle}</p>
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-surface-pale3 py-4 text-sm text-ink/65">
               <span className="font-medium text-navy">{post.author}</span>
-              <span className="inline-flex items-center gap-1.5">
-                <Calendar className="h-4 w-4" aria-hidden="true" />
-                {formatDate(post.date)}
-              </span>
+              {dateLabel && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar className="h-4 w-4" aria-hidden="true" />
+                  {dateLabel}
+                </span>
+              )}
               <span className="inline-flex items-center gap-1.5">
                 <Clock className="h-4 w-4" aria-hidden="true" />
                 {post.readingTime}

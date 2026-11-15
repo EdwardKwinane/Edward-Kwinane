@@ -37,7 +37,11 @@ export interface SanityProject {
   categories?: string[];
   status?: string;
   featured?: boolean;
-  technologies?: Array<{ name?: string }>;
+  /**
+   * `technologies[]->name` projects to an array of plain strings; older
+   * editors/tools may hand back `{name}` objects. Both are accepted.
+   */
+  technologies?: Array<string | { name?: string }>;
   related?: SanityProject[];
   sections?: Array<{ heading?: string; body?: string }>;
   problem?: string;

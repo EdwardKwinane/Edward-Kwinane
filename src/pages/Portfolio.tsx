@@ -5,14 +5,22 @@ import { PageHero } from "@/components/layout/PageHero";
 import { Container, Section } from "@/components/ui/Container";
 import { ProjectFilter } from "@/components/portfolio/ProjectFilter";
 import { ProjectGrid } from "@/components/portfolio/ProjectGrid";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { fetchProjects, type Project, type ProjectCategory } from "@/data/projects";
 
 type FilterValue = "ALL" | ProjectCategory;
 
+type Phase =
+  | { kind: "loading" }
+  | { kind: "error" }
+  | { kind: "ready"; projects: Project[] };
+
 export default function Portfolio() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [phase, setPhase] = useState<Phase>({ kind: "loading" });
+  const [attempt, setAttempt] = useState(0);
   const rawFilter = searchParams.get("category");
   const active: FilterValue = (["ALL", "AI", "VOICE", "RAG", "CHATBOTS", "AGENTS", "FULL-STACK"] as const).includes(
     rawFilter as FilterValue
@@ -22,15 +30,19 @@ export default function Portfolio() {
 
   useEffect(() => {
     let cancelled = false;
-    fetchProjects().then((items) => {
+    fetchProjects().then((result) => {
       if (cancelled) return;
-      setProjects(items);
-      setLoading(false);
+      if (result.status === "success") setPhase({ kind: "ready", projects: result.data });
+      else setPhase({ kind: "error" });
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [attempt]);
+
+  const retry = () => setAttempt((a) => a + 1);
+
+  const projects = phase.kind === "ready" ? phase.projects : [];
 
   const filtered = useMemo(
     () => (active === "ALL" ? projects : projects.filter((p) => p.categories.includes(active))),
@@ -48,6 +60,7 @@ export default function Portfolio() {
         title="Portfolio"
         description="AI systems, digital products and real engineering by Edward Kwinane — voice agents, RAG systems, AI chatbots and full-stack products built from architecture to production."
         path="/portfolio"
+        noindex={phase.kind !== "ready"}
       />
       <PageHero
         eyebrow="Selected Work"
@@ -62,15 +75,34 @@ export default function Portfolio() {
           <h2 className="sr-only">Projects</h2>
           <ProjectFilter active={active} onChange={onChange} />
 
-          <p className="mt-6 text-sm text-ink/65" aria-live="polite">
-            {loading
-              ? "Loading projects…"
-              : `${filtered.length} ${filtered.length === 1 ? "project" : "projects"}${
-                  active !== "ALL" ? ` in ${active}` : ""
-                }`}
-          </p>
+          {phase.kind === "loading" && <LoadingState label="Loading projects…" className="mt-6" />}
 
-          <ProjectGrid projects={filtered} className="mt-8" />
+          {phase.kind === "error" && <ErrorState onRetry={retry} className="mt-6" />}
+
+          {phase.kind === "ready" && (
+            <>
+              <p className="mt-6 text-sm text-ink/65" aria-live="polite">
+                {filtered.length} {filtered.length === 1 ? "project" : "projects"}
+                {active !== "ALL" ? ` in ${active}` : ""}
+              </p>
+
+              {filtered.length > 0 ? (
+                <ProjectGrid projects={filtered} className="mt-8" />
+              ) : (
+                <EmptyState
+                  title={
+                    projects.length === 0 ? "No projects yet" : `No projects in ${active} yet`
+                  }
+                  description={
+                    projects.length === 0
+                      ? "There are no published projects right now. Check back soon."
+                      : "Try a different category to see more of the work."
+                  }
+                  className="mt-8"
+                />
+              )}
+            </>
+          )}
         </Container>
       </Section>
     </>
