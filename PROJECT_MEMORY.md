@@ -199,6 +199,11 @@ rendered with `currentColor` so one fill covers both themes.
   *Consequence:* **Consent gating is implemented.** CookieConsent v3 by Orest Bida (`vanilla-cookieconsent` v3.3.0, MIT) is bundled and configured in `src/lib/consent/cookieConsent.ts` (opt-in; Necessary read-only / Analytics unused / Marketing; `cc_cookie` 182 days; footer "Cookie settings" reopens preferences). The Pixel initialises only on a Marketing grant (`onFirstConsent` + `onChange` — note: the library does NOT fire `onChange` for a visitor's first consent action) and `revoke()` stops tracking + clears `_fbp`/`_fbc` on withdrawal (`fr` on .facebook.com is not reachable). `hideFromBots: false` because its `navigator.webdriver` check would break Playwright. Do not add a second consent system.
   *Date:* 2026-11-14
 
+- **The consent banner is re-shown once at the start of every browser session.** `initConsent()` awaits `CookieConsent.run()`, then calls `show(true)` when `validConsent()` is true and the `sessionStorage` flag `ek-cc-banner-dismissed` is absent. `show(true)` is mandatory: for valid-consent visitors `autoShow` stays silent and no modal exists, and `show()` without the argument is a no-op. The flag is set from `onFirstConsent`, `onChange` and `onModalHide` (consent modal only) because re-accepting an unchanged banner fires neither consent callback. `cc_cookie` categories are never rewritten to force a re-ask; the 182-day persistence and the Pixel gate are unchanged.
+  *Reason:* product requirement — every new session must surface the notice, while a refresh must not.
+  *Consequence:* session semantics are per tab: a second tab opened from an existing one inherits `sessionStorage` and is not re-asked, while a new top-level session is. Do not swap this for a cookie or for resetting consent.
+  *Date:* 2026-11-15
+
 ## Constraints
 
 - `main` is the production branch. Branch, commit, push — Vercel deploys automatically. **Never

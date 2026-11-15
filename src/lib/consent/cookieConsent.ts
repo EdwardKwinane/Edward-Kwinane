@@ -19,6 +19,14 @@
  * (SameSite=Lax, Secure, 182 days), containing the accepted categories,
  * timestamps and a consent ID. `acceptedCategory()` is the single read path.
  *
+ * Session behaviour: the banner is shown once at the start of every browser
+ * session, even when a saved choice already exists. A sessionStorage flag
+ * (`ek-cc-banner-dismissed`) records that the visitor already saw and
+ * answered the banner in this session, so refreshes and in-session navigation
+ * do not repeat it. The flag is session-scoped (survives reloads, dies with
+ * the tab/session); the saved categories in `cc_cookie` are never touched by
+ * this — only the display is repeated.
+ *
  * This module is the ONLY place CookieConsent is configured. Other code
  * subscribes through `onMarketingConsentChange()` — never the other way
  * around — so there is exactly one source of truth for consent state.
@@ -38,6 +46,33 @@ type Listener = (marketingAccepted: MarketingConsent) => void;
 
 let started = false;
 const listeners = new Set<Listener>();
+
+/**
+ * sessionStorage flag: the visitor has already seen and answered the banner
+ * in this browser session. Session-scoped by design — it survives refreshes
+ * but is cleared when the session (tab) ends, so every new session is asked
+ * again without touching the categories saved in `cc_cookie`.
+ */
+export const SESSION_FLAG = "ek-cc-banner-dismissed";
+
+function markBannerDismissed(): void {
+  try {
+    sessionStorage.setItem(SESSION_FLAG, "1");
+  } catch {
+    // Storage unavailable (private mode, disabled storage): fall back to the
+    // library's default behaviour instead of throwing.
+  }
+}
+
+function bannerDismissedThisSession(): boolean {
+  try {
+    return sessionStorage.getItem(SESSION_FLAG) === "1";
+  } catch {
+    // Storage unavailable — do not force a banner the visitor cannot dismiss
+    // for the rest of the session.
+    return true;
+  }
+}
 
 function notify(marketingAccepted: MarketingConsent): void {
   listeners.forEach((listener) => {
@@ -217,7 +252,7 @@ export function initConsent(): void {
                       domain: "this website",
                       expiration: "182 days",
                       description:
-                        "Stores your cookie preferences so you are only asked once.",
+                        "Stores your cookie preferences for 182 days. The banner is shown once per browser session so you can confirm or change them.",
                     },
                   ],
                 },
@@ -274,13 +309,41 @@ export function initConsent(): void {
     // NOT fire onChange for this interaction, so it needs its own hook or a
     // fresh accept would never reach the Pixel.
     onFirstConsent: () => {
+      // The visitor has now seen and answered the banner for this session.
+      markBannerDismissed();
       notify(isMarketingAccepted());
     },
 
     // Fired only when categories actually change on a LATER interaction —
     // never on page load and never on the very first consent.
     onChange: () => {
+      markBannerDismissed();
       notify(isMarketingAccepted());
     },
-  });
+
+    // Neither callback above fires when a returning visitor re-confirms the
+    // banner without changing any category, so the session flag is also set
+    // when the consent modal closes. Only the consent modal counts — closing
+    // the preferences modal is not an answer to the banner.
+    onModalHide: ({ modalName }) => {
+      if (modalName === "consentModal") {
+        markBannerDismissed();
+      }
+    },
+  })
+    // A returning visitor already has valid consent, so `autoShow` does not
+    // display anything. Show the banner once at the start of each session
+    // instead. `show(true)` is required here: for a visitor with valid
+    // consent no modal has been generated yet, and `show()` without the
+    // argument would be a no-op. Fresh visitors are still handled by
+    // `autoShow` (and by the GPC rule), so this only adds the repeat display.
+    .then(() => {
+      if (CookieConsent.validConsent() && !bannerDismissedThisSession()) {
+        CookieConsent.show(true);
+      }
+    })
+    .catch(() => {
+      // If the library cannot start, keep the site usable. Consent stays
+      // unset, so the Pixel remains disabled either way.
+    });
 }
