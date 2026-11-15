@@ -463,3 +463,96 @@
     animation: none;
   }
 }
+/* CookieConsent (vanilla-cookieconsent) — themed with the Edward Kwinane
+   design system. The library ships its base styles (imported in main.tsx)
+   and is re-skinned purely through its --cc-* variables, so it follows the
+   site's light/dark theme automatically. Dark values target `html.dark`,
+   matching the ThemeProvider's selector. */
+:root {
+  --cc-bg: rgb(var(--c-surface-alt));
+  --cc-primary-color: rgb(var(--c-ink));
+  --cc-secondary-color: rgb(var(--c-ink) / 0.65);
+
+  --cc-btn-primary-bg: rgb(var(--c-primary));
+  --cc-btn-primary-color: #ffffff;
+  --cc-btn-primary-border-color: rgb(var(--c-primary));
+  --cc-btn-primary-hover-bg: rgb(var(--c-primary-hover));
+  --cc-btn-primary-hover-color: #ffffff;
+  --cc-btn-primary-hover-border-color: rgb(var(--c-primary-hover));
+
+  --cc-btn-secondary-bg: rgb(var(--c-surface-pale-2));
+  --cc-btn-secondary-color: rgb(var(--c-ink));
+  --cc-btn-secondary-border-color: rgb(var(--c-surface-pale-3));
+  --cc-btn-secondary-hover-bg: rgb(var(--c-surface-pale-3));
+  --cc-btn-secondary-hover-color: rgb(var(--c-ink));
+  --cc-btn-secondary-hover-border-color: rgb(var(--c-surface-pale-3));
+
+  --cc-separator-border-color: rgb(var(--c-surface-pale-3));
+  --cc-cookie-category-block-bg: rgb(var(--c-surface-pale));
+  --cc-cookie-category-block-border: rgb(var(--c-surface-pale-3));
+  --cc-cookie-category-block-hover-bg: rgb(var(--c-surface-pale-2));
+  --cc-cookie-category-block-hover-border: rgb(var(--c-surface-pale-3));
+  --cc-cookie-category-expanded-block-bg: transparent;
+  --cc-cookie-category-expanded-block-hover-bg: rgb(var(--c-surface-pale-2));
+
+  --cc-toggle-on-bg: rgb(var(--c-accent-fill));
+  --cc-toggle-on-knob-bg: #ffffff;
+  --cc-toggle-off-bg: rgb(var(--c-surface-pale-4));
+  --cc-toggle-off-knob-bg: #ffffff;
+  --cc-toggle-readonly-bg: rgb(var(--c-surface-pale-4));
+  --cc-toggle-readonly-knob-bg: #ffffff;
+  --cc-toggle-readonly-knob-icon-color: rgb(var(--c-surface-pale-4));
+  --cc-toggle-enabled-icon-color: #ffffff;
+  --cc-toggle-disabled-icon-color: #ffffff;
+
+  --cc-overlay-bg: rgb(var(--c-navy-deep) / 0.6);
+  --cc-link-color: rgb(var(--c-accent-dark));
+
+  --cc-font-family: var(--font-body);
+  --cc-modal-border-radius: var(--radius-lg);
+  --cc-btn-border-radius: var(--radius-sm);
+  --cc-modal-margin: 1rem;
+  --cc-footer-bg: rgb(var(--c-surface-pale));
+  --cc-footer-color: rgb(var(--c-ink) / 0.65);
+  --cc-footer-border-color: rgb(var(--c-surface-pale-3));
+}
+
+html.dark {
+  --cc-bg: rgb(var(--c-surface-alt));
+  --cc-primary-color: rgb(245 247 255);
+  --cc-secondary-color: rgb(var(--c-ink) / 0.75);
+
+  --cc-btn-primary-bg: rgb(var(--c-primary));
+  --cc-btn-primary-color: #ffffff;
+  --cc-btn-primary-border-color: rgb(var(--c-surface-pale-4));
+  --cc-btn-primary-hover-bg: rgb(var(--c-primary-hover));
+  --cc-btn-primary-hover-color: #ffffff;
+  --cc-btn-primary-hover-border-color: rgb(var(--c-surface-pale-4));
+
+  --cc-btn-secondary-bg: rgb(var(--c-surface-pale-2));
+  --cc-btn-secondary-color: rgb(245 247 255);
+  --cc-btn-secondary-border-color: rgb(var(--c-surface-pale-3));
+  --cc-btn-secondary-hover-bg: rgb(var(--c-surface-pale-3));
+  --cc-btn-secondary-hover-color: #ffffff;
+  --cc-btn-secondary-hover-border-color: rgb(var(--c-surface-pale-3));
+
+  --cc-separator-border-color: rgb(var(--c-surface-pale-3));
+  --cc-cookie-category-block-bg: rgb(var(--c-surface-pale));
+  --cc-cookie-category-block-border: rgb(var(--c-surface-pale-3));
+  --cc-cookie-category-block-hover-bg: rgb(var(--c-surface-pale-2));
+  --cc-cookie-category-block-hover-border: rgb(var(--c-surface-pale-4));
+
+  --cc-toggle-on-bg: rgb(var(--c-accent-fill));
+  --cc-toggle-on-knob-bg: #ffffff;
+  --cc-toggle-off-bg: rgb(var(--c-surface-pale-4));
+  --cc-toggle-off-knob-bg: #ffffff;
+  --cc-toggle-readonly-bg: rgb(var(--c-surface-pale-3));
+  --cc-toggle-readonly-knob-bg: #ffffff;
+
+  --cc-overlay-bg: rgb(5 6 16 / 0.72);
+  --cc-link-color: rgb(var(--c-accent-dark));
+
+  --cc-footer-bg: rgb(var(--c-surface-pale));
+  --cc-footer-color: rgb(var(--c-ink) / 0.75);
+  --cc-footer-border-color: rgb(var(--c-surface-pale-3));
+}

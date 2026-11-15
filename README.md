@@ -131,11 +131,91 @@ Copy `.env.example` to `.env` and fill in your Sanity project values:
 VITE_SANITY_PROJECT_ID=your-project-id
 VITE_SANITY_DATASET=production
 # VITE_SANITY_API_VERSION=2024-06-04   # optional pin
+VITE_META_PIXEL_ID=your-meta-pixel-id
 ```
 
 Never commit `.env`. The Studio reads its own config from `sanity/.env`
 (`SANITY_STUDIO_PROJECT_ID` / `SANITY_STUDIO_DATASET`), which is generated from the root
 `.env` by `scripts/prepare-env.mjs` every time you run a `studio` script.
+
+### Meta Pixel
+
+`VITE_META_PIXEL_ID` enables the Meta Pixel (base code in
+`src/lib/analytics/metaPixel.ts`, mounted via `src/components/analytics/MetaPixel.tsx`).
+It is a public, non-secret value (it ships in the client bundle), and it is the single
+source of truth — the ID is never hardcoded, so switching Pixel IDs or attaching a future
+custom domain needs no code change.
+
+**Required in Vercel** for Production and any Preview environments where you want
+tracking (Project Settings → Environment Variables). Without it, the Pixel silently
+does not load and the site works normally. The variable is read at build time by Vite
+and must be present on every build that should include the Pixel.
+
+The Pixel is gated behind the Marketing cookie category (see below): it is neither
+initialised nor loaded until a visitor grants Marketing consent, and tracking stops
+when consent is withdrawn.
+
+## Cookie consent
+
+Consent management uses **CookieConsent v3 by Orest Bida** — the official
+`vanilla-cookieconsent` npm package (MIT licence), bundled into this Vite build and
+served by the existing Vercel project. No CMP subscription, no external consent
+hosting, no backend, no database; the configuration lives in
+`src/lib/consent/cookieConsent.ts`.
+
+Categories (opt-in mode):
+
+| Category | Default | Notes |
+| --- | --- | --- |
+| Necessary | always on (read-only) | Only `cc_cookie` itself. |
+| Analytics | off | Declared for the future; nothing is collected today. |
+| Marketing | off | The Meta Pixel lives here. |
+
+The consent modal offers **Accept all**, **Reject optional** and **Customize**; the
+preferences modal offers **Save preferences** (plus Accept all / Reject optional).
+Consent can be changed or withdrawn at any time via the **Cookie settings** control in
+the site footer, which reopens the preferences modal.
+
+The banner is shown **once at the start of every browser session**, including for a
+returning visitor with a saved choice — that visitor sees the banner pre-filled with
+their existing categories and can confirm or change them. A `sessionStorage` flag
+(`ek-cc-banner-dismissed`) records that the banner was answered in this session, so a
+refresh and in-session navigation do not repeat it; closing the tab ends the session
+and the banner returns next time. Re-showing the banner never rewrites or resets the
+saved categories.
+
+How consent is stored and changed:
+
+- One first-party cookie, `cc_cookie` (`SameSite=Lax`, `Secure`, 182 days), holding the
+  accepted categories, timestamps and a consent ID.
+- `isMarketingAccepted()` reads `acceptedCategory('marketing')`; the Meta Pixel mounts
+  by reading that state and subscribes to consent transitions (`onFirstConsent` +
+  `onChange`), so a grant initialises the Pixel and counts one PageView, and a
+  withdrawal calls `fbq('consent','revoke')`, stops all wrapper tracking and erases the
+  first-party `_fbp`/`_fbc` cookies. The third-party `fr` cookie on `.facebook.com`
+  cannot be cleared by this site; Meta's consent-revoked state covers it server-side.
+- Re-displaying the banner uses `validConsent()` plus `show(true)`: returning visitors
+  have valid consent, so `autoShow` stays silent and no modal exists until it is
+  requested explicitly. Accepting an unchanged banner fires neither `onFirstConsent`
+  nor `onChange`, so the session flag is also set from `onModalHide` for the consent
+  modal only.
+- The banner honours the browser's Global Privacy Control signal (`respectGpc`).
+- The library's bot check is disabled (`hideFromBots: false`) because it keys off
+  `navigator.webdriver`, which would hide the banner from every automated test; the
+  site has nothing to hide from crawlers.
+- Bump `revision` in `cookieConsent.ts` when the wording changes so returning visitors
+  are re-asked.
+
+Testing locally: `npm run dev` (or `npm run build && npm run preview`) and clear
+site cookies to see the first-visit flow; clear only `sessionStorage` to simulate a new
+session with saved preferences. Accept / reject / customize flows, the footer reopen
+control, reload persistence, the per-session banner and SPA navigation are covered by
+the Playwright harness used during development (`/tmp/ek-pw` in the author's
+environment — not part of the repo).
+
+Vercel requirements: nothing beyond the existing project. `VITE_META_PIXEL_ID` must
+remain configured for Production, Preview and Development (it already is); the consent
+UI needs no env vars. Manual steps: none.
 
 ## Content management (Sanity CMS)
 
