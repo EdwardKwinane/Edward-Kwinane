@@ -1,6 +1,7 @@
 import type { Capability } from "./technologies";
 
 import { getSanityCapabilities } from "@/lib/sanity/queries";
+import type { ContentResult } from "@/lib/sanity/content";
 
 export interface CapabilityPreviewItem {
   id: string;
@@ -133,20 +134,26 @@ export const capabilitiesPreview: CapabilityPreviewItem[] = [
 /* ------------------------------------------------------------------ */
 
 /** Full capabilities for the capabilities page, from the CMS. */
-export async function fetchCapabilities(): Promise<Capability[]> {
+export async function fetchCapabilities(): Promise<ContentResult<Capability[]>> {
   return getSanityCapabilities();
 }
 
 /** Compact capability cards for the home page. Uses `featured`, else the first four. */
-export async function fetchCapabilityPreview(): Promise<CapabilityPreviewItem[]> {
-  const items = await getSanityCapabilities();
+export async function fetchCapabilityPreview(): Promise<ContentResult<CapabilityPreviewItem[]>> {
+  const result = await getSanityCapabilities();
+  if (result.status !== "success") return result;
+
+  const items = result.data;
   const featured = items.filter((cap) => cap.featured);
   const shown = (featured.length ? featured : items).slice(0, 4);
 
-  return shown.map((cap) => ({
-    id: cap.id,
-    title: cap.name || cap.headline || "Capability",
-    description: cap.shortDescription || cap.description,
-    labels: cap.previewLabels?.length ? cap.previewLabels : cap.labels,
-  }));
+  return {
+    status: "success",
+    data: shown.map((cap) => ({
+      id: cap.id,
+      title: cap.name || cap.headline || "Capability",
+      description: cap.shortDescription || cap.description,
+      labels: cap.previewLabels?.length ? cap.previewLabels : cap.labels,
+    })),
+  };
 }

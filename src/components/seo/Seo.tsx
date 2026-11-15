@@ -8,6 +8,12 @@ interface SeoProps {
   type?: "website" | "article";
   /** JSON-LD graph nodes for this route. Replaces the previous route's data. */
   structuredData?: Record<string, unknown> | Record<string, unknown>[];
+  /**
+   * Opt this page out of search indexing. Used for loading, error and
+   * not-found states so a transient CMS outage cannot deindex a real page
+   * and a failure page cannot be mistaken for valid content.
+   */
+  noindex?: boolean;
 }
 
 const OG_IMAGE = "/og-image.png";
@@ -63,6 +69,7 @@ export default function Seo({
   path = "/",
   type = "website",
   structuredData,
+  noindex = false,
 }: SeoProps) {
   const settings = useSiteSettings();
   const metaDescription = description ?? settings.siteDescription;
@@ -73,6 +80,44 @@ export default function Seo({
     () => (structuredData ? JSON.stringify(structuredData) : null),
     [structuredData]
   );
+
+  // robots management. Seo is the single writer of <meta name="robots"> so
+  // noindex pages restore exactly what they found (or remove what they
+  // created) on unmount, and indexable routes are never left with a stale
+  // noindex from a previous route.
+  useEffect(() => {
+    const MANAGED = "data-seo-managed";
+    const PREV = "data-seo-prev-robots";
+    const el = document.head.querySelector<HTMLMetaElement>('meta[name="robots"]');
+
+    if (!noindex) {
+      if (el && el.getAttribute(MANAGED) === "true") el.remove();
+      return;
+    }
+
+    let tag = el;
+    if (!tag) {
+      tag = document.createElement("meta");
+      tag.setAttribute("name", "robots");
+      tag.setAttribute(MANAGED, "true");
+      document.head.appendChild(tag);
+    }
+    const previous = tag.getAttribute("content");
+    if (previous && !tag.hasAttribute(PREV)) tag.setAttribute(PREV, previous);
+    tag.setAttribute("content", "noindex");
+
+    return () => {
+      const restore = tag.getAttribute(PREV);
+      if (restore) {
+        tag.setAttribute("content", restore);
+        tag.removeAttribute(PREV);
+      } else if (tag.getAttribute(MANAGED) === "true") {
+        tag.remove();
+      } else {
+        tag.setAttribute("content", "index");
+      }
+    };
+  }, [noindex]);
 
   useEffect(() => {
     const fullTitle =

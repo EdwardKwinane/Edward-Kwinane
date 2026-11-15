@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Mic, Database, MessageSquare, Layers } from "lucide-react";
 import { Container, Section } from "@/components/ui/Container";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
   fetchCapabilityPreview,
   type CapabilityPreviewItem,
@@ -10,20 +13,31 @@ import { revealElements } from "@/lib/gsap";
 
 const icons = [Mic, Database, MessageSquare, Layers];
 
+type Phase =
+  | { kind: "loading" }
+  | { kind: "error" }
+  | { kind: "ready"; capabilities: CapabilityPreviewItem[] };
+
 export function CapabilityPreview() {
   const scopeRef = useRef<HTMLElement>(null);
-  const [capabilities, setCapabilities] = useState<CapabilityPreviewItem[]>([]);
+  const [phase, setPhase] = useState<Phase>({ kind: "loading" });
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    fetchCapabilityPreview().then((items) => {
+    fetchCapabilityPreview().then((result) => {
       if (cancelled) return;
-      setCapabilities(items);
+      if (result.status === "success") setPhase({ kind: "ready", capabilities: result.data });
+      else setPhase({ kind: "error" });
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [attempt]);
+
+  const retry = () => setAttempt((a) => a + 1);
+
+  const capabilities = phase.kind === "ready" ? phase.capabilities : [];
 
   useEffect(() => {
     if (capabilities.length) {
@@ -41,38 +55,57 @@ export function CapabilityPreview() {
           </h2>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {capabilities.map((cap, i) => {
-            const Icon = icons[i % icons.length];
-            return (
-              <Link
-                key={cap.id}
-                to="/capabilities"
-                className="cap-card group flex flex-col rounded-2xl border border-surface-pale3 bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:bg-surface-pale hover:shadow-[0_16px_40px_rgba(13,13,91,0.1)] focus-ring"
-              >
-                <span className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-white transition-colors duration-300 group-hover:bg-accent-fill">
-                  <Icon className="h-6 w-6" strokeWidth={1.5} />
-                </span>
-                <h3 className="mt-5 font-heading text-lg font-semibold text-navy">{cap.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink/65">{cap.description}</p>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {cap.labels.map((label) => (
-                    <span
-                      key={label}
-                      className="rounded-full border border-surface-pale4 bg-surface-alt px-2.5 py-0.5 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65"
-                    >
-                      {label}
-                    </span>
-                  ))}
-                </div>
-                <span className="mt-auto inline-flex items-center gap-1.5 pt-5 font-heading text-sm font-semibold text-navy">
-                  Explore capability
-                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </span>
-              </Link>
-            );
-          })}
-        </div>
+        {phase.kind === "loading" && (
+          <LoadingState
+            label="Loading capabilities…"
+            className="mt-10 border-0 bg-transparent py-8"
+          />
+        )}
+
+        {phase.kind === "error" && <ErrorState onRetry={retry} className="mt-10" />}
+
+        {phase.kind === "ready" && capabilities.length === 0 && (
+          <EmptyState
+            title="No capabilities yet"
+            description="Capability content is being prepared. Check back soon."
+            className="mt-10"
+          />
+        )}
+
+        {phase.kind === "ready" && capabilities.length > 0 && (
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {capabilities.map((cap, i) => {
+              const Icon = icons[i % icons.length];
+              return (
+                <Link
+                  key={cap.id}
+                  to="/capabilities"
+                  className="cap-card group flex flex-col rounded-2xl border border-surface-pale3 bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:bg-surface-pale hover:shadow-[0_16px_40px_rgba(13,13,91,0.1)] focus-ring"
+                >
+                  <span className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-white transition-colors duration-300 group-hover:bg-accent-fill">
+                    <Icon className="h-6 w-6" strokeWidth={1.5} />
+                  </span>
+                  <h3 className="mt-5 font-heading text-lg font-semibold text-navy">{cap.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink/65">{cap.description}</p>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {cap.labels.map((label) => (
+                      <span
+                        key={label}
+                        className="rounded-full border border-surface-pale4 bg-surface-alt px-2.5 py-0.5 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                  <span className="mt-auto inline-flex items-center gap-1.5 pt-5 font-heading text-sm font-semibold text-navy">
+                    Explore capability
+                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </Container>
     </Section>
   );

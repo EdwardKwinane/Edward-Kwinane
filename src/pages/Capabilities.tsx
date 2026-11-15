@@ -6,24 +6,38 @@ import { PageHero } from "@/components/layout/PageHero";
 import { Container, Section } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { CapabilityCard } from "@/components/capabilities/CapabilityCard";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { fetchCapabilities } from "@/data/capabilities";
 import type { Capability } from "@/data/technologies";
 import { revealElements } from "@/lib/gsap";
 
+type Phase =
+  | { kind: "loading" }
+  | { kind: "error" }
+  | { kind: "ready"; capabilities: Capability[] };
+
 export default function Capabilities() {
   const scopeRef = useRef<HTMLDivElement>(null);
-  const [capabilities, setCapabilities] = useState<Capability[]>([]);
+  const [phase, setPhase] = useState<Phase>({ kind: "loading" });
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    fetchCapabilities().then((items) => {
+    fetchCapabilities().then((result) => {
       if (cancelled) return;
-      setCapabilities(items);
+      if (result.status === "success") setPhase({ kind: "ready", capabilities: result.data });
+      else setPhase({ kind: "error" });
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [attempt]);
+
+  const retry = () => setAttempt((a) => a + 1);
+
+  const capabilities = phase.kind === "ready" ? phase.capabilities : [];
 
   useEffect(() => {
     if (capabilities.length) {
@@ -37,6 +51,7 @@ export default function Capabilities() {
         title="Capabilities"
         description="What Edward Kwinane builds: AI voice agents, RAG systems, AI chatbots, AI agents and full-stack products designed around real-world problems."
         path="/capabilities"
+        noindex={phase.kind !== "ready"}
       />
       <PageHero
         eyebrow="Capabilities"
@@ -47,11 +62,25 @@ export default function Capabilities() {
       <div ref={scopeRef}>
         <Section className="pt-0 lg:pt-0">
           <Container className="space-y-14 sm:space-y-20 lg:space-y-32">
-            {capabilities.map((capability, i) => (
-              <div key={capability.id} className="capability-block">
-                <CapabilityCard capability={capability} flip={i % 2 === 1} />
-              </div>
-            ))}
+            {phase.kind === "loading" && (
+              <LoadingState label="Loading capabilities…" className="border-0 bg-transparent py-8" />
+            )}
+
+            {phase.kind === "error" && <ErrorState onRetry={retry} />}
+
+            {phase.kind === "ready" && capabilities.length === 0 && (
+              <EmptyState
+                title="Capabilities coming soon"
+                description="There are no published capabilities right now. Check back soon."
+              />
+            )}
+
+            {phase.kind === "ready" &&
+              capabilities.map((capability, i) => (
+                <div key={capability.id} className="capability-block">
+                  <CapabilityCard capability={capability} flip={i % 2 === 1} />
+                </div>
+              ))}
           </Container>
         </Section>
 

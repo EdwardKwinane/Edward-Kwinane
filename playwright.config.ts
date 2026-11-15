@@ -21,6 +21,10 @@ const BASE_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: "./tests",
+  // The Sanity reliability suite (sanity-reliability.spec.ts) runs under its
+  // own config (playwright.sanity.config.ts) against a build with a fake
+  // project ID and mocked CMS responses; it is ignored here.
+  testIgnore: "**/sanity-reliability.spec.ts",
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,

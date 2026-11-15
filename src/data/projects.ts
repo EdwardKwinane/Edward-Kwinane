@@ -3,6 +3,7 @@ import {
   getSanityFeaturedProjects,
   getSanityProjectBySlug,
 } from "@/lib/sanity/queries";
+import type { ContentResult } from "@/lib/sanity/content";
 
 export type ProjectCategory = "AI" | "VOICE" | "RAG" | "CHATBOTS" | "AGENTS" | "FULL-STACK";
 
@@ -335,22 +336,21 @@ export function getProject(slug: string) {
 /*                                                                     */
 /* The local `projects` array above is the seed source for              */
 /* `npm run seed`, not a runtime fallback. The CMS is the only source   */
-/* of truth, so a failed fetch surfaces as an empty list instead of     */
-/* silently serving stale content.                                      */
+/* of truth, so a failed fetch surfaces as an explicit `error` status   */
+/* instead of an empty list pretending to be content.                   */
 /* ------------------------------------------------------------------ */
 
-/** All projects from the CMS. */
-export async function fetchProjects(): Promise<Project[]> {
+/** All projects from the CMS. Empty data and failures are distinguishable. */
+export async function fetchProjects(): Promise<ContentResult<Project[]>> {
   return getSanityProjects();
 }
 
 /** Featured projects for the home page. Uses `featured`, else the first four. */
-export async function fetchFeaturedProjects(): Promise<Project[]> {
+export async function fetchFeaturedProjects(): Promise<ContentResult<Project[]>> {
   return getSanityFeaturedProjects();
 }
 
-/** Single project by slug. */
-export async function fetchProject(slug: string): Promise<Project | undefined> {
-  const item = await getSanityProjectBySlug(slug);
-  return item ?? undefined;
+/** Single project by slug. `not-found` means a legitimately missing document. */
+export async function fetchProject(slug: string): Promise<ContentResult<Project>> {
+  return getSanityProjectBySlug(slug);
 }

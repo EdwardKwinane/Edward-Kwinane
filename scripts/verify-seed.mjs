@@ -31,6 +31,23 @@ const { documents } = await buildDocuments({
 const byId = new Map(documents.map((d) => [d._id, d]));
 const ofType = (t) => documents.filter((d) => d._type === t);
 const deref = (r) => byId.get(r?._ref);
+/**
+ * The data layer now returns ContentResult<T> for every read. Unwrap it for
+ * the checks: success -> data, a legitimately missing document -> null, and a
+ * failure -> undefined (which fails the diff below, loudly, rather than
+ * silently comparing undefined to undefined).
+ */
+const unwrap = async (promise) => {
+  const result = await promise;
+  if (result && typeof result === "object" && "status" in result) {
+    return result.status === "success"
+      ? result.data
+      : result.status === "not-found"
+        ? null
+        : undefined;
+  }
+  return result;
+};
 
 const projectSummary = (p) => ({
   _id: p._id,
@@ -186,6 +203,7 @@ await esbuild.build({
     "import.meta.env.VITE_SANITY_PROJECT_ID": JSON.stringify(effectiveProjectId),
     "import.meta.env.VITE_SANITY_DATASET": JSON.stringify(dataset),
     "import.meta.env.VITE_SANITY_API_VERSION": JSON.stringify(apiVersion),
+    "import.meta.env.VITE_SANITY_TIMEOUT_MS": JSON.stringify("9000"),
   },
 });
 
@@ -246,13 +264,13 @@ check(`every list item has a _key (${documents.length} documents)`, unkeyed, [])
 
 console.log("\nProject detail — sections round-trip:");
 for (const local of m.projects) {
-  const cms = await m.getSanityProjectBySlug(local.slug);
+  const cms = await unwrap(m.getSanityProjectBySlug(local.slug));
   check(local.slug, cms?.sections, local.sections);
 }
 
 console.log("\nProject detail — summary fields:");
 for (const local of m.projects) {
-  const cms = await m.getSanityProjectBySlug(local.slug);
+  const cms = await unwrap(m.getSanityProjectBySlug(local.slug));
   check(
     local.slug,
     {
@@ -278,7 +296,7 @@ for (const local of m.projects) {
 
 console.log("\nPost detail — summary fields:");
 for (const local of m.blogPosts) {
-  const cms = await m.getSanityPostBySlug(local.slug);
+  const cms = await unwrap(m.getSanityPostBySlug(local.slug));
   check(
     local.slug,
     {
@@ -308,7 +326,7 @@ for (const local of m.blogPosts) {
 
 console.log("\nPost detail — body block counts:");
 for (const local of m.blogPosts) {
-  const cms = await m.getSanityPostBySlug(local.slug);
+  const cms = await unwrap(m.getSanityPostBySlug(local.slug));
   const localBlocks = (local.content ?? []).reduce(
     (n, b) => n + (b.type === "ul" || b.type === "ol" ? (b.items?.length ?? 0) : 1),
     0
@@ -317,7 +335,7 @@ for (const local of m.blogPosts) {
 }
 
 console.log("\nHome page capability cards (id is an internal key, not rendered):");
-const previewCms = await m.fetchCapabilityPreview();
+const previewCms = await unwrap(m.fetchCapabilityPreview());
 const { id: _ignored, ...previewRest } = m.capabilitiesPreview[0];
 check(
   "fetchCapabilityPreview",
@@ -329,7 +347,7 @@ console.log("\nSite settings:");
 check("fetchSiteSettings", await m.fetchSiteSettings(), m.siteDefaults);
 
 console.log("\nCapabilities page:");
-const capsCms = await m.fetchCapabilities();
+const capsCms = await unwrap(m.fetchCapabilities());
 check(
   "fetchCapabilities",
   capsCms.map((c) => ({

@@ -53,12 +53,29 @@ function nonEmpty(value: string | undefined): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
-/** Merges the CMS document over the defaults. */
+/**
+ * Merges the CMS document over the defaults.
+ *
+ * The siteSettings singleton is identity/copy chrome, not content: when the
+ * read fails for any reason (unconfigured, outage, malformed, legitimately
+ * missing document) the site must still render, so it falls back to the
+ * built-in defaults and says why in the console. The failure is never
+ * reported as "empty site".
+ */
 export async function fetchSiteSettings(): Promise<SiteSettings> {
-  const doc = await getSanitySiteSettings();
+  const result = await getSanitySiteSettings();
+  if (result.status !== "success") {
+    if (result.status !== "not-found") {
+      console.warn(
+        `[sanity] site settings unavailable (${result.status}); using built-in defaults`
+      );
+    }
+    return siteDefaults;
+  }
+  const doc = result.data;
   if (!doc) return siteDefaults;
 
-  const tags = doc.heroTags?.filter((tag) => tag.trim().length > 0) ?? [];
+  const tags = doc.heroTags?.filter((tag) => typeof tag === "string" && tag.trim().length > 0) ?? [];
 
   return {
     siteTitle: nonEmpty(doc.siteTitle) ?? siteDefaults.siteTitle,

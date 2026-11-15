@@ -8,50 +8,106 @@ import { Button } from "@/components/ui/Button";
 import { ProjectCard } from "@/components/portfolio/ProjectCard";
 import { fetchProject, fetchProjects, type Project } from "@/data/projects";
 import NotFound from "@/pages/NotFound";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
+
+type Phase =
+  | { kind: "loading" }
+  | { kind: "error" }
+  | { kind: "not-found" }
+  | { kind: "ready"; project: Project; related: Project[] };
 
 export default function PortfolioDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const [project, setProject] = useState<Project | null>(null);
-  const [related, setRelated] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [phase, setPhase] = useState<Phase>({ kind: "loading" });
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    setPhase({ kind: "loading" });
+
     async function load() {
-      const item = slug ? await fetchProject(slug) : undefined;
-      const all = await fetchProjects();
+      // Fetch the detail first; only read the full list once the detail has
+      // resolved, so an outage never issues a second unnecessary request.
+      const itemResult = slug
+        ? await fetchProject(slug)
+        : { status: "not-found" } as const;
       if (cancelled) return;
-      setProject(item ?? null);
-      setRelated(
-        item
-          ? all.filter((p) => item.related.includes(p.slug) && p.slug !== item.slug).slice(0, 2)
-          : []
-      );
-      setLoading(false);
+
+      if (itemResult.status !== "success") {
+        if (itemResult.status === "not-found") {
+          setPhase({ kind: "not-found" });
+        } else {
+          // Recoverable failure or malformed data: an ErrorState, never a
+          // fake NotFound. The URL stays untouched, so valid content is never
+          // deindexed because of a temporary CMS outage.
+          setPhase({ kind: "error" });
+        }
+        return;
+      }
+
+      const project = itemResult.data;
+
+      const listResult = await fetchProjects();
+      if (cancelled) return;
+      const all = listResult.status === "success" ? listResult.data : [];
+      const related = all
+        .filter((p) => project.related.includes(p.slug) && p.slug !== project.slug)
+        .slice(0, 2);
+
+      setPhase({ kind: "ready", project, related });
     }
-    load();
+
+    void load();
+
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [slug, attempt]);
 
-  if (loading) {
+  const retry = () => setAttempt((a) => a + 1);
+
+  if (phase.kind === "loading") {
     return (
-      <section className="bg-surface pt-32 pb-14 lg:pt-40 lg:pb-20">
-        <Container>
-          <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/65">
-            Loading…</p>
-        </Container>
-      </section>
+      <>
+        <Seo
+          title="Case study"
+          description="Loading the case study from the CMS."
+          path={slug ? `/portfolio/${slug}` : "/portfolio"}
+          noindex
+        />
+        <section className="bg-surface pt-32 pb-14 lg:pt-40 lg:pb-20">
+          <Container>
+            <LoadingState label="Loading case study…" className="border-0 bg-transparent py-8" />
+          </Container>
+        </section>
+      </>
     );
   }
 
-  // An unknown slug is a missing page: render the NotFound view in place so
-  // the URL stays honest and the page is marked noindex, instead of silently
-  // redirecting to the listing. (A server-side HTTP 404 is not possible for
-  // CMS-addressed slugs in a static SPA without server infrastructure.)
-  if (!project) return <NotFound />;
+  if (phase.kind === "error") {
+    return (
+      <>
+        <Seo
+          title="Temporarily unavailable"
+          description="This case study couldn't be loaded right now."
+          path={slug ? `/portfolio/${slug}` : "/portfolio"}
+          noindex
+        />
+        <section className="bg-surface pt-32 pb-14 lg:pt-40 lg:pb-20">
+          <Container>
+            <ErrorState onRetry={retry} />
+          </Container>
+        </section>
+      </>
+    );
+  }
+
+  // A successful response with no matching document is a genuine 404: render
+  // NotFound in place so the URL stays honest and the page keeps noindex.
+  if (phase.kind === "not-found") return <NotFound />;
+
+  const { project, related } = phase;
 
   const relatedProjects = project.related
     .map((s) => related.find((p) => p.slug === s))

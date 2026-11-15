@@ -57,6 +57,12 @@ jobs:
       - name: End-to-end tests
         run: npm run test:e2e
 
+      # Reliability suite: the app is built with a fake Sanity project ID and
+      # every CMS request is mocked locally, so it exercises outage, timeout,
+      # retry, empty and malformed-data behaviour without touching a real CMS.
+      - name: Sanity reliability e2e tests
+        run: npm run test:e2e:sanity
+
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4

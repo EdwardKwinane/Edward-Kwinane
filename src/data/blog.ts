@@ -297,14 +297,14 @@ import {
   getSanityPosts,
   getSanityPostBySlug,
 } from "@/lib/sanity/queries";
+import type { ContentResult } from "@/lib/sanity/content";
 
-/** All published posts from the CMS. */
-export async function fetchBlogPosts(): Promise<BlogPost[]> {
+/** All published posts from the CMS. Empty data and failures are distinguishable. */
+export async function fetchBlogPosts(): Promise<ContentResult<BlogPost[]>> {
   return getSanityPosts();
 }
 
-/** Single published post by slug. */
-export async function fetchBlogPost(slug: string): Promise<BlogPost | undefined> {
-  const item = await getSanityPostBySlug(slug);
-  return item ?? undefined;
+/** Single published post by slug. `not-found` means a legitimately missing document. */
+export async function fetchBlogPost(slug: string): Promise<ContentResult<BlogPost>> {
+  return getSanityPostBySlug(slug);
 }
