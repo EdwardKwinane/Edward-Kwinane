@@ -1,23 +1,31 @@
 import * as esbuild from "esbuild";
 import { resolve } from "node:path";
-import { readFileSync } from "node:fs";
 import { buildDocuments } from "./seed-documents.mjs";
+import { loadSanityConfig, repoRoot } from "./load-env.mjs";
 
-const root = resolve(import.meta.dirname, "..");
-const env = Object.fromEntries(
-  readFileSync(resolve(root, ".env"), "utf-8")
-    .split("\n")
-    .filter((l) => l.trim() && !l.trim().startsWith("#"))
-    .map((l) => {
-      const i = l.indexOf("=");
-      return [l.slice(0, i).trim(), l.slice(i + 1).trim().replace(/^["']|["']$/g, "")];
-    })
-);
+/**
+ * Offline by construction: the documents are built locally by
+ * scripts/seed-documents.mjs and served through a stub client, so no Sanity
+ * credentials or network access are involved. That is why it runs in CI with
+ * no configuration — the project ID is only forwarded into the bundle so
+ * `client.ts` sees the same value the app would.
+ */
+const root = repoRoot;
+const { projectId, dataset, apiVersion } = loadSanityConfig();
+
+/**
+ * The local data modules construct a Sanity client at import time, and the
+ * real client rejects an empty project ID. The value is inert here — this
+ * script swaps in a stub client before anything touches the network — so a
+ * placeholder keeps `verify:seed` runnable with no configuration at all,
+ * which is exactly what CI looks like.
+ */
+const effectiveProjectId = projectId || "ci-placeholder";
 
 const { documents } = await buildDocuments({
-  projectId: env.VITE_SANITY_PROJECT_ID,
-  dataset: env.VITE_SANITY_DATASET,
-  apiVersion: env.VITE_SANITY_API_VERSION,
+  projectId: effectiveProjectId,
+  dataset,
+  apiVersion,
 });
 
 const byId = new Map(documents.map((d) => [d._id, d]));
@@ -175,9 +183,9 @@ await esbuild.build({
     },
   ],
   define: {
-    "import.meta.env.VITE_SANITY_PROJECT_ID": JSON.stringify(env.VITE_SANITY_PROJECT_ID),
-    "import.meta.env.VITE_SANITY_DATASET": JSON.stringify(env.VITE_SANITY_DATASET),
-    "import.meta.env.VITE_SANITY_API_VERSION": JSON.stringify(env.VITE_SANITY_API_VERSION),
+    "import.meta.env.VITE_SANITY_PROJECT_ID": JSON.stringify(effectiveProjectId),
+    "import.meta.env.VITE_SANITY_DATASET": JSON.stringify(dataset),
+    "import.meta.env.VITE_SANITY_API_VERSION": JSON.stringify(apiVersion),
   },
 });
 

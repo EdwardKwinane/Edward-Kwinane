@@ -13,6 +13,8 @@
     "verify:seed": "node scripts/verify-seed.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
     "verify:sitemap": "node scripts/generate-sitemap.mjs --check",
+    "test:e2e": "playwright test",
+    "test:e2e:report": "playwright show-report",
     "repair:keys": "node scripts/repair-keys.mjs",
     "studio": "node scripts/prepare-env.mjs && cd sanity && sanity dev",
     "studio:build": "node scripts/prepare-env.mjs && cd sanity && sanity build",
@@ -49,6 +51,7 @@
     "esbuild": true
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@types/node": "^22.10.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
