@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Seo from "@/components/seo/Seo";
 import { Container, Section } from "@/components/ui/Container";
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ProjectCard } from "@/components/portfolio/ProjectCard";
 import { fetchProject, fetchProjects, type Project } from "@/data/projects";
+import NotFound from "@/pages/NotFound";
 
 export default function PortfolioDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -46,7 +47,11 @@ export default function PortfolioDetail() {
     );
   }
 
-  if (!project) return <Navigate to="/portfolio" replace />;
+  // An unknown slug is a missing page: render the NotFound view in place so
+  // the URL stays honest and the page is marked noindex, instead of silently
+  // redirecting to the listing. (A server-side HTTP 404 is not possible for
+  // CMS-addressed slugs in a static SPA without server infrastructure.)
+  if (!project) return <NotFound />;
 
   const relatedProjects = project.related
     .map((s) => related.find((p) => p.slug === s))

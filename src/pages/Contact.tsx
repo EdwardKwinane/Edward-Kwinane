@@ -18,7 +18,7 @@ const contactChannels = [
   {
     icon: Mail,
     title: "Prefer email?",
-    description: "Connect the form below to a real endpoint, or reach out through the channels in the footer.",
+    description: "There is no public email address yet — use the form to get in touch.",
   },
 ];
 

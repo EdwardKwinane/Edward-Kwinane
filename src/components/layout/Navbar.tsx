@@ -230,7 +230,7 @@ export function Navbar() {
             <Link
               ref={brandRef}
               to="/"
-              className="group flex min-w-0 shrink flex-col overflow-hidden leading-none focus-ring rounded-sm"
+              className="group flex min-h-[24px] min-w-0 shrink flex-col justify-center overflow-hidden leading-none focus-ring rounded-sm"
               aria-label={`${settings.ownerName} home`}
             >
               <span className="whitespace-nowrap font-heading text-[15px] font-bold uppercase tracking-wide text-navy transition-colors group-hover:text-accent-dark">

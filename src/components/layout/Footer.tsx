@@ -35,7 +35,7 @@ export function Footer() {
             {settings.email ? (
               <a
                 href={`mailto:${settings.email}`}
-                className="mt-4 inline-block text-sm text-accent-dark hover:underline focus-ring"
+                className="mt-4 inline-flex min-h-[24px] items-center text-sm text-accent-dark hover:underline focus-ring"
               >
                 {settings.email}
               </a>
@@ -93,7 +93,7 @@ export function Footer() {
             <button
               type="button"
               onClick={openCookiePreferences}
-              className="rounded-sm text-xs text-ink/65 underline-offset-2 transition-colors hover:text-accent focus-ring"
+              className="inline-flex min-h-[24px] min-w-[24px] items-center rounded-sm text-xs text-ink/65 underline-offset-2 transition-colors hover:text-accent focus-ring"
             >
               Cookie settings
             </button>
