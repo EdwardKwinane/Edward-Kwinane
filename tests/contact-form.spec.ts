@@ -65,9 +65,11 @@ test.describe("contact form — real submission flow", () => {
     await expect(page.locator('button[type="submit"]')).toContainText("Sending…");
     await expect(page.locator('[role="status"].sr-only')).toBeVisible();
 
-    // On 200: success panel, honest copy, exactly one request.
-    await expect(page.locator('[role="status"] h3')).toHaveText("Message sent");
-    await expect(page.locator('[role="status"]')).toContainText("your message has been delivered");
+    // On 200: success panel, wording confirming submission to the email service.
+    await expect(page.locator('[role="status"] h3')).toHaveText("Message submitted");
+    await expect(page.locator('[role="status"]')).toContainText(
+      "submitted to the email service",
+    );
     expect(requests).toHaveLength(1);
     expect(requests[0].method).toBe("POST");
     const payload = JSON.parse(requests[0].postData ?? "{}");
@@ -128,7 +130,7 @@ test.describe("contact form — real submission flow", () => {
     await fillValidForm(page);
     await page.locator('button[type="submit"]').click();
 
-    await expect(page.locator('[role="status"] h3')).toHaveText("Message sent");
+    await expect(page.locator('[role="status"] h3')).toHaveText("Message submitted");
     expect(requests).toHaveLength(2);
   });
 
@@ -145,7 +147,7 @@ test.describe("contact form — real submission flow", () => {
 
     // Retry from the panel works.
     await panel.locator('button:has-text("Try again")').click();
-    await expect(page.locator('[role="status"] h3')).toHaveText("Message sent");
+    await expect(page.locator('[role="status"] h3')).toHaveText("Message submitted");
     expect(requests).toHaveLength(3);
   });
 

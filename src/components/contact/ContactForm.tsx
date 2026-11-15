@@ -195,10 +195,10 @@ export function ContactForm() {
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-success text-success-fg">
           <CheckCircle2 className="h-6 w-6" />
         </span>
-        <h3 className="font-heading text-xl font-semibold text-navy">Message sent</h3>
+        <h3 className="font-heading text-xl font-semibold text-navy">Message submitted</h3>
         <p className="text-sm leading-relaxed text-ink/70">
-          Thanks, {name.trim().split(" ")[0] || "there"} — your message has been delivered. I
-          typically reply within a couple of business days.
+          Thanks, {name.trim().split(" ")[0] || "there"} — your message was submitted to the
+          email service. I typically reply within a couple of business days.
         </p>
         <Button
           variant="outline"

@@ -11,6 +11,7 @@ import {
   SEND_TIMEOUT_MS,
   HONEYPOT_FIELD,
   fingerprint,
+  isJsonContentType,
   sanitizeReplyTo,
   validateSubmission,
 } from "./rules";
@@ -40,12 +41,20 @@ export interface ContactMailConfig {
 }
 
 export interface ContactDeps {
-  /** Sends the email. Throws on failure. Resolved with the Resend id. */
-  sendMail: (mail: ContactMail) => Promise<unknown>;
-  /** True when this fingerprint was already recorded (recent duplicate). */
-  isDuplicate: (fingerprint: string) => Promise<boolean>;
-  /** Records the fingerprint after a successful send (TTL-dedupe for retries). */
-  recordFingerprint: (fingerprint: string) => Promise<void>;
+  /**
+   * Sends the email. Throws DefiniteSendFailure when the provider rejected the
+   * request (retry is safe), UncertainSendFailure (or anything else) when the
+   * outcome is unknown. Receives the handler's AbortSignal so the underlying
+   * request can be cancelled on timeout.
+   */
+  sendMail: (mail: ContactMail, signal?: AbortSignal) => Promise<unknown>;
+  /**
+   * Atomically reserves the fingerprint for the dedupe window (Redis SET NX EX).
+   * True when this call won the reservation, false when it is already held.
+   */
+  claimFingerprint: (fingerprint: string) => Promise<boolean>;
+  /** Best-effort release of a reservation after a definite send failure. */
+  releaseFingerprint: (fingerprint: string) => Promise<void>;
   /** Checks (and consumes, when allowed) the configured rate limits. */
   checkRateLimit: () => Promise<RateLimitDecision>;
   /** Fixed sender/recipient for this deployment (from the environment). */
@@ -111,11 +120,38 @@ class TimeoutError extends Error {
   }
 }
 
-async function withTimeout<T>(operation: Promise<T>, ms: number): Promise<T> {
+/**
+ * Send failure where delivery definitively did not happen (the provider
+ * rejected the request with a 4xx). The idempotency reservation may be
+ * released so a retry can proceed.
+ */
+export class DefiniteSendFailure extends Error {
+  constructor() {
+    super("Email delivery definitively failed");
+    this.name = "DefiniteSendFailure";
+  }
+}
+
+/**
+ * Send failure with an unknown outcome (provider 5xx, network error, timeout).
+ * The email may or may not have been delivered, so the idempotency reservation
+ * must be kept: a retry must not initiate a second delivery attempt.
+ */
+export class UncertainSendFailure extends Error {
+  constructor() {
+    super("Email delivery outcome unknown");
+    this.name = "UncertainSendFailure";
+  }
+}
+
+async function withTimeout<T>(operation: Promise<T>, ms: number, onTimeout?: () => void): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const timeout = new Promise<never>((_resolve, reject) => {
-      timer = setTimeout(() => reject(new TimeoutError()), ms);
+      timer = setTimeout(() => {
+        onTimeout?.();
+        reject(new TimeoutError());
+      }, ms);
       (timer as { unref?: () => void }).unref?.();
     });
     return await Promise.race([operation, timeout]);
@@ -137,12 +173,20 @@ export async function handleContactRequest(req: ContactRequest, deps: ContactDep
     return error(403, "forbidden");
   }
 
-  // 3. Size gate (bytes, not UTF-16 code units).
+  // 3. Content-Type gate: the endpoint speaks JSON only.
+  const contentType = header(req.headers, "content-type");
+  if (!isJsonContentType(contentType)) {
+    return error(415, "unsupported_media_type");
+  }
+
+  // 4. Size gate (bytes, not UTF-16 code units). The adapter additionally
+  // enforces this on the raw request stream before JSON parsing; this check
+  // is defence in depth for direct callers.
   if (new TextEncoder().encode(req.rawBody).length > MAX_BODY_BYTES) {
     return error(413, "too_large");
   }
 
-  // 4. JSON parse gate.
+  // 5. JSON parse gate.
   let payload: unknown;
   try {
     payload = JSON.parse(req.rawBody);
@@ -161,12 +205,12 @@ export async function handleContactRequest(req: ContactRequest, deps: ContactDep
     message: str("message"),
   };
 
-  // 5. Honeypot: silent, success-shaped discard. Never sends, never logs.
+  // 6. Honeypot: silent, success-shaped discard. Never sends, never logs.
   if (str(HONEYPOT_FIELD).trim() !== "") {
     return ok();
   }
 
-  // 6. Server-authoritative validation.
+  // 7. Server-authoritative validation.
   const fields = validateSubmission(submission);
   if (Object.keys(fields).length > 0) {
     return error(400, "validation", { fields });
@@ -174,14 +218,10 @@ export async function handleContactRequest(req: ContactRequest, deps: ContactDep
 
   const fp = fingerprint(submission);
 
-  // 7–8. Dedupe + rate limits, fail closed on any dependency failure (A3).
-  let duplicate = false;
+  // 8. Rate limits — before claiming the fingerprint so a 429 never burns the
+  //    dedupe reservation. Fail closed on any dependency failure (A3).
   let decision: RateLimitDecision;
   try {
-    duplicate = await deps.isDuplicate(fp);
-    if (duplicate) {
-      return error(409, "duplicate");
-    }
     decision = await deps.checkRateLimit();
   } catch {
     return error(503, "unavailable");
@@ -191,7 +231,24 @@ export async function handleContactRequest(req: ContactRequest, deps: ContactDep
     return error(429, "rate_limited", { retryAfterSeconds }, retryAfterSeconds);
   }
 
-  // 9. Send email, bounded by the configured timeout.
+  // 9. Atomic duplicate reservation: a single Redis SET NX EX claims the
+  //    fingerprint for the whole send. Concurrent identical requests cannot
+  //    both win the claim, so at most one initiates delivery. The loser gets
+  //    409. Any Redis failure here fails closed with 503.
+  let claimed: boolean;
+  try {
+    claimed = await deps.claimFingerprint(fp);
+  } catch {
+    return error(503, "unavailable");
+  }
+  if (!claimed) {
+    return error(409, "duplicate");
+  }
+
+  // 10. Send email, bounded by the configured timeout. The timeout aborts the
+  //     underlying provider request via AbortSignal instead of merely racing
+  //     it, and the reservation is KEPT: an aborted request has an unknown
+  //     delivery outcome.
   const replyTo = sanitizeReplyTo(submission.email);
   const text = [
     `Name: ${submission.name.trim()}`,
@@ -203,24 +260,44 @@ export async function handleContactRequest(req: ContactRequest, deps: ContactDep
   ].join("\n");
 
   const sendTimeoutMs = deps.sendTimeoutMs ?? SEND_TIMEOUT_MS;
+  const controller = new AbortController();
+  const sendOperation = deps.sendMail(
+    { from: deps.mail.from, to: deps.mail.to, subject: SUBJECT, replyTo, text },
+    controller.signal,
+  );
+  // If the timeout wins the race, the operation promise may still reject later;
+  // give that rejection a handler so it never becomes an unhandled rejection.
+  sendOperation.catch(() => {});
   try {
-    await withTimeout(
-      deps.sendMail({ from: deps.mail.from, to: deps.mail.to, subject: SUBJECT, replyTo, text }),
-      sendTimeoutMs,
-    );
+    await withTimeout(sendOperation, sendTimeoutMs, () => controller.abort());
   } catch (err) {
     if (err instanceof TimeoutError) return error(504, "unavailable");
+    if (err instanceof DefiniteSendFailure) {
+      // The provider definitively rejected this submission; the reservation is
+      // released so the client's retry can proceed.
+      try {
+        await deps.releaseFingerprint(fp);
+      } catch {
+        // Release is best effort. Worst case the retry gets 409 within the
+        // dedupe window instead of a fresh send.
+      }
+      return error(502, "unavailable");
+    }
+    // Uncertain outcome (provider 5xx, network failure): keep the reservation
+    // so no second delivery attempt is ever initiated for this fingerprint.
     return error(502, "unavailable");
   }
 
-  // 10. Record the fingerprint only after a successful send, so a 5xx never
-  // blocks the client's retry-once behavior.
-  try {
-    await deps.recordFingerprint(fp);
-  } catch {
-    // The email was delivered; failing to record the dedupe stamp must not
-    // turn a successful send into a 5xx. Worst case: a retry sends a copy.
-  }
+  // 11. The reservation stays in place for the rest of the dedupe window: a
+  //     re-submission of the identical payload gets 409, which is what makes
+  //     the client's retry-on-5xx safe.
+  //
+  //     Known limitation, stated honestly: this design guarantees at-most-one
+  //     send per fingerprint per dedupe window, not exactly-once delivery.
+  //     After a 504 (uncertain outcome) a client retry is answered 409 even
+  //     though delivery may never have happened; after the 10-minute window a
+  //     genuine re-submission is a fresh send. The Redis reservation is the
+  //     single source of truth; there is no two-phase provider confirmation.
 
   return ok();
 }

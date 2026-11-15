@@ -37,6 +37,13 @@ export const RATE_LIMITS = {
   globalDay: { windowMs: 24 * 60 * 60 * 1000, max: 50 },
 } as const;
 
+/** Content-Type must be exactly application/json; a charset parameter is allowed. */
+export function isJsonContentType(value: string | undefined): boolean {
+  if (!value) return false;
+  const main = value.split(";", 1)[0].trim().toLowerCase();
+  return main === "application/json";
+}
+
 const EMAIL_PATTERN = /^[^\s@<>"'(){}\[\],;:\\]+@[^\s@<>"'(){}\[\],;:\\]+\.[^\s@<>"'(){}\[\],;:\\]+$/;
 
 /** Structure + length check for an email address. No CR/LF by construction. */
