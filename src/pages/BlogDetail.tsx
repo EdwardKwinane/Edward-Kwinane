@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Calendar, ChevronDown, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Seo from "@/components/seo/Seo";
 import { Container, Section } from "@/components/ui/Container";
 import { Badge } from "@/components/ui/Badge";
+import NotFound from "@/pages/NotFound";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { ArchitectureDiagram } from "@/components/architecture/ArchitectureDiagram";
 import { fetchBlogPost, fetchBlogPosts, type BlogPost } from "@/data/blog";
@@ -166,7 +167,11 @@ export default function BlogDetail() {
     );
   }
 
-  if (!post) return <Navigate to="/blog" replace />;
+  // An unknown slug is a missing page: render the NotFound view in place so
+  // the URL stays honest and the page is marked noindex, instead of silently
+  // redirecting to the listing. (A server-side HTTP 404 is not possible for
+  // CMS-addressed slugs in a static SPA without server infrastructure.)
+  if (!post) return <NotFound />;
 
   const articleSchema = {
     "@type": "Article",
