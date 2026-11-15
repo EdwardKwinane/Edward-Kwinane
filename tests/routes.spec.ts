@@ -98,8 +98,10 @@ test.describe("public routes", () => {
   });
 
   test("unknown paths still render the app shell without crashing", async ({ page }) => {
-    // PR-C records current behaviour only; the HTTP status contract for unknown
-    // routes is covered by the 404 suite added with the 404 fix.
+    // `vite preview` serves the SPA shell (200) for every path, so the HTTP
+    // 404 contract for unknown routes cannot be asserted here; it is enforced
+    // by the scoped vercel.json rewrites and verified on the Vercel Preview
+    // deployment. This test pins the current local behaviour only.
     const response = await page.goto("/this-route-does-not-exist", { waitUntil: "load" });
     expect(response?.status()).toBe(200);
     await expect(page.locator("main#main")).toBeVisible();
