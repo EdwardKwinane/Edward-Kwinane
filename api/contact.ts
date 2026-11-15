@@ -7,8 +7,11 @@
  *
  * Body size: the raw request stream is consumed with a strict byte counter
  * BEFORE any JSON parsing. Vercel's `request.body` helper is a lazy getter,
- * so by never touching it we own the stream and can stop reading (and destroy
- * the connection) as soon as 32 KB is exceeded. No unbounded buffering.
+ * so by never touching it we own the stream and can stop reading (pause, no
+ * destroy) the moment 32 KB is exceeded — no unbounded buffering. The 413 is
+ * sent with `connection: close` and the request stream is released only after
+ * the response has flushed, because destroying the request mid-response can
+ * drop the socket before the client receives the status.
  *
  * Fail closed: any missing configuration or dependency failure returns 503
  * rather than swallowing a lead or degrading anti-abuse protection.
@@ -23,10 +26,12 @@ import {
   DEDUPE_WINDOW_SECONDS,
   MAX_BODY_BYTES,
   RATE_LIMITS,
+  isJsonContentType,
 } from "../src/lib/contact/rules";
 import {
   DefiniteSendFailure,
   handleContactRequest,
+  sameOrigin,
   UncertainSendFailure,
   type ContactMail,
   type RateLimitDecision,
@@ -40,6 +45,7 @@ type VercelRequestLike = {
   headers: Record<string, string | string[] | undefined>;
   /** Raw body stream (Node IncomingMessage); never touch the lazy `body` getter. */
   on(event: "data" | "end" | "error", listener: (...args: unknown[]) => void): unknown;
+  pause?(): unknown;
   destroy?(error?: Error): void;
 };
 type VercelResponseLike = {
@@ -82,11 +88,36 @@ function firstHeader(value: string | string[] | undefined): string {
 
 type RawBodyResult = { tooLarge: false; body: string } | { tooLarge: true };
 
+/** Sends an early rejection without reading the request stream. */
+function rejectEarly(res: VercelResponseLike, status: number, code: string): void {
+  res.status(status).json({ ok: false, error: { code } });
+}
+
+/**
+ * Used on the 413 path, where the remaining body is deliberately unconsumed.
+ * The response goes out with `connection: close`; where the response object
+ * emits "finish" (Node ServerResponse), the request stream is released only
+ * after the response has been flushed. The undrained socket is then closed by
+ * Node/the platform, so no destroy can drop the response.
+ */
+function closeRequestAfterResponse(req: VercelRequestLike, res: VercelResponseLike): void {
+  const finishable = res as VercelResponseLike & {
+    on?: (event: "finish", listener: () => void) => unknown;
+  };
+  if (typeof finishable.on === "function") {
+    finishable.on("finish", () => req.destroy?.());
+  }
+}
+
 /**
  * Consumes the raw request stream with a strict byte counter. Stops reading
- * (and tears the connection down) the moment the limit is exceeded, so an
- * unbounded upload is never buffered. A stream error yields an empty body,
- * which the handler's JSON gate rejects as invalid_json.
+ * (the stream is paused) the moment the limit is exceeded, so an unbounded
+ * upload is never buffered. Do NOT destroy the request here: destroying the
+ * stream tears down the shared socket and can drop the 413 before it reaches
+ * the client — the response lifecycle is handled by the caller instead
+ * (connection: close, then destroy after the response flushes).
+ * A stream error yields an empty body, which the handler's JSON gate rejects
+ * as invalid_json.
  */
 function readRawBody(req: VercelRequestLike, maxBytes: number): Promise<RawBodyResult> {
   return new Promise((resolve) => {
@@ -94,16 +125,15 @@ function readRawBody(req: VercelRequestLike, maxBytes: number): Promise<RawBodyR
     let total = 0;
     let settled = false;
     const settle = (result: RawBodyResult): void => {
-      if (!settled) {
-        settled = true;
-        resolve(result);
-      }
+      if (settled) return;
+      settled = true;
+      req.pause?.();
+      resolve(result);
     };
     req.on("data", (chunk: unknown) => {
       total += Buffer.isBuffer(chunk) ? chunk.length : Buffer.byteLength(String(chunk));
       if (total > maxBytes) {
         settle({ tooLarge: true });
-        req.destroy?.();
         return;
       }
       chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
@@ -132,10 +162,36 @@ export default async function handler(req: VercelRequestLike, res: VercelRespons
   }
 
   try {
+    const headers: Record<string, string> = {};
+    for (const [key, value] of Object.entries(req.headers)) {
+      headers[key.toLowerCase()] = firstHeader(value);
+    }
+
+    // Cheap gates run BEFORE the body is consumed, in the same order and with
+    // the same rules as the pure handler (which keeps them as defence in
+    // depth): method → Origin/Host → Content-Type. Rejected requests never
+    // read a single byte of the payload.
+    if ((req.method ?? "").toUpperCase() !== "POST") {
+      rejectEarly(res, 405, "method_not_allowed");
+      return;
+    }
+    const origin = headers["origin"] ?? "";
+    const host = headers["host"] ?? "";
+    if (!origin || !host || !sameOrigin(origin, host)) {
+      rejectEarly(res, 403, "forbidden");
+      return;
+    }
+    if (!isJsonContentType(headers["content-type"])) {
+      rejectEarly(res, 415, "unsupported_media_type");
+      return;
+    }
+
     // Genuine byte limit on the ORIGINAL request bytes, before JSON parsing.
     const raw = await readRawBody(req, MAX_BODY_BYTES);
     if (raw.tooLarge) {
+      res.setHeader("connection", "close");
       res.status(413).json({ ok: false, error: { code: "too_large" } });
+      closeRequestAfterResponse(req, res);
       return;
     }
 
@@ -252,11 +308,6 @@ export default async function handler(req: VercelRequestLike, res: VercelRespons
       console.log("contact_sent", data?.id ?? "unknown");
       return data;
     };
-
-    const headers: Record<string, string> = {};
-    for (const [key, value] of Object.entries(req.headers)) {
-      headers[key.toLowerCase()] = firstHeader(value);
-    }
 
     const result = await handleContactRequest(
       { method: req.method ?? "", headers, rawBody: raw.body },

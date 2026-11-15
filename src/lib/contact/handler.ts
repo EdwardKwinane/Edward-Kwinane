@@ -5,6 +5,9 @@
  * Upstash) into this handler; tests inject fakes. Nothing here talks to the
  * network, the filesystem or Node-specific APIs, so the file stays inside the
  * `tsc -b` scope and is fully testable in isolation.
+ *
+ * The adapter applies the method/Origin/Content-Type gates before it consumes
+ * the request stream; the identical checks are kept here as defence in depth.
  */
 import {
   MAX_BODY_BYTES,
@@ -92,8 +95,10 @@ function error(status: number, code: string, extra?: Omit<ApiErrorBody, "code">,
 /** Fixed subject line — never contains user input. */
 export const SUBJECT = "New portfolio contact";
 
-/** Same-origin check: Origin header must be present and match the Host header. */
-function sameOrigin(origin: string, host: string): boolean {
+/** Same-origin check: Origin header must be present and match the Host header.
+ *  Exported so the Vercel adapter can apply the identical rule before it
+ *  consumes the request stream (kept in one place so they cannot drift). */
+export function sameOrigin(origin: string, host: string): boolean {
   try {
     const url = new URL(origin);
     // Prefixing the host with the origin's protocol lets the URL parser
