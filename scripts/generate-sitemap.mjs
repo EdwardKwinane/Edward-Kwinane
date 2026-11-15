@@ -12,31 +12,22 @@
  *
  * --check is the useful one in CI: it turns drift into a failing signal
  * instead of a silent omission. It only reads, so it needs no write token.
+ *
+ * Configuration comes from `process.env` first, then a local `.env`
+ * (see scripts/load-env.mjs). When neither provides a Sanity project ID,
+ * `--check` still runs, but as an offline structural check of the committed
+ * file — that keeps CI credential-free while still failing on a malformed or
+ * duplicated sitemap. Without an ID, regenerating is refused, because writing
+ * a sitemap with no project + post URLs would silently drop content.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { loadSanityConfig, repoRoot } from "./load-env.mjs";
 
-const root = resolve(import.meta.dirname, "..");
-const SITEMAP = resolve(root, "public/sitemap.xml");
-
-const env = Object.fromEntries(
-  readFileSync(resolve(root, ".env"), "utf-8")
-    .split("\n")
-    .filter((l) => l.trim() && !l.trim().startsWith("#"))
-    .map((l) => {
-      const i = l.indexOf("=");
-      return [l.slice(0, i).trim(), l.slice(i + 1).trim().replace(/^["']|["']$/g, "")];
-    })
-);
-
-const { VITE_SANITY_PROJECT_ID: projectId, VITE_SANITY_DATASET: dataset } = env;
-if (!projectId) {
-  console.error("VITE_SANITY_PROJECT_ID is missing from .env — cannot build the sitemap.");
-  process.exit(1);
-}
-
+const SITEMAP = resolve(repoRoot, "public/sitemap.xml");
 const ORIGIN = "https://edward-kwinane.vercel.app";
-const apiVersion = env.VITE_SANITY_API_VERSION || "2024-06-04";
+
+const { projectId, dataset, apiVersion } = loadSanityConfig();
 
 /** Static routes, with the same changefreq/priority the hand-written file used. */
 const staticRoutes = [
@@ -47,6 +38,16 @@ const staticRoutes = [
   { path: "/blog", changefreq: "weekly", priority: "0.8" },
   { path: "/contact", changefreq: "monthly", priority: "0.8" },
 ];
+
+const CHANGEFREQ = new Set([
+  "always",
+  "hourly",
+  "daily",
+  "weekly",
+  "monthly",
+  "yearly",
+  "never",
+]);
 
 /* Mirrors the runtime filters: posts need `publishedAt` (an earlier post with
    none leaked publicly while Studio showed it as a draft), and both lists are
@@ -89,32 +90,104 @@ ${body}
 `;
 };
 
-const slugs = await fetchPaths();
-const next = xml(slugs);
-const current = readFileSync(SITEMAP, "utf-8");
 const check = process.argv.includes("--check");
+const current = readFileSync(SITEMAP, "utf-8");
 
-console.log(
-  `sitemap: ${staticRoutes.length} static + ${slugs.projects.length} project + ${slugs.posts.length} post = ${
-    staticRoutes.length + slugs.projects.length + slugs.posts.length
-  } urls`
-);
+/**
+ * Credential-free validation of the committed sitemap. Used by CI, where no
+ * Sanity project ID is available. It cannot detect content drift, but it does
+ * catch the failures that break discovery outright: a malformed document,
+ * duplicated or non-absolute URLs, and missing static routes.
+ */
+function checkOffline() {
+  const problems = [];
+  const locs = [...current.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  const counts = {
+    url: (current.match(/<url>/g) ?? []).length,
+    loc: locs.length,
+    changefreq: (current.match(/<changefreq>/g) ?? []).length,
+    priority: (current.match(/<priority>/g) ?? []).length,
+  };
 
-if (check) {
-  if (current.trim() === next.trim()) {
-    console.log("  ok    sitemap.xml is in sync with the dataset");
-  } else {
-    const have = [...current.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-    const want = [...next.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-    const missing = want.filter((u) => !have.includes(u));
-    const extra = have.filter((u) => !want.includes(u));
-    console.log("  FAIL  sitemap.xml has drifted from the dataset");
-    missing.forEach((u) => console.log(`          missing: ${u}`));
-    extra.forEach((u) => console.log(`          stale:   ${u}`));
-    console.log("        run: npm run sitemap");
+  if (!current.includes("<urlset")) problems.push("missing <urlset> root element");
+  for (const [key, value] of Object.entries(counts)) {
+    if (value !== counts.url) {
+      problems.push(`expected ${counts.url} <${key}> elements, found ${value}`);
+    }
+  }
+  if (counts.url === 0) problems.push("no <url> entries");
+
+  const seen = new Set();
+  for (const loc of locs) {
+    if (!loc.startsWith(`${ORIGIN}/`)) {
+      problems.push(`non-absolute or off-origin loc: ${loc}`);
+    }
+    if (seen.has(loc)) problems.push(`duplicate loc: ${loc}`);
+    seen.add(loc);
+  }
+
+  for (const route of staticRoutes) {
+    if (!seen.has(`${ORIGIN}${route.path}`)) {
+      problems.push(`missing static route: ${ORIGIN}${route.path}`);
+    }
+  }
+
+  for (const [, freq, priority] of current.matchAll(
+    /<changefreq>([^<]+)<\/changefreq><priority>([^<]+)<\/priority>/g
+  )) {
+    if (!CHANGEFREQ.has(freq)) problems.push(`invalid changefreq: ${freq}`);
+    const numeric = Number(priority);
+    if (!Number.isFinite(numeric) || numeric < 0 || numeric > 1) {
+      problems.push(`invalid priority: ${priority}`);
+    }
+  }
+
+  console.log(`sitemap: ${counts.url} urls — offline structural check (no Sanity project ID)`);
+  if (problems.length === 0) {
+    console.log("  ok    sitemap.xml is well formed, absolute and free of duplicates");
+    console.log("        dataset comparison skipped: set VITE_SANITY_PROJECT_ID for the full check");
+    return;
+  }
+  console.log("  FAIL  sitemap.xml failed the structural check");
+  problems.forEach((problem) => console.log(`          ${problem}`));
+  process.exit(1);
+}
+
+if (!projectId) {
+  if (!check) {
+    console.error(
+      "VITE_SANITY_PROJECT_ID is not set — cannot regenerate the sitemap.\n" +
+        "Export it in the shell or add it to .env (see .env.example)."
+    );
     process.exit(1);
   }
+  checkOffline();
 } else {
-  writeFileSync(SITEMAP, next);
-  console.log("  wrote public/sitemap.xml");
+  const slugs = await fetchPaths();
+  const next = xml(slugs);
+
+  console.log(
+    `sitemap: ${staticRoutes.length} static + ${slugs.projects.length} project + ${slugs.posts.length} post = ${
+      staticRoutes.length + slugs.projects.length + slugs.posts.length
+    } urls`
+  );
+
+  if (check) {
+    if (current.trim() === next.trim()) {
+      console.log("  ok    sitemap.xml is in sync with the dataset");
+    } else {
+      const have = [...current.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+      const want = [...next.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+      const missing = want.filter((u) => !have.includes(u));
+      const extra = have.filter((u) => !want.includes(u));
+      console.log("  FAIL  sitemap.xml has drifted from the dataset");
+      missing.forEach((u) => console.log(`          missing: ${u}`));
+      extra.forEach((u) => console.log(`          stale:   ${u}`));
+      console.log("        run: npm run sitemap");
+      process.exit(1);
+    }
+  } else {
+    writeFileSync(SITEMAP, next);
+    console.log("  wrote public/sitemap.xml");
+  }
 }
