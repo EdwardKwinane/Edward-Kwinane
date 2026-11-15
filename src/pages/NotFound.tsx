@@ -1,8 +1,37 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Seo from "@/components/seo/Seo";
 import { Button } from "@/components/ui/Button";
 
+/**
+ * Unknown routes must not be indexed. The HTTP 404 served by Vercel for these
+ * paths carries a `noindex` meta in its <head> (see scripts/build-404.mjs);
+ * this effect covers the client-side case, when a stale in-app link renders
+ * this page inside the already-loaded bundle.
+ */
+function useNoindex() {
+  useEffect(() => {
+    let el = document.head.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    if (!el) {
+      el = document.createElement("meta");
+      el.setAttribute("name", "robots");
+      document.head.appendChild(el);
+    }
+    const previous = el.getAttribute("content");
+    el.setAttribute("content", "noindex");
+    return () => {
+      if (previous === null) {
+        el.remove();
+      } else {
+        el.setAttribute("content", previous);
+      }
+    };
+  }, []);
+}
+
 export default function NotFound() {
+  useNoindex();
+
   return (
     <>
       <Seo
