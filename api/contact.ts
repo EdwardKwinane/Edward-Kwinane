@@ -27,7 +27,7 @@ import {
   MAX_BODY_BYTES,
   RATE_LIMITS,
   isJsonContentType,
-} from "../src/lib/contact/rules";
+} from "../src/lib/contact/rules.js";
 import {
   DefiniteSendFailure,
   handleContactRequest,
@@ -35,7 +35,7 @@ import {
   UncertainSendFailure,
   type ContactMail,
   type RateLimitDecision,
-} from "../src/lib/contact/handler";
+} from "../src/lib/contact/handler.js";
 
 export const maxDuration = 30;
 

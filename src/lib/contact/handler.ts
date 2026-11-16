@@ -17,7 +17,7 @@ import {
   isJsonContentType,
   sanitizeReplyTo,
   validateSubmission,
-} from "./rules";
+} from "./rules.js";
 
 export interface ContactRequest {
   method: string;
