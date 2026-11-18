@@ -40,41 +40,46 @@ function ProcessCard({ stage, position, stacked = false }: ProcessCardProps) {
   return (
     <article
       className={cn(
-        "relative flex h-full flex-col overflow-hidden rounded-2xl border border-surface-pale3 bg-surface",
+        "relative flex h-full flex-col overflow-hidden border border-surface-pale3 bg-surface",
         stacked
-          ? "p-7 shadow-[0_18px_50px_-24px_rgba(13,13,91,0.28)] sm:p-8 lg:p-10"
-          : "p-6"
+          ? "rounded-3xl p-8 shadow-[0_30px_80px_-32px_rgba(13,13,91,0.3)] sm:p-10 lg:p-12"
+          : "rounded-2xl p-6"
       )}
     >
       {stacked ? (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-20 right-5 select-none font-heading text-[128px] font-bold leading-none tracking-tight text-navy/[0.06]"
+          className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 select-none font-heading text-[168px] font-bold leading-none tracking-tight text-navy/[0.06] lg:text-[232px]"
         >
           {stage.index}
         </span>
       ) : null}
 
       <div className="relative flex items-center justify-between gap-4">
-        <span className="font-technical text-[11px] font-bold uppercase tracking-tech text-accent-dark">
+        <span
+          className={cn(
+            "font-technical font-bold uppercase tracking-tech text-accent-dark",
+            stacked ? "text-xs" : "text-[11px]"
+          )}
+        >
           Stage {stage.index}
         </span>
         <span className="relative z-10 h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
       </div>
 
-      <div className={cn("relative flex flex-1 flex-col justify-center", stacked ? "py-5" : "py-4")}>
+      <div className={cn("relative flex flex-1 flex-col justify-center", stacked ? "py-6" : "py-4")}>
         <h3
           className={cn(
             "font-heading font-semibold text-navy",
-            stacked ? "text-3xl sm:text-4xl" : "text-2xl"
+            stacked ? "text-4xl sm:text-[40px] sm:leading-[1.1] lg:text-[44px]" : "text-2xl"
           )}
         >
           {stage.name}
         </h3>
         <p
           className={cn(
-            "mt-3 leading-relaxed text-ink/65",
-            stacked ? "max-w-lg text-base sm:text-lg" : "text-sm"
+            "leading-relaxed text-ink/65",
+            stacked ? "mt-4 max-w-md text-base sm:text-lg lg:max-w-xl lg:text-xl" : "mt-3 text-sm"
           )}
         >
           {stage.detail}
@@ -88,7 +93,12 @@ function ProcessCard({ stage, position, stacked = false }: ProcessCardProps) {
             style={{ width: `${((position + 1) / STAGE_COUNT) * 100}%` }}
           />
         </div>
-        <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/50">
+        <span
+          className={cn(
+            "font-technical font-semibold uppercase tracking-tech text-ink/50",
+            stacked ? "text-[11px]" : "text-[10px]"
+          )}
+        >
           {stage.index} / {String(STAGE_COUNT).padStart(2, "0")}
         </span>
       </div>
@@ -130,8 +140,8 @@ function StackCard({ stage, position, active }: StackCardProps) {
    * the accessibility tree for screen-reader users.
    */
   const opacity = useTransform(enter, (value) => (value > 0 ? 1 : 0));
-  const scale = useTransform(depth, (value) => 1 - value * 0.022);
-  const depthY = useTransform(depth, (value) => value * -11);
+  const scale = useTransform(depth, (value) => 1 - value * 0.012);
+  const depthY = useTransform(depth, (value) => value * -13);
   /**
    * Only the card on top of the deck should accept pointer input, otherwise an
    * invisible waiting card would sit over the visible one and block selection.
@@ -203,10 +213,13 @@ function ProcessStack() {
       style={{ height: `calc(${STAGE_COUNT} * ${SCROLL_PER_CARD_VH}vh + ${TAIL_VH}vh)` }}
       data-testid="process-stack"
     >
-      <div className="sticky top-24 flex h-[min(calc(100svh-7rem),760px)] items-center justify-center">
+      <div className="sticky top-24 flex h-[min(calc(100svh-7rem),860px)] items-center justify-center">
         <Container className="w-full">
-          <div className="relative mx-auto w-full max-w-3xl">
-            <ol className="relative h-[clamp(340px,48vh,460px)]" aria-label="Process stages">
+          <div className="relative mx-auto w-full">
+            <ol
+              className="relative h-[clamp(400px,54vh,540px)] lg:h-[clamp(420px,62vh,660px)]"
+              aria-label="Process stages"
+            >
               {stages.map((stage, index) => (
                 <StackCard key={stage.index} stage={stage} position={index} active={active} />
               ))}
