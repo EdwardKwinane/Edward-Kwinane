@@ -9,6 +9,7 @@ import {
   fetchCapabilityPreview,
   type CapabilityPreviewItem,
 } from "@/data/capabilities";
+import { SurfaceCard, cardChipClass, cardIconChipClass } from "@/components/ui/SurfaceCard";
 import { revealElements } from "@/lib/gsap";
 
 const icons = [Mic, Database, MessageSquare, Layers];
@@ -77,31 +78,34 @@ export function CapabilityPreview() {
             {capabilities.map((cap, i) => {
               const Icon = icons[i % icons.length];
               return (
-                <Link
+                <SurfaceCard
                   key={cap.id}
-                  to="/capabilities"
-                  className="cap-card group flex flex-col rounded-2xl border border-surface-pale3 bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:bg-surface-pale hover:shadow-[0_16px_40px_rgba(13,13,91,0.1)] focus-ring"
+                  asChild
+                  interactive
+                  className="cap-card group flex h-full flex-col bg-surface p-6 hover:bg-surface-pale"
                 >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-white transition-colors duration-300 group-hover:bg-accent-fill">
-                    <Icon className="h-6 w-6" strokeWidth={1.5} />
-                  </span>
-                  <h3 className="mt-5 font-heading text-lg font-semibold text-navy">{cap.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink/65">{cap.description}</p>
-                  <div className="mt-4 flex flex-wrap gap-1.5">
-                    {cap.labels.map((label) => (
-                      <span
-                        key={label}
-                        className="rounded-full border border-surface-pale4 bg-surface-alt px-2.5 py-0.5 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65"
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                  <span className="mt-auto inline-flex items-center gap-1.5 pt-5 font-heading text-sm font-semibold text-navy">
-                    Explore capability
-                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
-                </Link>
+                  <Link to="/capabilities">
+                    <span className={cardIconChipClass}>
+                      <Icon className="h-6 w-6" strokeWidth={1.5} aria-hidden="true" />
+                    </span>
+                    <h3 className="mt-5 font-heading text-lg font-semibold text-navy">{cap.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-ink/65">{cap.description}</p>
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                      {cap.labels.map((label) => (
+                        <span key={label} className={cardChipClass}>
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                    <span className="mt-auto inline-flex items-center gap-1.5 pt-5 font-heading text-sm font-semibold text-navy">
+                      Explore capability
+                      <ArrowRight
+                        aria-hidden="true"
+                        className="h-4 w-4 motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:translate-x-1"
+                      />
+                    </span>
+                  </Link>
+                </SurfaceCard>
               );
             })}
           </div>

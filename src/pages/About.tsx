@@ -15,6 +15,8 @@ import { Container, Section } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { revealElements } from "@/lib/gsap";
 import { useSiteSettings } from "@/data/site";
+import { SurfaceCard, surfaceCardClass, cardChipClass, cardIconChipClass } from "@/components/ui/SurfaceCard";
+import { cn } from "@/lib/utils";
 
 const profileFields = [
   { label: "Name", value: "Edward Kwinane" },
@@ -87,10 +89,10 @@ export default function About() {
         description="I specialize in turning ambitious ideas into working software by combining AI engineering, system architecture and modern full-stack development."
       />
 
-      <div ref={scopeRef} className="glass-field">
+      <div ref={scopeRef}>
         <Section className="pt-0 lg:pt-0">
           <Container>
-            <div className="glass-panel about-reveal p-6 sm:p-8 lg:p-12">
+            <SurfaceCard className="about-reveal p-6 sm:p-8 lg:p-12">
               <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
                 <div className="max-w-xl">
                   <h2 className="font-heading text-[28px] font-semibold leading-[36px] text-navy sm:text-[32px] sm:leading-[40px]">
@@ -117,7 +119,7 @@ export default function About() {
                 </div>
 
                 <div className="about-reveal">
-                  <div className="glass-card p-6 sm:p-8">
+                  <SurfaceCard className="bg-surface-pale p-6 sm:p-8">
                     <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                       {/* Intrinsic 256x256 keeps the box reserved before the
                           file loads, so the header never shifts. The asset is a
@@ -159,12 +161,12 @@ export default function About() {
                         </div>
                       ))}
                     </dl>
-                  </div>
+                  </SurfaceCard>
                 </div>
               </div>
 
               {socialLinks.length > 0 && (
-                <div className="glass-card mt-8 p-2">
+                <SurfaceCard className="mt-8 bg-surface-pale p-2">
                   <ul className="grid gap-1 sm:grid-cols-2 sm:gap-2">
                     {socialLinks.map(({ href, label, Icon }) => (
                       <li key={label}>
@@ -184,9 +186,9 @@ export default function About() {
                       </li>
                     ))}
                   </ul>
-                </div>
+                </SurfaceCard>
               )}
-            </div>
+            </SurfaceCard>
           </Container>
         </Section>
 
@@ -202,7 +204,7 @@ export default function About() {
               {philosophy.map((item) => (
                 <li
                   key={item.index}
-                  className="about-reveal glass-card p-4 sm:p-6"
+                  className={cn(surfaceCardClass, "about-reveal p-4 sm:p-6")}
                 >
                   <span className="font-heading text-3xl font-bold text-ink/50">
                     {item.index}
@@ -232,19 +234,16 @@ export default function About() {
                 return (
                   <div
                     key={area.title}
-                    className="about-reveal glass-card flex flex-col p-5 sm:p-8"
+                    className={cn(surfaceCardClass, "about-reveal flex flex-col p-5 sm:p-8")}
                   >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-white">
-                      <Icon className="h-6 w-6" strokeWidth={1.5} />
+                    <span className={cardIconChipClass}>
+                      <Icon className="h-6 w-6" strokeWidth={1.5} aria-hidden="true" />
                     </span>
                     <h3 className="mt-5 font-heading text-xl font-semibold text-navy">{area.title}</h3>
                     <p className="mt-2 text-sm leading-relaxed text-ink/65">{area.description}</p>
                     <div className="mt-5 flex flex-wrap gap-2">
                       {area.labels.map((label) => (
-                        <span
-                          key={label}
-                          className="rounded-full border border-surface-pale4 bg-surface-pale px-3 py-1 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65"
-                        >
+                        <span key={label} className={cardChipClass}>
                           {label}
                         </span>
                       ))}
@@ -254,7 +253,7 @@ export default function About() {
               })}
             </div>
 
-            <div className="about-reveal glass-panel mt-14 p-8 lg:p-10">
+            <div className={cn(surfaceCardClass, "about-reveal mt-14 p-8 lg:p-10")}>
               <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
                 <div>
                   <h3 className="font-heading text-xl font-semibold text-navy lg:text-2xl">

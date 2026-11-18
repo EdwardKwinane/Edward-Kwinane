@@ -3,64 +3,74 @@ import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/data/projects";
 import { Badge } from "@/components/ui/Badge";
+import { SurfaceCard, CardMedia, cardChipClass } from "@/components/ui/SurfaceCard";
 
 export function ProjectCard({ project, className }: { project: Project; className?: string }) {
-  return (
-    <Link
-      to={`/portfolio/${project.slug}`}
-      className={cn(
-        "group flex flex-col overflow-hidden rounded-2xl border border-surface-pale3 bg-surface-alt transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(13,13,91,0.12)] focus-ring",
-        className
-      )}
-    >
-      <div className="relative flex aspect-[16/9] items-center justify-center overflow-hidden bg-primary">
-        <div className="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(255,255,255,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.2)_1px,transparent_1px)] [background-size:32px_32px]" />
-        <div className="relative flex flex-col items-center gap-1 text-center transition-transform duration-500 group-hover:scale-105">
-          <span className="font-technical text-xs font-bold uppercase tracking-tech text-accent">
-            {project.visual.label}
-          </span>
-          <span className="font-technical text-[10px] uppercase tracking-tech text-white/60">
-            {project.visual.sublabel}
-          </span>
-        </div>
-        {/* This badge sits on the cover, which composites to a dark navy in both
-            themes. accent-dark measures 3.22:1 there, so the label is forced to
-            white (16.1:1 light / 13.9:1 dark). */}
-        {project.placeholder && (
-          <Badge variant="orange" className="absolute right-3 top-3 text-white">
-            Placeholder
-          </Badge>
-        )}
-      </div>
+  const cover = project.coverImage;
 
-      <div className="flex flex-1 flex-col gap-4 p-6">
-        <div className="flex items-center justify-between gap-2">
-          <Badge variant="navy">{project.category}</Badge>
-          <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65">
-            {project.status}
+  return (
+    <SurfaceCard asChild interactive className={cn("group flex h-full flex-col overflow-hidden", className)}>
+      <Link to={`/portfolio/${project.slug}`}>
+        <CardMedia src={cover} alt={project.coverImageAlt}>
+          {!cover && (
+            <>
+              {/* Blueprint grid over the navy-deep placeholder surface. */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(255,255,255,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.2)_1px,transparent_1px)] [background-size:32px_32px]"
+              />
+              <div
+                aria-hidden="true"
+                className="relative flex h-full flex-col items-center justify-center gap-1 text-center motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-out motion-safe:group-hover:scale-105"
+              >
+                <span className="font-technical text-xs font-bold uppercase tracking-tech text-accent">
+                  {project.visual.label}
+                </span>
+                <span className="font-technical text-[10px] uppercase tracking-tech text-white/60">
+                  {project.visual.sublabel}
+                </span>
+              </div>
+            </>
+          )}
+          {/* This badge sits on the navy-deep band, which is dark in both
+              themes. accent-dark measures 3.22:1 there, so the label is forced
+              to white (16.1:1 light / 13.9:1 dark). */}
+          {project.placeholder && (
+            <Badge variant="orange" className="absolute right-3 top-3 text-white">
+              Placeholder
+            </Badge>
+          )}
+        </CardMedia>
+
+        <div className="flex flex-1 flex-col gap-4 p-6">
+          <div className="flex items-center justify-between gap-2">
+            <Badge variant="navy">{project.category}</Badge>
+            <span className="font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65">
+              {project.status}
+            </span>
+          </div>
+          <div>
+            <h3 className="font-heading text-xl font-semibold text-navy transition-colors duration-300 motion-reduce:transition-none group-hover:text-accent-dark">
+              {project.title}
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-ink/65 line-clamp-3">{project.description}</p>
+          </div>
+          <div className="mt-auto flex flex-wrap gap-2">
+            {project.technologies.slice(0, 5).map((tech) => (
+              <span key={tech} className={cardChipClass}>
+                {tech}
+              </span>
+            ))}
+          </div>
+          <span className="inline-flex items-center gap-1.5 font-heading text-sm font-semibold text-navy">
+            View project
+            <ArrowRight
+              aria-hidden="true"
+              className="h-4 w-4 motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:translate-x-1"
+            />
           </span>
         </div>
-        <div>
-          <h3 className="font-heading text-xl font-semibold text-navy transition-colors group-hover:text-accent-dark">
-            {project.title}
-          </h3>
-          <p className="mt-2 text-sm leading-relaxed text-ink/65 line-clamp-3">{project.description}</p>
-        </div>
-        <div className="mt-auto flex flex-wrap gap-2">
-          {project.technologies.slice(0, 5).map((tech) => (
-            <span
-              key={tech}
-              className="rounded-full border border-surface-pale4 bg-surface-pale px-2.5 py-0.5 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65"
-            >
-              {tech}
-            </span>
-          ))}
-        </div>
-        <span className="inline-flex items-center gap-1.5 font-heading text-sm font-semibold text-navy">
-          View project
-          <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-        </span>
-      </div>
-    </Link>
+      </Link>
+    </SurfaceCard>
   );
 }
