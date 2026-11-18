@@ -17,7 +17,9 @@ const BASE_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: "./tests",
-  testMatch: "sanity-reliability.spec.ts",
+  // The Sanity reliability suite runs under this config (see below) with a
+  // build against a fake project ID and mocked CMS responses.
+  testMatch: ["sanity-reliability.spec.ts", "cards.spec.ts"],
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
