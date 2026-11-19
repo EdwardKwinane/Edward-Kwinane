@@ -1,19 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion, useMotionValueEvent, useReducedMotion, useScroll } from "framer-motion";
-import {
-  ArrowRight,
-  Blocks,
-  Briefcase,
-  Home,
-  Mail,
-  Menu,
-  Newspaper,
-  UserRound,
-} from "lucide-react";
+import { ArrowRight, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { Dock, type DockItem } from "@/components/ui/dock";
 import {
   Sheet,
   SheetContent,
@@ -25,17 +15,13 @@ import {
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { useSiteSettings } from "@/data/site";
 
-/**
- * The site's destinations, in their existing order. The same list feeds the
- * desktop dock and the mobile sheet, so the two can never drift apart.
- */
-const navItems: DockItem[] = [
-  { label: "Home", to: "/", end: true, icon: Home },
-  { label: "About", to: "/about", icon: UserRound },
-  { label: "Portfolio", to: "/portfolio", icon: Briefcase },
-  { label: "Capabilities", to: "/capabilities", icon: Blocks },
-  { label: "Blog", to: "/blog", icon: Newspaper },
-  { label: "Contact", to: "/contact", icon: Mail },
+const navItems = [
+  { label: "Home", to: "/" },
+  { label: "About", to: "/about" },
+  { label: "Portfolio", to: "/portfolio" },
+  { label: "Capabilities", to: "/capabilities" },
+  { label: "Blog", to: "/blog" },
+  { label: "Contact", to: "/contact" },
 ];
 
 const MOBILE_NAV_ID = "mobile-navigation";
@@ -78,12 +64,6 @@ export function Navbar() {
   const [sheetOpen, setSheetOpen] = useState(false);
   /** Natural width of the expanded row, so `auto` never has to be measured mid-animation. */
   const [expandedWidth, setExpandedWidth] = useState<number | null>(null);
-  /**
-   * The pill clips its contents while its width animates, so the row can never
-   * spill outside the rounded surface. Once settled it lets children overflow
-   * so the dock's floating labels can rise above the bar.
-   */
-  const [clipContent, setClipContent] = useState(true);
 
   const pillRef = useRef<HTMLDivElement>(null);
   const rowRef = useRef<HTMLDivElement>(null);
@@ -156,15 +136,6 @@ export function Navbar() {
     }
   });
 
-  // Re-clip whenever the pill starts collapsing or expanding again. The timer
-  // is a fallback for the case where the width animation is already settled
-  // (for example on first mount) and never reports completion.
-  useEffect(() => {
-    setClipContent(true);
-    const timer = window.setTimeout(() => setClipContent(false), 600);
-    return () => window.clearTimeout(timer);
-  }, [collapsed]);
-
   // A route change scrolls to the top; reset so the pill is never left collapsed.
   useEffect(() => {
     lastY.current = 0;
@@ -219,17 +190,14 @@ export function Navbar() {
     : { type: "spring" as const, stiffness: 280, damping: 30, mass: 1 };
   const fadeTransition = { duration: reduceMotion ? 0 : 0.16, ease: "easeOut" as const };
 
-  // Mobile rows only. `min-h-11` keeps every row a 44px tap target.
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
-      "flex min-h-11 items-center gap-3 rounded-md px-3 py-3 font-heading text-base font-semibold transition-colors focus-ring",
-      isActive
-        ? "bg-surface-pale text-accent-dark"
-        : "text-navy hover:bg-surface-pale"
+      "relative whitespace-nowrap rounded-pill px-2.5 py-2 text-sm font-medium transition-colors focus-ring hover:text-accent",
+      isActive ? "text-accent-dark" : "text-ink/75"
     );
 
   return (
-    <header className="pointer-events-none fixed inset-x-0 top-0 z-40 flex justify-center px-4 pt-4 sm:pt-5 lg:pt-8">
+    <header className="pointer-events-none fixed inset-x-0 top-0 z-40 flex justify-center px-4 pt-4 sm:pt-5">
       <Sheet open={sheetOpen} onOpenChange={handleSheetOpenChange}>
         <motion.div
           ref={pillRef}
@@ -238,8 +206,7 @@ export function Navbar() {
           transition={widthTransition}
           style={{ maxWidth: "calc(100vw - 2rem)" }}
           className={cn(
-            "pointer-events-auto relative flex h-14 items-center rounded-pill",
-            clipContent ? "overflow-hidden" : "overflow-visible",
+            "pointer-events-auto relative flex h-14 items-center overflow-hidden rounded-pill",
             "border border-surface-pale3 bg-surface-alt/80 shadow-[0_10px_30px_-12px_rgba(11,28,48,0.28)] backdrop-blur-xl"
           )}
         >
@@ -274,15 +241,29 @@ export function Navbar() {
               </span>
             </Link>
 
-            <Dock
-              items={navItems}
-              label="Primary"
-              magnification={1.45}
-              distance={110}
-              spring={{ stiffness: 320, damping: 26, mass: 0.6 }}
-              labelPlacement="top"
-              className="hidden shrink-0 lg:flex"
-            />
+            <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Primary">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === "/"}
+                  className={navLinkClass}
+                >
+                  {({ isActive }) => (
+                    <>
+                      {item.label}
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          "absolute inset-x-2.5 bottom-1 h-0.5 rounded-pill bg-accent transition-opacity duration-200",
+                          isActive ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </nav>
 
             <span className="hidden shrink-0 items-center gap-2 2xl:inline-flex">
               <span className="relative flex h-2 w-2">
@@ -354,26 +335,17 @@ export function Navbar() {
           <nav className="mt-2 flex flex-col gap-1" aria-label="Mobile">
             {navItems.map((item) => (
               <SheetClose asChild key={item.to}>
-                <NavLink to={item.to} end={item.end} className={navLinkClass}>
-                  {({ isActive }) => (
-                    <>
-                      <item.icon
-                        aria-hidden="true"
-                        className={cn(
-                          "h-[18px] w-[18px] shrink-0",
-                          isActive ? "text-accent-dark" : "text-ink/55"
-                        )}
-                      />
-                      <span>{item.label}</span>
-                      <span
-                        aria-hidden="true"
-                        className={cn(
-                          "ml-auto h-1.5 w-1.5 rounded-full bg-accent transition-opacity duration-200 motion-reduce:transition-none",
-                          isActive ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                    </>
-                  )}
+                <NavLink
+                  to={item.to}
+                  end={item.to === "/"}
+                  className={({ isActive }) =>
+                    cn(
+                      "rounded-md px-3 py-3 font-heading text-base font-semibold transition-colors",
+                      isActive ? "bg-surface-pale text-accent-dark" : "text-navy hover:bg-surface-pale"
+                    )
+                  }
+                >
+                  {item.label}
                 </NavLink>
               </SheetClose>
             ))}
