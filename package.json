@@ -37,6 +37,7 @@
     "@upstash/redis": "^1.41.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "d3-geo": "3.1.2",
     "framer-motion": "^12.43.0",
     "gsap": "^3.12.5",
     "lucide-react": "^0.460.0",
@@ -48,16 +49,21 @@
     "sanity": "^3.99.0",
     "styled-components": "^6.5.3",
     "tailwind-merge": "^2.5.5",
-    "vanilla-cookieconsent": "^3.3.0"
+    "topojson-client": "3.1.0",
+    "vanilla-cookieconsent": "^3.3.0",
+    "world-atlas": "2.0.2"
   },
   "allowScripts": {
     "esbuild": true
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
+    "@types/d3-geo": "3.1.1",
     "@types/node": "^22.10.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@types/topojson-client": "3.1.5",
+    "@types/topojson-specification": "1.0.5",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
