@@ -1,11 +1,13 @@
 import { expect, gotoHome, waitForConsentReady, test, type Page } from "./helpers";
 
 /**
- * Process section — Hover Reveal Cards.
+ * Process section — six-card stage grid.
  *
- * The section must render the six stages, keep the copy verbatim, load one
- * distinct photograph per card, honour keyboard focus and reduced motion the
- * same way it does hover, and never introduce horizontal scrolling.
+ * The section must render the six stages as informational cards, keep the
+ * copy verbatim, give every card a restrained decorative icon, honour
+ * reduced motion by keeping cards static, and never introduce horizontal
+ * scrolling. Cards are not interactive, so they must not be focusable or
+ * imply navigation.
  */
 
 const STAGES = [
@@ -43,6 +45,11 @@ function cards(page: Page) {
   return processSection(page).locator("ul > li");
 }
 
+/** The SurfaceCard panel inside a stage list item. */
+function cardSurface(page: Page, index: number) {
+  return cards(page).nth(index).locator("div").first();
+}
+
 async function cardMetrics(page: Page, index: number) {
   return cards(page).nth(index).evaluate((element) => {
     const computed = getComputedStyle(element);
@@ -50,6 +57,19 @@ async function cardMetrics(page: Page, index: number) {
       opacity: Number(computed.opacity),
       transform: computed.transform,
       transitionProperty: computed.transitionProperty,
+    };
+  });
+}
+
+async function surfaceMetrics(page: Page, index: number) {
+  return cardSurface(page, index).evaluate((element) => {
+    const computed = getComputedStyle(element);
+    return {
+      transform: computed.transform,
+      transitionProperty: computed.transitionProperty,
+      boxShadow: computed.boxShadow,
+      borderColor: computed.borderColor,
+      cursor: computed.cursor,
     };
   });
 }
@@ -83,55 +103,52 @@ test.describe("process section", () => {
     }
   });
 
-  test("loads one distinct, fully-resolved photograph per card", async ({ page }) => {
+  test("gives every card one decorative icon and no images", async ({ page }) => {
     await gotoHome(page);
     await dismissConsent(page);
 
     const section = processSection(page);
     await section.scrollIntoViewIfNeeded();
 
-    const images = section.locator("img");
-    await expect(images).toHaveCount(STAGES.length);
-
-    const sources = await images.evaluateAll((elements) =>
-      elements.map((element) => (element as HTMLImageElement).src)
-    );
-    expect(new Set(sources).size).toBe(STAGES.length);
-
+    // The six stage icons are lucide SVGs, hidden from assistive technology:
+    // the visible stage name is the accessible label.
+    const icons = section.locator("svg");
+    await expect(icons).toHaveCount(STAGES.length);
     for (let index = 0; index < STAGES.length; index += 1) {
-      await expect
-        .poll(
-          () =>
-            images.nth(index).evaluate(
-              (element) => {
-                const img = element as HTMLImageElement;
-                return img.complete && img.naturalWidth > 0;
-              }
-            ),
-          { timeout: 20000 }
-        )
-        .toBe(true);
+      await expect(icons.nth(index)).toHaveAttribute("aria-hidden", "true");
     }
+
+    // The redesign retired the per-card photographs; nothing should load one.
+    await expect(section.locator("img")).toHaveCount(0);
   });
 
-  test("hover emphasis promotes the active card and dims its siblings", async ({ page }) => {
+  test("hover raises the card without dimming its siblings", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoHome(page);
     await dismissConsent(page);
 
     const section = processSection(page);
     await section.scrollIntoViewIfNeeded();
+
+    const before = await surfaceMetrics(page, 1);
+    expect(before.transform).toBe("none");
+    expect(before.cursor).not.toBe("pointer");
 
     await cards(page).nth(1).hover();
-    await page.waitForTimeout(700);
+    await page.waitForTimeout(500);
 
-    const hovered = await cardMetrics(page, 1);
-    const sibling = await cardMetrics(page, 0);
-    expect(hovered.opacity).toBe(1);
-    expect(sibling.opacity).toBeLessThan(0.8);
+    const hovered = await surfaceMetrics(page, 1);
+    const sibling = await surfaceMetrics(page, 0);
+    expect(hovered.transform).not.toBe("none");
+    expect(hovered.boxShadow).not.toBe(before.boxShadow);
+    expect(sibling.transform).toBe("none");
+    expect(sibling.boxShadow).toBe("none");
+
+    // The card is informational: no opacity dimming of neighbours.
+    expect((await cardMetrics(page, 0)).opacity).toBe(1);
   });
 
-  test("keyboard focus produces the same emphasis as hover", async ({ page }) => {
+  test("cards are informational: not focusable and not links", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoHome(page);
     await dismissConsent(page);
@@ -139,18 +156,22 @@ test.describe("process section", () => {
     const section = processSection(page);
     await section.scrollIntoViewIfNeeded();
 
-    const focused = cards(page).locator("article").nth(0);
-    await focused.focus();
-    await expect(focused).toBeFocused();
-    await page.waitForTimeout(700);
+    await expect(cards(page)).toHaveCount(STAGES.length);
+    await expect(section.locator("a")).toHaveCount(0);
+    await expect(section.locator("button")).toHaveCount(0);
+    await expect(section.locator("[tabindex]")).toHaveCount(0);
 
-    const focusedCard = await cardMetrics(page, 0);
-    const sibling = await cardMetrics(page, 1);
-    expect(focusedCard.opacity).toBe(1);
-    expect(sibling.opacity).toBeLessThan(0.8);
+    for (let index = 0; index < STAGES.length; index += 1) {
+      const tabIndex = await cards(page)
+        .nth(index)
+        .evaluate((element) => (element as HTMLElement).tabIndex);
+      expect(tabIndex).toBe(-1);
+    }
 
-    const outline = await focused.evaluate((element) => getComputedStyle(element).outlineStyle);
-    expect(outline).not.toBe("none");
+    // Clicking a card must not navigate anywhere.
+    const urlBefore = page.url();
+    await cards(page).nth(2).click();
+    expect(page.url()).toBe(urlBefore);
   });
 
   test("mobile keeps a single-column, readable card list", async ({ page }) => {
@@ -190,27 +211,42 @@ test.describe("process section", () => {
     });
   }
 
-  test("cards stay legible in the dark theme", async ({ page }) => {
-    await page.addInitScript(() => {
-      try {
-        localStorage.setItem("ek-theme", "dark");
-      } catch {
-        /* storage may be unavailable; the default theme still renders */
+  test("card headings follow the theme tokens in light and dark", async ({ page }) => {
+    for (const theme of ["light", "dark"] as const) {
+      await page.addInitScript((value) => {
+        try {
+          localStorage.setItem("ek-theme", value);
+        } catch {
+          /* storage may be unavailable; the default theme still renders */
+        }
+      }, theme);
+      await gotoHome(page);
+      await dismissConsent(page);
+
+      const section = processSection(page);
+      await section.scrollIntoViewIfNeeded();
+
+      const headings = section.getByRole("heading", { level: 3 });
+      await expect(headings).toHaveCount(STAGES.length);
+
+      // text-navy resolves to the theme's navy token.
+      const expected = theme === "dark" ? "rgb(245, 247, 255)" : "rgb(13, 13, 91)";
+      for (let index = 0; index < STAGES.length; index += 1) {
+        await expect(headings.nth(index)).toBeVisible();
+        const color = await headings
+          .nth(index)
+          .evaluate((element) => getComputedStyle(element).color);
+        expect(color).toBe(expected);
       }
-    });
-    await gotoHome(page);
-    await dismissConsent(page);
 
-    const section = processSection(page);
-    await section.scrollIntoViewIfNeeded();
-
-    const headings = section.getByRole("heading", { level: 3 });
-    await expect(headings).toHaveCount(STAGES.length);
-    for (let index = 0; index < STAGES.length; index += 1) {
-      await expect(headings.nth(index)).toBeVisible();
-      const color = await headings.nth(index).evaluate((element) => getComputedStyle(element).color);
-      // Card text is intentionally white over the navy gradient in both themes.
-      expect(color).toBe("rgb(255, 255, 255)");
+      // Reset for the next iteration.
+      await page.addInitScript(() => {
+        try {
+          localStorage.removeItem("ek-theme");
+        } catch {
+          /* ignore */
+        }
+      });
     }
   });
 });
@@ -228,12 +264,19 @@ test.describe("process section — reduced motion", () => {
 
     await expect(section.getByRole("heading", { level: 3 })).toHaveCount(STAGES.length);
 
+    const before = await cardMetrics(page, 1);
+    expect(before.transform).toBe("none");
+    const beforeSurface = await surfaceMetrics(page, 1);
+    expect(beforeSurface.transitionProperty).toBe("none");
+
     await cards(page).nth(1).hover();
     await page.waitForTimeout(150);
 
     const hovered = await cardMetrics(page, 1);
-    expect(hovered.transitionProperty).toBe("none");
+    const surface = await surfaceMetrics(page, 1);
     expect(hovered.transform).toBe("none");
+    expect(surface.transform).toBe("none");
+    expect(surface.transitionProperty).toBe("none");
 
     const widths = await page.evaluate(() => ({
       scroll: document.documentElement.scrollWidth,
