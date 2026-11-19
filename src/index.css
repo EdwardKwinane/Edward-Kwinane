@@ -380,6 +380,98 @@
   }
 }
 
+/* IntegrationHero — Technologies & Tools marquee.
+   Two infinite tracks (one per row) translated by exactly one copy width.
+   Each copy carries trailing padding equal to the gap, so the −50% loop
+   point is pixel-identical — no seam, no jump. Pure CSS: no JS loops. */
+.integration-marquee {
+  --integration-marquee-gap: 0.875rem;
+  --integration-marquee-duration: 60s;
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+}
+
+@media (min-width: 640px) {
+  .integration-marquee {
+    --integration-marquee-gap: 1.5rem;
+    --integration-marquee-duration: 66s;
+  }
+}
+
+@media (min-width: 1024px) {
+  .integration-marquee {
+    --integration-marquee-gap: 2rem;
+    --integration-marquee-duration: 72s;
+  }
+}
+
+.integration-marquee__track {
+  display: flex;
+  width: max-content;
+  animation: integration-marquee-x var(--integration-marquee-duration) linear infinite;
+  will-change: transform;
+}
+
+.integration-marquee--reverse .integration-marquee__track {
+  animation-direction: reverse;
+}
+
+.integration-marquee__copy {
+  display: flex;
+  align-items: center;
+  gap: var(--integration-marquee-gap);
+  padding-right: var(--integration-marquee-gap);
+}
+
+@keyframes integration-marquee-x {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (hover: hover) {
+  .integration-marquee:hover .integration-marquee__track {
+    animation-play-state: paused;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .integration-marquee {
+    mask-image: none;
+    -webkit-mask-image: none;
+    overflow: visible;
+  }
+
+  .integration-marquee__track {
+    animation: none;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 1.5rem;
+  }
+
+  .integration-marquee__copy {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    padding-right: 0;
+    row-gap: 1.5rem;
+  }
+
+  .integration-marquee__copy[aria-hidden="true"] {
+    display: none;
+  }
+
+  .integration-tile--repeat {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sheet-content[data-state="open"] {
     animation: none;
