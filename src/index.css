@@ -366,19 +366,8 @@
   }
 }
 
-/* Mobile nav sheet */
-.sheet-content[data-state="open"] {
-  animation: sheet-in 0.25s ease-out;
-}
-
-@keyframes sheet-in {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
+/* Mobile nav sheet — intentionally has no open/close animation: the panel
+   renders in its final position. */
 
 /* IntegrationHero — Technologies & Tools marquee.
    Two infinite tracks (one per row) translated by exactly one copy width.
@@ -472,11 +461,6 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .sheet-content[data-state="open"] {
-    animation: none;
-  }
-}
 /* CookieConsent (vanilla-cookieconsent) — themed with the Edward Kwinane
    design system. The library ships its base styles (imported in main.tsx)
    and is re-skinned purely through its --cc-* variables, so it follows the
