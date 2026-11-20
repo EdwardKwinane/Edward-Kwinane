@@ -7,18 +7,16 @@ import {
 } from "d3-geo";
 import { feature } from "topojson-client";
 import land110m from "world-atlas/land-110m.json";
-import { Mail, MessageSquare, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SurfaceCard, cardIconChipClass } from "@/components/ui/SurfaceCard";
+import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import { useSiteSettings } from "@/data/site";
 
 /**
  * Contact-with-Globe — the supplied contact page layout, rebuilt on this
  * site's design system.
  *
- * Left column: direct context on how engagements start (project types,
- * response expectations, the fact that email is not public yet) plus a
- * static vector globe.
+ * Left column: the current availability status (the only verified contact
+ * context the site publishes) plus a static vector globe.
  * Right column: `children`, which is the real `<ContactForm />` — this
  * component never renders its own inputs, so the `/api/contact` contract is
  * untouched.
@@ -35,25 +33,6 @@ export interface ContactWithGlobeProps {
   children?: React.ReactNode;
   className?: string;
 }
-
-const contactChannels = [
-  {
-    icon: Zap,
-    title: "Project types",
-    description:
-      "Voice agents, RAG systems, AI chatbots, AI agents, full-stack products and automation.",
-  },
-  {
-    icon: MessageSquare,
-    title: "Response time",
-    description: "Messages are typically reviewed within a couple of business days.",
-  },
-  {
-    icon: Mail,
-    title: "Prefer email?",
-    description: "There is no public email address yet — use the form to get in touch.",
-  },
-];
 
 interface GlobeModel {
   sphere: string;
@@ -117,14 +96,14 @@ function StaticGlobe() {
 
   if (!model) {
     return (
-      <div className="mx-auto flex w-full max-w-[340px] items-center justify-center">
+      <div className="mx-auto flex w-full max-w-[340px] items-center justify-center sm:max-w-[420px]">
         <GlobeFallback />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-[340px]">
+    <div className="mx-auto w-full max-w-[340px] sm:max-w-[420px]">
       <svg
         viewBox={`0 0 ${GLOBE_WIDTH} ${GLOBE_HEIGHT}`}
         className="h-auto w-full"
@@ -158,57 +137,21 @@ export function ContactWithGlobe({ children, className }: ContactWithGlobeProps)
 
   return (
     <div className={cn("grid gap-8 lg:grid-cols-2 lg:gap-12 xl:gap-16", className)}>
-      {/* Left column — context + globe. */}
-      <SurfaceCard className="flex flex-col gap-8 p-6 sm:p-8">
-        <div>
-          <p className="font-technical text-[10px] font-bold uppercase tracking-tech text-accent-dark">
-            Get in touch
-          </p>
-          <h2 className="mt-2 font-heading text-xl font-semibold text-navy lg:text-2xl">
-            How this usually starts
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink/70">
-            The form is the fastest route — it lands straight in Edward&apos;s inbox, not a ticket
-            queue. A short brief is all it takes to scope the first conversation.
-          </p>
-        </div>
-
-        <ul className="flex flex-col gap-5">
-          {contactChannels.map((channel) => {
-            const Icon = channel.icon;
-            return (
-              <li key={channel.title} className="flex items-start gap-4">
-                <span className={cn(cardIconChipClass, "h-11 w-11 shrink-0")}>
-                  <Icon className="h-5 w-5" strokeWidth={1.5} aria-hidden="true" />
-                </span>
-                <span className="min-w-0">
-                  <span className="block font-heading text-sm font-semibold text-navy">
-                    {channel.title}
-                  </span>
-                  <span className="mt-1 block text-sm leading-relaxed text-ink/65">
-                    {channel.description}
-                  </span>
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-
-        <div className="mt-auto flex flex-col gap-4 border-t border-surface-pale3 pt-6">
-          <span className="inline-flex w-max items-center gap-2 rounded-full border border-surface-pale4 bg-surface-pale px-3 py-1.5">
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="whitespace-nowrap font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65">
-              {settings.availabilityText}
-            </span>
+      {/* Left column — availability + globe. */}
+      <SurfaceCard className="flex flex-col gap-6 p-6 sm:p-8">
+        <span className="inline-flex w-max items-center gap-2 rounded-full border border-surface-pale4 bg-surface-pale px-3 py-1.5">
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          <span className="whitespace-nowrap font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/65">
+            {settings.availabilityText}
           </span>
+        </span>
 
-          <figure className="overflow-hidden rounded-2xl border border-surface-pale3 bg-navy-deep px-4 pb-5 pt-6">
-            <StaticGlobe />
-            <figcaption className="mt-1 text-center font-technical text-[9px] font-semibold uppercase tracking-tech text-white/60">
-              Every project starts with a conversation
-            </figcaption>
-          </figure>
-        </div>
+        <figure className="flex flex-1 flex-col justify-center gap-3 overflow-hidden rounded-2xl border border-surface-pale3 bg-navy-deep px-4 pb-5 pt-6">
+          <StaticGlobe />
+          <figcaption className="text-center font-technical text-[9px] font-semibold uppercase tracking-tech text-white/60">
+            Every project starts with a conversation
+          </figcaption>
+        </figure>
       </SurfaceCard>
 
       {/* Right column — the real form card. */}
