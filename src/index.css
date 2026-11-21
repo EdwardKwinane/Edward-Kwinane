@@ -378,14 +378,24 @@
   --integration-marquee-duration: 60s;
   overflow: hidden;
   width: 100%;
-  mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+  /* Wider, softer fade on phones so a half-visible tile does not cut its
+     label mid-word at the viewport edge. */
+  mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
 }
 
 @media (min-width: 640px) {
   .integration-marquee {
     --integration-marquee-gap: 1.5rem;
     --integration-marquee-duration: 66s;
+    mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 7%,
+      black 93%,
+      transparent
+    );
   }
 }
 
@@ -393,6 +403,15 @@
   .integration-marquee {
     --integration-marquee-gap: 2rem;
     --integration-marquee-duration: 72s;
+  }
+}
+
+/* Airier spacing on wide monitors: fewer of the 8 unique tiles repeat inside
+   a single viewport. Same scroll speed (copy width ÷ duration ≈ 53px/s). */
+@media (min-width: 1536px) {
+  .integration-marquee {
+    --integration-marquee-gap: 3.5rem;
+    --integration-marquee-duration: 83s;
   }
 }
 
@@ -427,6 +446,23 @@
   .integration-marquee:hover .integration-marquee__track {
     animation-play-state: paused;
   }
+
+  /* An explicit Play must win over a resting pointer (e.g. keyboard
+     activation while the cursor happens to sit over a row). The flag clears
+     when the pointer enters or leaves the group, so hover pause resumes. */
+  .integration-marquee-group[data-paused="false"][data-ignore-hover="true"] .integration-marquee:hover .integration-marquee__track {
+    animation-play-state: running;
+  }
+}
+
+/* Manual pause keeps both rows stopped wherever the pointer goes. */
+.integration-marquee-group[data-paused="true"] .integration-marquee__track {
+  animation-play-state: paused;
+}
+
+/* Keyboard focus inside the marquee pauses it while the user reads. */
+.integration-marquee-group:focus-within .integration-marquee__track {
+  animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -459,6 +495,26 @@
   .integration-tile--repeat {
     display: none;
   }
+}
+
+/* Theme-aware dotted grid behind the marquee. Uses the same token as the
+   hero blueprint grid so the texture stays visible in both themes. */
+.integration-grid {
+  background-image: radial-gradient(rgb(var(--c-grid-line) / 0.16) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 120% 90% at 50% 40%, black 35%, transparent 78%);
+  -webkit-mask-image: radial-gradient(
+    ellipse 120% 90% at 50% 40%,
+    black 35%,
+    transparent 78%
+  );
+}
+
+/* The focusable marquee group shows an inset ring instead of overflowing
+   its full-bleed edges. */
+.integration-marquee-group:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -4px;
 }
 
 /* CookieConsent (vanilla-cookieconsent) — themed with the Edward Kwinane
