@@ -510,6 +510,16 @@
   );
 }
 
+/* Dark theme: the navy grid line sits close to the dark background, so the
+   dots use the lighter navy-light token at a modest alpha to stay visible
+   without competing with the marquee tiles. */
+html.dark .integration-grid {
+  background-image: radial-gradient(
+    rgb(var(--c-navy-light) / 0.25) 1px,
+    transparent 1.2px
+  );
+}
+
 /* The focusable marquee group shows an inset ring instead of overflowing
    its full-bleed edges. */
 .integration-marquee-group:focus-visible {
