@@ -27,7 +27,7 @@ export function ProcessSection() {
           >
             From idea to production
           </h2>
-          <p className="mt-3 text-base leading-relaxed text-ink/65">
+          <p className="mt-3 text-balance text-base leading-relaxed text-ink/65">
             A repeatable sequence that moves a concept into a deployed system without losing the thread.
           </p>
         </div>

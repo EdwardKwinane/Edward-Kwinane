@@ -67,11 +67,34 @@ async function surfaceMetrics(page: Page, index: number) {
     return {
       transform: computed.transform,
       transitionProperty: computed.transitionProperty,
+      transitionDuration: computed.transitionDuration,
       boxShadow: computed.boxShadow,
       borderColor: computed.borderColor,
       cursor: computed.cursor,
     };
   });
+}
+
+/** The decorative icon chip is the first span inside the card surface. */
+async function chipMetrics(page: Page, index: number) {
+  return cardSurface(page, index)
+    .locator("span")
+    .first()
+    .evaluate((element) => {
+      const computed = getComputedStyle(element);
+      return {
+        backgroundColor: computed.backgroundColor,
+        color: computed.color,
+      };
+    });
+}
+
+/**
+ * Wait for the GSAP entrance reveal to finish. The last card resolves last,
+ * so its final opacity confirms every earlier card has completed too.
+ */
+async function waitForReveal(page: Page) {
+  await expect(cards(page).last()).toHaveCSS("opacity", "1");
 }
 
 test.describe("process section", () => {
@@ -122,29 +145,38 @@ test.describe("process section", () => {
     await expect(section.locator("img")).toHaveCount(0);
   });
 
-  test("hover raises the card without dimming its siblings", async ({ page }) => {
+  test("informational cards do not react to hover", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoHome(page);
     await dismissConsent(page);
 
     const section = processSection(page);
     await section.scrollIntoViewIfNeeded();
+    await waitForReveal(page);
 
     const before = await surfaceMetrics(page, 1);
+    const beforeChip = await chipMetrics(page, 1);
     expect(before.transform).toBe("none");
+    expect(before.boxShadow).toBe("none");
     expect(before.cursor).not.toBe("pointer");
 
     await cards(page).nth(1).hover();
-    await page.waitForTimeout(500);
 
     const hovered = await surfaceMetrics(page, 1);
+    const hoveredChip = await chipMetrics(page, 1);
+    expect(hovered.transform).toBe("none");
+    expect(hovered.boxShadow).toBe(before.boxShadow);
+    expect(hovered.borderColor).toBe(before.borderColor);
+    expect(hovered.cursor).toBe(before.cursor);
+    expect(hoveredChip.backgroundColor).toBe(beforeChip.backgroundColor);
+    expect(hoveredChip.color).toBe(beforeChip.color);
+
     const sibling = await surfaceMetrics(page, 0);
-    expect(hovered.transform).not.toBe("none");
-    expect(hovered.boxShadow).not.toBe(before.boxShadow);
     expect(sibling.transform).toBe("none");
     expect(sibling.boxShadow).toBe("none");
 
-    // The card is informational: no opacity dimming of neighbours.
+    // The card is informational: no opacity change on the card or its siblings.
+    expect((await cardMetrics(page, 1)).opacity).toBe(1);
     expect((await cardMetrics(page, 0)).opacity).toBe(1);
   });
 
@@ -254,7 +286,7 @@ test.describe("process section", () => {
 test.describe("process section — reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
 
-  test("keeps the cards static: no transitions, no hover transforms", async ({ page }) => {
+  test("keeps the cards static: no transitions, no hover treatment", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoHome(page);
     await dismissConsent(page);
@@ -267,16 +299,21 @@ test.describe("process section — reduced motion", () => {
     const before = await cardMetrics(page, 1);
     expect(before.transform).toBe("none");
     const beforeSurface = await surfaceMetrics(page, 1);
-    expect(beforeSurface.transitionProperty).toBe("none");
+    const beforeChip = await chipMetrics(page, 1);
+    expect(beforeSurface.transitionDuration).toBe("0s");
 
     await cards(page).nth(1).hover();
-    await page.waitForTimeout(150);
 
     const hovered = await cardMetrics(page, 1);
     const surface = await surfaceMetrics(page, 1);
+    const chip = await chipMetrics(page, 1);
     expect(hovered.transform).toBe("none");
     expect(surface.transform).toBe("none");
-    expect(surface.transitionProperty).toBe("none");
+    expect(surface.transitionDuration).toBe("0s");
+    expect(surface.boxShadow).toBe(beforeSurface.boxShadow);
+    expect(surface.borderColor).toBe(beforeSurface.borderColor);
+    expect(chip.backgroundColor).toBe(beforeChip.backgroundColor);
+    expect(chip.color).toBe(beforeChip.color);
 
     const widths = await page.evaluate(() => ({
       scroll: document.documentElement.scrollWidth,

@@ -21,14 +21,14 @@ import type { ProcessStage } from "@/data/process";
  * so the section belongs to the existing card language rather than
  * introducing a second one.
  *
- * Cards are informational: no links, no tab stops, no pointer cursor. The
- * only interaction is a restrained lift + border/shadow emphasis on hover,
- * applied via `motion-safe:` so `prefers-reduced-motion` keeps them static.
+ * Cards are informational: no links, no tab stops, no pointer cursor and no
+ * hover affordance that would imply they can be clicked. The shared icon
+ * chip's `group-hover` accent is intentionally not activated here because
+ * the cards are not in a `group`.
  *
  * Entrance animation is the site-wide GSAP scroll reveal
  * (`revealElements(".process-card")`, called by the section), which itself
- * disables under reduced motion. The reveal targets the list item; the
- * hover lift lives on the inner card so the two transforms never fight.
+ * disables under reduced motion.
  */
 
 const stageIcons: Record<string, LucideIcon> = {
@@ -42,10 +42,7 @@ const stageIcons: Record<string, LucideIcon> = {
 
 const cardClass = cn(
   surfaceCardClass,
-  "group flex h-full min-h-[240px] flex-col p-6 sm:min-h-[264px] sm:p-7 lg:min-h-[280px] lg:p-8",
-  "transition-[border-color,box-shadow,transform] duration-300 ease-out motion-reduce:transition-none",
-  "hover:border-navy/25 hover:shadow-[0_16px_40px_rgba(13,13,91,0.12)]",
-  "motion-safe:hover:-translate-y-1"
+  "flex h-full min-h-[220px] flex-col p-6 sm:min-h-[232px] sm:p-7 lg:min-h-[248px] lg:p-8"
 );
 
 export interface ProcessGridProps {
@@ -77,7 +74,7 @@ export function ProcessGrid({ stages, className }: ProcessGridProps) {
                 </span>
                 <span className="flex items-center gap-3">
                   <span aria-hidden="true" className="h-px w-8 bg-navy/15" />
-                  <span className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/60">
+                  <span className="font-technical text-[11px] font-bold uppercase tracking-tech text-ink/70">
                     Stage {stage.index}
                   </span>
                 </span>
@@ -87,7 +84,7 @@ export function ProcessGrid({ stages, className }: ProcessGridProps) {
                 <h3 className="font-heading text-xl font-semibold leading-snug text-navy lg:text-[22px]">
                   {stage.name}
                 </h3>
-                <p className="mt-2.5 text-[15px] leading-relaxed text-ink/65">
+                <p className="mt-2.5 text-pretty text-[15px] leading-relaxed text-ink/65 sm:max-md:text-balance">
                   {stage.detail}
                 </p>
               </div>
