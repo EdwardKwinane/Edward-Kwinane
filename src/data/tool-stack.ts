@@ -1,5 +1,6 @@
 /**
- * The Tools & Technologies stack shown in the homepage marquee.
+ * The Tools & Technologies inventory shown in the homepage Technologies
+ * & Tools section (two infinite marquee tracks of circular tiles).
  *
  * Every entry is verifiable from this repository: `package.json` dependencies, the
  * README stack, or the documented Sanity / Vercel deployment. Nothing here is a
@@ -17,9 +18,11 @@
 
 export type ToolCategory =
   | "Frontend"
+  | "Runtime"
   | "Content & Data"
   | "Animation"
-  | "Infrastructure";
+  | "Infrastructure"
+  | "Voice & Real-time";
 
 export interface Tool {
   /** Stable identifier, also used as the React key. */
@@ -28,8 +31,12 @@ export interface Tool {
   name: string;
   /** Grouping used for documentation and future filtering. */
   category: ToolCategory;
-  /** Official brand mark as an SVG path on a `0 0 24 24` grid. */
-  path: string;
+  /** Official brand mark as an SVG path on a `0 0 24 24` grid. Absent for
+   *  technologies without a brand mark (text fallback is used then). */
+  path?: string;
+  /** Short text rendered inside the tile when no brand path is available
+   *  (e.g. standards such as WebRTC). */
+  fallback?: string;
   /** Where the asset came from, for provenance. */
   source: string;
 }
@@ -102,7 +109,7 @@ export const tools: Tool[] = [
   {
     id: "nodedotjs",
     name: "Node.js",
-    category: "Content & Data",
+    category: "Runtime",
     path:
       "M11.998,24c-0.321,0-0.641-0.084-0.922-0.247l-2.936-1.737c-0.438-0.245-0.224-0.332-0.08-0.383 c0.585-0.203,0.703-0.25,1.328-0.604c0.065-0.037,0.151-0.023,0.218,0.017l2.256,1.339c0.082,0.045,0.197,0.045,0.272,0l8.795-5.076 c0.082-0.047,0.134-0.141,0.134-0.238V6.921c0-0.099-0.053-0.192-0.137-0.242l-8.791-5.072c-0.081-0.047-0.189-0.047-0.271,0 L3.075,6.68C2.99,6.729,2.936,6.825,2.936,6.921v10.15c0,0.097,0.054,0.189,0.139,0.235l2.409,1.392 c1.307,0.654,2.108-0.116,2.108-0.89V7.787c0-0.142,0.114-0.253,0.256-0.253h1.115c0.139,0,0.255,0.112,0.255,0.253v10.021 c0,1.745-0.95,2.745-2.604,2.745c-0.508,0-0.909,0-2.026-0.551L2.28,18.675c-0.57-0.329-0.922-0.945-0.922-1.604V6.921 c0-0.659,0.353-1.275,0.922-1.603l8.795-5.082c0.557-0.315,1.296-0.315,1.848,0l8.794,5.082c0.57,0.329,0.924,0.944,0.924,1.603 v10.15c0,0.659-0.354,1.273-0.924,1.604l-8.794,5.078C12.643,23.916,12.324,24,11.998,24z M19.099,13.993 c0-1.9-1.284-2.406-3.987-2.763c-2.731-0.361-3.009-0.548-3.009-1.187c0-0.528,0.235-1.233,2.258-1.233 c1.807,0,2.473,0.389,2.747,1.607c0.024,0.115,0.129,0.199,0.247,0.199h1.141c0.071,0,0.138-0.031,0.186-0.081 c0.048-0.054,0.074-0.123,0.067-0.196c-0.177-2.098-1.571-3.076-4.388-3.076c-2.508,0-4.004,1.058-4.004,2.833 c0,1.925,1.488,2.457,3.895,2.695c2.88,0.282,3.103,0.703,3.103,1.269c0,0.983-0.789,1.402-2.642,1.402 c-2.327,0-2.839-0.584-3.011-1.742c-0.02-0.124-0.126-0.215-0.253-0.215h-1.137c-0.141,0-0.254,0.112-0.254,0.253 c0,1.482,0.806,3.248,4.655,3.248C17.501,17.007,19.099,15.91,19.099,13.993z",
     source: "Simple Icons (Node.js)",
@@ -131,4 +138,72 @@ export const tools: Tool[] = [
       "m12 1.608 12 20.784H0Z",
     source: "Simple Icons (Vercel)",
   },
+  {
+    id: "upstash",
+    name: "Upstash",
+    category: "Infrastructure",
+    path:
+      "M13.8027 0C11.193 0 8.583.9952 6.5918 2.9863c-3.9823 3.9823-3.9823 10.4396 0 14.4219 1.9911 1.9911 5.2198 1.9911 7.211 0 1.991-1.9911 1.991-5.2198 0-7.211L12 12c.9956.9956.9956 2.6098 0 3.6055-.9956.9955-2.6099.9955-3.6055 0-2.9866-2.9868-2.9866-7.8297 0-10.8164 2.9868-2.9868 7.8297-2.9868 10.8164 0l1.8028-1.8028C19.0225.9952 16.4125 0 13.8027 0zM12 12c-.9956-.9956-.9956-2.6098 0-3.6055.9956-.9955 2.6098-.9955 3.6055 0 2.9867 2.9868 2.9867 7.8297 0 10.8164-2.9867 2.9868-7.8297 2.9868-10.8164 0l-1.8028 1.8028c3.9823 3.9822 10.4396 3.9822 14.4219 0 3.9823-3.9824 3.9823-10.4396 0-14.4219-.9956-.9956-2.3006-1.4922-3.6055-1.4922-1.3048 0-2.6099.4966-3.6054 1.4922-1.9912 1.9912-1.9912 5.2198 0 7.211z",
+    source: "Simple Icons (Upstash) — @upstash/redis, rate limiting in api/contact.ts",
+  },
+  {
+    id: "github",
+    name: "GitHub",
+    category: "Infrastructure",
+    path:
+      "M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12",
+    source: "Simple Icons (GitHub) — README: GitHub is the source of truth",
+  },
+  {
+    id: "npm",
+    name: "npm",
+    category: "Infrastructure",
+    path:
+      "M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z",
+    source: "Simple Icons (npm) — README: the only package manager used",
+  },
+  {
+    id: "webrtc",
+    name: "WebRTC",
+    category: "Voice & Real-time",
+    fallback: "WebRTC",
+    source: "Seeded project content (AI Voice Agent): WebRTC, STT, LLM, TTS",
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* Marquee rows — split so the two tracks scroll in opposite           */
+/* directions. Every entry is verified against this repository (see     */
+/* each `source`); nothing is listed for adjacency or aspiration.      */
+/* ------------------------------------------------------------------ */
+
+const byId = new Map(tools.map((tool) => [tool.id, tool]));
+const pick = (id: string): Tool => {
+  const tool = byId.get(id);
+  if (!tool) throw new Error(`tool-stack: unknown tool "${id}"`);
+  return tool;
+};
+
+/** Row one — interface, language and runtime. */
+export const integrationRowOne: Tool[] = [
+  pick("react"),
+  pick("typescript"),
+  pick("vite"),
+  pick("tailwindcss"),
+  pick("reactrouter"),
+  pick("radixui"),
+  pick("lucide"),
+  pick("nodedotjs"),
+];
+
+/** Row two — content, motion, delivery and real-time. */
+export const integrationRowTwo: Tool[] = [
+  pick("sanity"),
+  pick("framer"),
+  pick("gsap"),
+  pick("upstash"),
+  pick("vercel"),
+  pick("github"),
+  pick("npm"),
+  pick("webrtc"),
 ];

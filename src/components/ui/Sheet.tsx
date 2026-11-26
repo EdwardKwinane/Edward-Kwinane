@@ -16,7 +16,7 @@ const SheetOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-navy-deep/50 backdrop-blur-sm data-[state=open]:animate-in",
+      "fixed inset-0 z-50 bg-navy-deep/50 backdrop-blur-sm",
       className
     )}
     {...props}
@@ -33,13 +33,13 @@ const SheetContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "sheet-content fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-sm flex-col gap-6 overflow-y-auto bg-surface-alt p-8 shadow-2xl outline-none",
+        "fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-sm flex-col gap-6 overflow-y-auto bg-surface-alt p-8 shadow-2xl outline-none",
         className
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-2 text-ink/65 transition-colors hover:bg-surface-pale hover:text-navy focus-ring">
+      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-2 text-ink/65 hover:bg-surface-pale hover:text-navy focus-ring">
         <X className="h-5 w-5" />
         <span className="sr-only">Close menu</span>
       </DialogPrimitive.Close>

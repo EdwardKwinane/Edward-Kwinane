@@ -3,7 +3,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Hero } from "@/components/home/Hero";
 import { CapabilityPreview } from "@/components/home/CapabilityPreview";
 import { FeaturedPortfolio } from "@/components/home/FeaturedPortfolio";
-import { ToolsSection } from "@/components/home/ToolsSection";
+import { IntegrationHero } from "@/components/ui/integration-hero";
 import { ArchitectureSection } from "@/components/home/ArchitectureSection";
 import { ProcessSection } from "@/components/home/ProcessSection";
 import { BlogPreview } from "@/components/home/BlogPreview";
@@ -29,7 +29,7 @@ export default function Home() {
         <FeaturedPortfolio />
       </ErrorBoundary>
       <ErrorBoundary>
-        <ToolsSection />
+        <IntegrationHero />
       </ErrorBoundary>
       <ErrorBoundary>
         <ArchitectureSection />

@@ -1,5 +1,5 @@
 import { fetchContentArray, fetchContentOne, type ContentResult } from "./content";
-import { imageUrl } from "./image";
+import { imageUrl, safeImageUrl } from "./image";
 import type {
   SanityProject,
   SanityPost,
@@ -436,7 +436,7 @@ function mapPostSummary(p: PostSummarySource): BlogPost | null {
       ? p.tags.filter((t): t is string => typeof t === "string")
       : [],
     related: [],
-    coverImage: imageUrl(p.coverImage),
+    coverImage: safeImageUrl(p.coverImage),
     coverImageAlt: p.coverImage?.alt,
   };
 }

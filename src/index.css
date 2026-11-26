@@ -366,25 +366,167 @@
   }
 }
 
-/* Mobile nav sheet */
-.sheet-content[data-state="open"] {
-  animation: sheet-in 0.25s ease-out;
+/* Mobile nav sheet — intentionally has no open/close animation: the panel
+   renders in its final position. */
+
+/* IntegrationHero — Technologies & Tools marquee.
+   Two infinite tracks (one per row) translated by exactly one copy width.
+   Each copy carries trailing padding equal to the gap, so the −50% loop
+   point is pixel-identical — no seam, no jump. Pure CSS: no JS loops. */
+.integration-marquee {
+  --integration-marquee-gap: 0.875rem;
+  --integration-marquee-duration: 60s;
+  overflow: hidden;
+  width: 100%;
+  /* Wider, softer fade on phones so a half-visible tile does not cut its
+     label mid-word at the viewport edge. */
+  mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
 }
 
-@keyframes sheet-in {
+@media (min-width: 640px) {
+  .integration-marquee {
+    --integration-marquee-gap: 1.5rem;
+    --integration-marquee-duration: 66s;
+    mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 7%,
+      black 93%,
+      transparent
+    );
+  }
+}
+
+@media (min-width: 1024px) {
+  .integration-marquee {
+    --integration-marquee-gap: 2rem;
+    --integration-marquee-duration: 72s;
+  }
+}
+
+/* Airier spacing on wide monitors: fewer of the 8 unique tiles repeat inside
+   a single viewport. Same scroll speed (copy width ÷ duration ≈ 53px/s). */
+@media (min-width: 1536px) {
+  .integration-marquee {
+    --integration-marquee-gap: 3.5rem;
+    --integration-marquee-duration: 83s;
+  }
+}
+
+.integration-marquee__track {
+  display: flex;
+  width: max-content;
+  animation: integration-marquee-x var(--integration-marquee-duration) linear infinite;
+  will-change: transform;
+}
+
+.integration-marquee--reverse .integration-marquee__track {
+  animation-direction: reverse;
+}
+
+.integration-marquee__copy {
+  display: flex;
+  align-items: center;
+  gap: var(--integration-marquee-gap);
+  padding-right: var(--integration-marquee-gap);
+}
+
+@keyframes integration-marquee-x {
   from {
-    transform: translateX(100%);
+    transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translateX(0);
+    transform: translate3d(-50%, 0, 0);
   }
+}
+
+@media (hover: hover) {
+  .integration-marquee:hover .integration-marquee__track {
+    animation-play-state: paused;
+  }
+
+  /* An explicit Play must win over a resting pointer (e.g. keyboard
+     activation while the cursor happens to sit over a row). The flag clears
+     when the pointer enters or leaves the group, so hover pause resumes. */
+  .integration-marquee-group[data-paused="false"][data-ignore-hover="true"] .integration-marquee:hover .integration-marquee__track {
+    animation-play-state: running;
+  }
+}
+
+/* Manual pause keeps both rows stopped wherever the pointer goes. */
+.integration-marquee-group[data-paused="true"] .integration-marquee__track {
+  animation-play-state: paused;
+}
+
+/* Keyboard focus inside the marquee pauses it while the user reads. */
+.integration-marquee-group:focus-within .integration-marquee__track {
+  animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sheet-content[data-state="open"] {
+  .integration-marquee {
+    mask-image: none;
+    -webkit-mask-image: none;
+    overflow: visible;
+  }
+
+  .integration-marquee__track {
     animation: none;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 1.5rem;
+  }
+
+  .integration-marquee__copy {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    padding-right: 0;
+    row-gap: 1.5rem;
+  }
+
+  .integration-marquee__copy[aria-hidden="true"] {
+    display: none;
+  }
+
+  .integration-tile--repeat {
+    display: none;
   }
 }
+
+/* Theme-aware dotted grid behind the marquee. Uses the same token as the
+   hero blueprint grid so the texture stays visible in both themes. */
+.integration-grid {
+  background-image: radial-gradient(rgb(var(--c-grid-line) / 0.16) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 120% 90% at 50% 40%, black 35%, transparent 78%);
+  -webkit-mask-image: radial-gradient(
+    ellipse 120% 90% at 50% 40%,
+    black 35%,
+    transparent 78%
+  );
+}
+
+/* Dark theme: the navy grid line sits close to the dark background, so the
+   dots use the lighter navy-light token at a modest alpha to stay visible
+   without competing with the marquee tiles. */
+html.dark .integration-grid {
+  background-image: radial-gradient(
+    rgb(var(--c-navy-light) / 0.25) 1px,
+    transparent 1.2px
+  );
+}
+
+/* The focusable marquee group shows an inset ring instead of overflowing
+   its full-bleed edges. */
+.integration-marquee-group:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -4px;
+}
+
 /* CookieConsent (vanilla-cookieconsent) — themed with the Edward Kwinane
    design system. The library ships its base styles (imported in main.tsx)
    and is re-skinned purely through its --cc-* variables, so it follows the
