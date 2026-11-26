@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { LoadingState } from "@/components/ui/LoadingState";
 import { CardMedia, SurfaceCard } from "@/components/ui/SurfaceCard";
 import { blogCategories, type BlogPost } from "@/data/blog";
 
@@ -22,7 +21,8 @@ import { blogCategories, type BlogPost } from "@/data/blog";
  * tokens, React Router) instead of shadcn UI. The reference's demo posts,
  * categories and authors were discarded — this component renders only the
  * posts handed to it by the page, which fetches them from Sanity. Nothing
- * here fetches, caches or invents content.
+ * here fetches or invents content; the only local memory is an in-memory
+ * last-known post count used to size the loading skeleton.
  *
  * Filtering is presentation state (category + free-text search) and runs on
  * the already-loaded posts. Search matches title, subtitle, excerpt, category,
@@ -53,11 +53,25 @@ export interface BlogListingProps {
   className?: string;
 }
 
-/** Lower-case, accent-folded form used for free-text matching. */
+/**
+ * Cold-start skeleton fallback. This is the published-post count observed in
+ * the read-only 2026-11 Sanity audit, not a query limit or a guarantee: the
+ * live query has no upper bound and the CMS can change independently of a
+ * deployment. Warm visits use the last successfully rendered count instead.
+ */
+const COLD_START_SKELETON_CARD_COUNT = 7;
+
+/** Blog-only in-memory count. Updated in an effect, never during render. */
+let lastKnownPostCount = COLD_START_SKELETON_CARD_COUNT;
+
+/** Lower-case, accent-folded, whitespace- and dash-normalised form for matching. */
 function normalize(value: string): string {
   return value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[-\u2010-\u2015]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
     .toLowerCase();
 }
 
@@ -186,6 +200,137 @@ function BlogPostCard({ post }: { post: BlogPost }) {
   );
 }
 
+/** Skeleton pill widths mirror the real tab labels without inventing categories. */
+const SKELETON_PILL_WIDTHS = ["w-7", "w-20", "w-16", "w-12", "w-24", "w-20", "w-28"] as const;
+
+/**
+ * Structural loading card. It mirrors `BlogPostCard`'s box model — media band,
+ * badge/meta/title/excerpt rows and the author footer — so the skeleton grid
+ * reserves the same geometry as the ready grid. All nodes are aria-hidden by
+ * the parent skeleton and contain no focusable elements.
+ */
+function BlogSkeletonCard() {
+  return (
+    <li className="h-full" data-skeleton-card="">
+      <SurfaceCard className="flex h-full flex-col overflow-hidden bg-surface-alt motion-safe:animate-pulse">
+        <div className="relative aspect-[16/9] w-full overflow-hidden bg-surface-pale">
+          <div className="absolute inset-0 grid place-items-center">
+            <span className="h-6 w-20 rounded-full bg-surface-pale4" />
+          </div>
+        </div>
+
+        <div className="flex flex-1 flex-col p-5 sm:p-6 lg:p-5 xl:p-6">
+          <div className="flex h-[34px] items-start justify-between gap-3">
+            <span className="inline-flex h-[26px] w-24 rounded-full bg-surface-pale" />
+          </div>
+
+          <span className="mt-3 block h-6 w-28 rounded-full bg-surface-pale" />
+
+          <span className="mt-1.5 block h-[25px] w-full rounded bg-surface-pale lg:h-7" />
+          <span className="mt-0 block h-[25px] w-4/5 rounded bg-surface-pale lg:h-7" />
+
+          <div className="mt-2 flex h-[68px] flex-col justify-between">
+            <span className="block h-[22px] w-full rounded bg-surface-pale" />
+            <span className="block h-[22px] w-full rounded bg-surface-pale" />
+            <span className="block h-[22px] w-3/5 rounded bg-surface-pale" />
+          </div>
+
+          <div className="mt-auto flex items-center justify-between gap-2 border-t border-surface-pale3 pt-4">
+            <span className="flex items-center gap-2">
+              <span className="h-7 w-7 shrink-0 rounded-full bg-surface-pale" />
+              <span className="h-3 w-24 rounded-full bg-surface-pale" />
+            </span>
+            <span className="h-3 w-20 rounded-full bg-surface-pale" />
+          </div>
+        </div>
+      </SurfaceCard>
+    </li>
+  );
+}
+
+/**
+ * Zero-post warm cache still needs geometry matching the ready empty state.
+ * It carries the same box model as `EmptyState`, with a screen-reader-only
+ * loading label and no focusable elements.
+ */
+function BlogEmptyLoadingSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-busy="true"
+      aria-live="polite"
+      data-blog-skeleton=""
+      className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-surface-pale4 bg-surface-alt px-6 py-14 text-center"
+    >
+      <span className="sr-only">Loading articles…</span>
+      <span aria-hidden="true" className="h-8 w-8 rounded-full bg-surface-pale" />
+      <h2 aria-hidden="true" className="font-heading text-2xl font-semibold text-transparent">
+        <span className="rounded bg-surface-pale">No articles yet</span>
+      </h2>
+      <p aria-hidden="true" className="max-w-md text-sm leading-relaxed text-transparent">
+        <span className="rounded bg-surface-pale">
+          There are no published articles right now. Check back soon — new writing lands here first.
+        </span>
+      </p>
+    </div>
+  );
+}
+
+/** Loading layout with the ready state's toolbar, count line and grid geometry. */
+function BlogLoadingSkeleton({ cardCount }: { cardCount: number }) {
+  const safeCardCount = Math.max(0, cardCount);
+
+  if (safeCardCount === 0) return <BlogEmptyLoadingSkeleton />;
+
+  return (
+    <div data-blog-skeleton="">
+      <div className="flex flex-col gap-4 border-b border-surface-pale3 pb-5 lg:flex-row lg:items-center lg:justify-between">
+        <div
+          className="flex gap-2 overflow-x-auto px-0.5 py-1"
+          aria-hidden="true"
+          data-skeleton-tablist=""
+        >
+          {SKELETON_PILL_WIDTHS.map((width, index) => (
+            <span
+              key={index}
+              className="flex shrink-0 items-center rounded-full border border-surface-pale4 bg-surface-alt px-4 py-2"
+              data-skeleton-pill=""
+            >
+              <span className={cn("block h-6 rounded-full bg-surface-pale4", width)} />
+            </span>
+          ))}
+        </div>
+
+        <div className="relative w-full lg:max-w-xs" aria-hidden="true">
+          <div className="flex h-11 w-full items-center rounded-md border border-slate-border bg-surface-alt px-4">
+            <span className="block h-3 w-2/3 rounded-full bg-surface-pale4" />
+          </div>
+        </div>
+      </div>
+
+      <p
+        role="status"
+        aria-busy="true"
+        aria-live="polite"
+        className="mt-4 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/55"
+      >
+        Loading articles…
+      </p>
+
+      <div aria-hidden="true" className="mt-6">
+        <ul
+          role="list"
+          className="grid auto-rows-fr gap-6 md:grid-cols-2 md:gap-7 lg:grid-cols-3"
+        >
+          {Array.from({ length: safeCardCount }, (_, index) => (
+            <BlogSkeletonCard key={index} />
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 export function BlogListing({
   status,
   posts,
@@ -202,6 +347,19 @@ export function BlogListing({
   const [activeCategory, setActiveCategory] = React.useState("ALL");
   const [query, setQuery] = React.useState("");
   const tabRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+  const tablistRef = React.useRef<HTMLDivElement | null>(null);
+  const dragRef = React.useRef<{
+    pointerId: number;
+    startX: number;
+    startScroll: number;
+    moved: boolean;
+  } | null>(null);
+  const suppressClickRef = React.useRef(false);
+
+  /** Cache only successful ready results; effects never mutate during render. */
+  React.useEffect(() => {
+    if (status === "ready") lastKnownPostCount = posts.length;
+  }, [status, posts.length]);
 
   /**
    * Categories come from the published posts, ordered by the site's editorial
@@ -270,6 +428,46 @@ export function BlogListing({
     tabRefs.current[nextIndex]?.focus();
   }
 
+  /** Mouse/pen drag-to-scroll; touch scrolling stays native. */
+  function handleTabPointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    if (event.button !== 0 || (event.pointerType !== "mouse" && event.pointerType !== "pen")) return;
+    const strip = tablistRef.current;
+    if (!strip || strip.scrollWidth <= strip.clientWidth) return;
+    suppressClickRef.current = false;
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startScroll: strip.scrollLeft,
+      moved: false,
+    };
+    strip.setPointerCapture(event.pointerId);
+  }
+
+  function handleTabPointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    const strip = tablistRef.current;
+    if (!drag || !strip || event.pointerId !== drag.pointerId) return;
+    const delta = event.clientX - drag.startX;
+    if (Math.abs(delta) > 3) drag.moved = true;
+    strip.scrollLeft = drag.startScroll - delta;
+  }
+
+  function handleTabPointerEnd(event: React.PointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    const strip = tablistRef.current;
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    if (drag.moved) suppressClickRef.current = true;
+    if (strip?.hasPointerCapture(event.pointerId)) strip.releasePointerCapture(event.pointerId);
+    dragRef.current = null;
+  }
+
+  function handleTabClickCapture(event: React.MouseEvent<HTMLDivElement>) {
+    if (!suppressClickRef.current) return;
+    suppressClickRef.current = false;
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   const countLabel =
     visible.length === posts.length
       ? `${visible.length} ${visible.length === 1 ? "article" : "articles"}`
@@ -301,7 +499,7 @@ export function BlogListing({
       <Section aria-label="Blog articles" className="pt-0 lg:pt-0">
         <Container>
           {status === "loading" && (
-            <LoadingState label="Loading articles…" className="border-0 bg-transparent py-8" />
+            <BlogLoadingSkeleton cardCount={lastKnownPostCount} />
           )}
 
           {status === "error" && <ErrorState onRetry={onRetry} />}
@@ -317,10 +515,16 @@ export function BlogListing({
             <>
               <div className="flex flex-col gap-4 border-b border-surface-pale3 pb-5 lg:flex-row lg:items-center lg:justify-between">
                 <div
+                  ref={tablistRef}
                   role="tablist"
                   aria-label="Filter articles by category"
                   onKeyDown={handleTabKeyDown}
-                  className="flex gap-2 overflow-x-auto px-0.5 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  onPointerDown={handleTabPointerDown}
+                  onPointerMove={handleTabPointerMove}
+                  onPointerUp={handleTabPointerEnd}
+                  onPointerCancel={handleTabPointerEnd}
+                  onClickCapture={handleTabClickCapture}
+                  className="flex cursor-grab gap-2 overflow-x-auto px-0.5 py-1 select-none active:cursor-grabbing"
                 >
                   {tabs.map((tab, index) => {
                     const selected = tab === selectedTab;
