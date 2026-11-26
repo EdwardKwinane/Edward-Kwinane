@@ -241,9 +241,27 @@ test.describe("card system", () => {
 
       const title = card.locator("h3, h2").first();
       const before = await title.evaluate((el) => getComputedStyle(el).color);
+      // Derive the intended hover colour from the active theme rather than a
+      // literal, so the assertion follows the light/dark accent variables.
+      const hoverColor = await page.evaluate(() => {
+        const probe = document.createElement("span");
+        probe.style.color = "var(--accent-dark)";
+        document.body.append(probe);
+        const color = getComputedStyle(probe).color;
+        probe.remove();
+        return color;
+      });
+      expect(before, `card title starts at the theme heading colour in ${theme} mode`).not.toBe(hoverColor);
+
       await card.hover();
-      const after = await title.evaluate((el) => getComputedStyle(el).color);
-      expect(after, `hover should restyle the title in ${theme} mode`).not.toBe(before);
+      // The title transitions its colour for 300ms (200ms while ThemeProvider
+      // applies `theme-switching`), so a single read immediately after hover
+      // can still return the pre-hover value. Poll the settled colour instead.
+      await expect
+        .poll(() => title.evaluate((el) => getComputedStyle(el).color), {
+          message: `hover should restyle the title in ${theme} mode`,
+        })
+        .toBe(hoverColor);
 
       // Tab from the top of the document until a portfolio card link holds focus —
       // this exercises the real keyboard path instead of a synthetic .focus().
