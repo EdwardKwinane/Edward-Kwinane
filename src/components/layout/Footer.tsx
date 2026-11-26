@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Github, Linkedin } from "lucide-react";
 import { Container } from "@/components/ui/Container";
@@ -15,10 +16,30 @@ const navItems = [
 
 export function Footer() {
   const settings = useSiteSettings();
+  const [contactFocused, setContactFocused] = useState(false);
+  const [emailHref, setEmailHref] = useState<string | null>(null);
   const socialLinks = [
     { href: settings.githubUrl, label: "GitHub", Icon: Github },
     { href: settings.linkedinUrl, label: "LinkedIn", Icon: Linkedin },
   ].filter((link) => link.href);
+
+  // The CMS email arrives after first paint. Keep the contact affordance in
+  // this slot from the very first render so the async value can only change
+  // its label/href, never the footer's height. If the link currently has focus,
+  // defer the swap until blur so its destination and accessible name do not
+  // change underneath keyboard or assistive-technology users.
+  useEffect(() => {
+    if (contactFocused) return;
+    setEmailHref(settings.email || null);
+  }, [settings.email, contactFocused]);
+
+  const emailDeferred = Boolean(settings.email && contactFocused && !emailHref);
+  const contactClass =
+    "mt-4 inline-flex min-h-[24px] items-center text-sm text-accent-dark hover:underline focus-ring";
+  const contactFocusProps = {
+    onFocus: () => setContactFocused(true),
+    onBlur: () => setContactFocused(false),
+  };
 
   return (
     <footer className="border-t border-surface-pale3 bg-surface-alt">
@@ -32,14 +53,27 @@ export function Footer() {
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink/65">
               {settings.footerTagline}
             </p>
-            {settings.email ? (
-              <a
-                href={`mailto:${settings.email}`}
-                className="mt-4 inline-flex min-h-[24px] items-center text-sm text-accent-dark hover:underline focus-ring"
-              >
-                {settings.email}
+            {emailHref ? (
+              <a href={`mailto:${emailHref}`} className={contactClass} {...contactFocusProps}>
+                {emailHref}
               </a>
-            ) : null}
+            ) : (
+              <Link to="/contact" className={contactClass} {...contactFocusProps}>
+                Contact me
+              </Link>
+            )}
+            {/* A plain aria-live region announces the deferred swap without
+                claiming the form's `role="status"` loading region. */}
+            <span
+              className="sr-only"
+              aria-live="polite"
+              aria-atomic="true"
+              data-contact-status
+            >
+              {emailDeferred
+                ? "Email contact option is now available; it will replace the contact link after this link loses focus."
+                : ""}
+            </span>
           </div>
 
           <nav className="md:col-span-4" aria-label="Footer">

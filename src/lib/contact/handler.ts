@@ -231,7 +231,10 @@ export async function handleContactRequest(req: ContactRequest, deps: ContactDep
   } catch {
     return error(503, "unavailable");
   }
-  if (!decision.allowed) {
+  // Compare the discriminant explicitly so the union narrows under both
+  // strict and non-strict TypeScript configs (the Vercel function build uses
+  // the latter). The 429 contract and Retry-After calculation are unchanged.
+  if (decision.allowed === false) {
     const retryAfterSeconds = Math.max(1, Math.ceil(decision.retryAfterMs / 1000));
     return error(429, "rate_limited", { retryAfterSeconds }, retryAfterSeconds);
   }
