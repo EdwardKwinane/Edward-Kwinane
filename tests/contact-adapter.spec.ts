@@ -151,11 +151,13 @@ test.afterEach(() => {
   for (const key of ENV_KEYS) delete process.env[key];
 });
 
-test("adapter compiles in the standalone non-strict mode used by Vercel", async () => {
-  // The project typecheck is strict and skips api/, but Vercel also runs a
-  // standalone `tsc` over the function entry point. Pin that exact mode here
-  // so a discriminated-union narrowing regression fails in CI instead of
-  // surfacing as a non-fatal build warning in Production.
+test("adapter compiles under Vercel's non-strict standalone source check", async () => {
+  // The project typecheck is strict and skips api/, but Vercel's Node function
+  // builder also compiles the entry point with the nearest tsconfig and
+  // non-strict defaults. The Production log surfaced only source diagnostics,
+  // so this mirrors that check for user code: default (non-strict) options,
+  // no project references, and --skipLibCheck to exclude unrelated dependency
+  // declaration errors. Both original TS2339 regressions are in this graph.
   const tsc =
     process.platform === "win32" ? "node_modules\\.bin\\tsc.cmd" : "node_modules/.bin/tsc";
   await execFileAsync(tsc, ["--noEmit", "--skipLibCheck", "api/contact.ts"], {

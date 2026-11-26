@@ -1,6 +1,5 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { MetaPixel } from "@/components/analytics/MetaPixel";
@@ -49,7 +48,23 @@ function PageFallback() {
   );
 }
 
+/**
+ * Mounts only when the resolved route subtree is committed. It tells App that
+ * the initial route has painted, so the Footer can be mounted outside the
+ * Suspense boundary from then on without ever being painted against the
+ * 50vh fallback.
+ */
+function RouteReadySignal({ onReady }: { onReady: () => void }) {
+  useLayoutEffect(() => {
+    onReady();
+  }, [onReady]);
+  return null;
+}
+
 export default function App() {
+  const [routeReady, setRouteReady] = useState(false);
+  const markRouteReady = useCallback(() => setRouteReady(true), []);
+
   return (
     <BrowserRouter>
       <SiteSettingsProvider>
@@ -59,10 +74,12 @@ export default function App() {
         <div className="flex min-h-screen flex-col">
           <Navbar />
           {/*
-            The footer shares this Suspense boundary with the lazy route so it
-            is never painted against the 50vh loading fallback. Without this,
-            the footer sits in the first viewport and then moves off-screen as
-            soon as the real page height arrives — a site-wide layout shift.
+            Only the lazy route uses this Suspense boundary. The fallback still
+            owns main#main so the skip link and loading announcement work.
+            RouteReadySignal flips routeReady when the initial page actually
+            paints; before that the Footer is deliberately absent. After the
+            first paint the Footer lives outside Suspense, so client-side route
+            transitions never unmount its links or drop keyboard focus.
           */}
           <Suspense
             fallback={
@@ -83,9 +100,10 @@ export default function App() {
                 <Route path="/contact" element={<ErrorBoundary><Contact /></ErrorBoundary>} />
                 <Route path="*" element={<ErrorBoundary><NotFound /></ErrorBoundary>} />
               </Routes>
+              <RouteReadySignal onReady={markRouteReady} />
             </main>
-            <Footer />
           </Suspense>
+          {routeReady ? <Footer /> : null}
         </div>
       </SiteSettingsProvider>
     </BrowserRouter>

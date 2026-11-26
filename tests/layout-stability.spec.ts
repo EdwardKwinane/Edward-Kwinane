@@ -1,4 +1,4 @@
-import { test, expect, type BrowserContext } from "@playwright/test";
+import { test, expect, type BrowserContext, type Page } from "@playwright/test";
 
 /**
  * First-paint layout-stability regression suite.
@@ -17,6 +17,17 @@ const CORS = {
   "access-control-allow-headers": "*",
   "access-control-max-age": "86400",
 };
+
+// The observed post-fix CLS is ~0.0007 or lower. 0.01 is an order of magnitude
+// below the "good" Core Web Vitals threshold and far below the reproduced
+// original footer jump (~0.44–0.51), so it is a meaningful regression gate.
+const CLS_LIMIT = 0.01;
+
+const VIEWPORTS = [
+  { width: 1440, height: 900 },
+  { width: 390, height: 844 },
+] as const;
+const THEMES = ["light", "dark"] as const;
 
 const SITE_SETTINGS = {
   _id: "siteSettings",
@@ -55,6 +66,13 @@ interface Metrics {
   footerShifts: number;
 }
 
+interface FooterGeometry {
+  top: number;
+  height: number;
+  footerCount: number;
+  mailtoCount: number;
+}
+
 interface MockOptions {
   holdSettings?: boolean;
   holdRouteChunk?: boolean;
@@ -79,6 +97,54 @@ interface MockHandles {
   routeChunkRequested: Promise<void>;
   releaseSettings: () => void;
   releaseRouteChunk: () => void;
+}
+
+async function installTheme(
+  context: BrowserContext,
+  theme: (typeof THEMES)[number],
+): Promise<void> {
+  await context.addInitScript((value) => {
+    try {
+      localStorage.setItem("ek-theme", value);
+    } catch {
+      /* private mode */
+    }
+  }, theme);
+}
+
+/**
+ * The consent banner is unrelated first-paint chrome, and its library moves
+ * keyboard focus to itself when it appears. Give every context a saved,
+ * already-answered choice so these tests isolate footer behaviour and CLS.
+ */
+async function suppressConsentBanner(context: BrowserContext): Promise<void> {
+  const now = new Date().toISOString();
+  await context.addInitScript(() => {
+    try {
+      sessionStorage.setItem("ek-cc-banner-dismissed", "1");
+    } catch {
+      /* private mode */
+    }
+  });
+  await context.addCookies([
+    {
+      name: "cc_cookie",
+      value: encodeURIComponent(
+        JSON.stringify({
+          categories: ["necessary"],
+          revision: 1,
+          data: null,
+          consentTimestamp: now,
+          consentId: "layout-stability-test",
+          services: {},
+          languageCode: "en",
+          lastConsentTimestamp: now,
+        }),
+      ),
+      url: BASE,
+      sameSite: "Lax",
+    },
+  ]);
 }
 
 async function installMocks(
@@ -158,104 +224,241 @@ async function installMocks(
 }
 
 async function installClsRecorder(context: BrowserContext): Promise<void> {
+  await suppressConsentBanner(context);
   await context.addInitScript(() => {
+    type ShiftEntry = PerformanceEntry & {
+      value: number;
+      hadRecentInput: boolean;
+      sources?: Array<{ node?: Node | null }>;
+    };
+
     const metrics: Metrics = { cls: 0, footerShifts: 0 };
-    (window as unknown as { __layoutMetrics: Metrics }).__layoutMetrics = metrics;
-    new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
+    const record = (entries: readonly ShiftEntry[]): void => {
+      for (const entry of entries) {
         if (entry.hadRecentInput) continue;
         metrics.cls += entry.value;
-        for (const source of entry.sources ?? []) {
-          if (source.node?.tagName === "FOOTER") metrics.footerShifts += entry.value;
-        }
+        // Count the whole entry once if any source is the footer or a child,
+        // rather than double-counting multiple footer descendants.
+        const footerRelated = (entry.sources ?? []).some((source) => {
+          const node = source.node;
+          return node instanceof Element && node.closest("footer") !== null;
+        });
+        if (footerRelated) metrics.footerShifts += entry.value;
       }
-    }).observe({ type: "layout-shift", buffered: true });
+    };
+
+    const observer = new PerformanceObserver((list) => {
+      record(list.getEntries() as ShiftEntry[]);
+    });
+    observer.observe({ type: "layout-shift", buffered: true });
+
+    // PerformanceObserver callbacks are async. takeRecords() lets assertions
+    // synchronously collect anything still queued at the measurement point.
+    (window as unknown as { __flushLayoutMetrics?: () => Metrics }).__flushLayoutMetrics = () => {
+      record(observer.takeRecords() as ShiftEntry[]);
+      return { ...metrics };
+    };
+  });
+}
+
+async function readLayoutMetrics(page: Page): Promise<Metrics> {
+  // Deterministic checkpoint: fonts settle, then one browser animation frame
+  // lets any queued layout-shift records reach the observer.
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  });
+  return page.evaluate(
+    () =>
+      (window as unknown as { __flushLayoutMetrics?: () => Metrics }).__flushLayoutMetrics?.() ?? {
+        cls: 1,
+        footerShifts: 1,
+      },
+  );
+}
+
+function assertStable(metrics: Metrics): void {
+  expect(metrics.footerShifts).toBe(0);
+  expect(metrics.cls).toBeLessThan(CLS_LIMIT);
+}
+
+async function footerGeometry(page: Page): Promise<FooterGeometry> {
+  return page.evaluate(() => {
+    const footer = document.querySelector("footer");
+    const rect = footer?.getBoundingClientRect();
+    return {
+      // Document-space top: focusing a link and tabbing away can scroll the
+      // viewport, which must not be mistaken for a footer layout shift.
+      top: rect ? Math.round(rect.y + window.scrollY) : -1,
+      height: rect ? Math.round(rect.height) : -1,
+      footerCount: document.querySelectorAll("footer").length,
+      mailtoCount: document.querySelectorAll('footer a[href^="mailto:"]').length,
+    };
   });
 }
 
 const cases = [
-  { route: "/", chunk: "Home-", viewport: { width: 1440, height: 900 } },
-  { route: "/about", chunk: "About-", viewport: { width: 1440, height: 900 } },
-  { route: "/blog", chunk: "Blog-", viewport: { width: 1440, height: 900 } },
-  { route: "/", chunk: "Home-", viewport: { width: 390, height: 844 } },
-  { route: "/about", chunk: "About-", viewport: { width: 390, height: 844 } },
-  { route: "/blog", chunk: "Blog-", viewport: { width: 390, height: 844 } },
+  { route: "/", chunk: "Home-" },
+  { route: "/about", chunk: "About-" },
+  { route: "/blog", chunk: "Blog-" },
 ] as const;
 
 test.describe("first-paint layout stability", () => {
-  for (const { route, chunk, viewport } of cases) {
-    test(`${route} at ${viewport.width}px keeps the footer out of the lazy-route fallback`, async ({
-      browser,
-    }) => {
-      const context = await browser.newContext({ viewport });
-      const mocks = await installMocks(context, {
-        holdSettings: true,
-        holdRouteChunk: true,
-        routeChunk: chunk,
-      });
-      await installClsRecorder(context);
-      const page = await context.newPage();
+  for (const { route, chunk } of cases) {
+    for (const viewport of VIEWPORTS) {
+      for (const theme of THEMES) {
+        test(`${route} at ${viewport.width}px in ${theme} keeps the footer out of the lazy-route fallback`, async ({
+          browser,
+        }) => {
+          const context = await browser.newContext({ viewport });
+          await installTheme(context, theme);
+          const mocks = await installMocks(context, {
+            holdSettings: true,
+            holdRouteChunk: true,
+            routeChunk: chunk,
+          });
+          await installClsRecorder(context);
+          const page = await context.newPage();
 
-      await page.goto(`${BASE}${route}`, { waitUntil: "domcontentloaded" });
-      await Promise.all([mocks.settingsRequested, mocks.routeChunkRequested]);
-      await expect(page.locator("main#main")).toBeVisible();
-      // Production ordering: CMS settings land while the lazy route chunk is
-      // still in flight. The footer must not be painted against the fallback.
-      await expect(page.locator("footer")).toHaveCount(0);
-      mocks.releaseSettings();
-      await expect(page.locator('footer a[href^="mailto:"]')).toHaveCount(0);
+          await page.goto(`${BASE}${route}`, { waitUntil: "domcontentloaded" });
+          await Promise.all([mocks.settingsRequested, mocks.routeChunkRequested]);
+          await expect(page.locator("main#main")).toBeVisible();
+          // Production ordering: CMS settings land while the lazy route chunk is
+          // still in flight. The footer must not be painted against the fallback.
+          await expect(page.locator("footer")).toHaveCount(0);
+          mocks.releaseSettings();
+          await expect(page.locator("footer")).toHaveCount(0);
 
-      mocks.releaseRouteChunk();
-      await expect(page.locator("footer")).toBeVisible();
-      await expect(page.locator('footer a[href^="mailto:"]')).toHaveCount(1);
+          mocks.releaseRouteChunk();
+          await expect(page.locator("footer")).toBeVisible();
+          await expect(page.locator('footer a[href^="mailto:"]')).toHaveCount(1);
 
-      const metrics = await page.evaluate(
-        () => (window as unknown as { __layoutMetrics?: Metrics }).__layoutMetrics
-      );
-      expect(metrics?.footerShifts ?? 1).toBe(0);
-      await context.close();
-    });
+          assertStable(await readLayoutMetrics(page));
+          await context.close();
+        });
+      }
+    }
   }
 
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
-    test(`late CMS email does not change footer height at ${viewport.width}px`, async ({
-      browser,
-    }) => {
-      const context = await browser.newContext({ viewport });
-      const mocks = await installMocks(context, { holdSettings: true });
-      await installClsRecorder(context);
-      const page = await context.newPage();
+  for (const viewport of VIEWPORTS) {
+    for (const theme of THEMES) {
+      test(`late CMS email preserves footer geometry at ${viewport.width}px in ${theme}`, async ({
+        browser,
+      }) => {
+        const context = await browser.newContext({ viewport });
+        await installTheme(context, theme);
+        const mocks = await installMocks(context, { holdSettings: true });
+        await installClsRecorder(context);
+        const page = await context.newPage();
 
-      await page.goto(`${BASE}/about`, { waitUntil: "domcontentloaded" });
-      await mocks.settingsRequested;
-      await expect(page.locator("footer")).toBeVisible();
-      const before = await page.evaluate(() => {
-        const rect = document.querySelector("footer")!.getBoundingClientRect();
-        return {
-          height: Math.round(rect.height),
-          mailtoCount: document.querySelectorAll('footer a[href^="mailto:"]').length,
-          contactText: [...document.querySelectorAll("footer a")]
-            .map((a) => a.textContent?.trim() ?? "")
-            .find((text) => text === "Contact me"),
-        };
-      });
-      expect(before.mailtoCount).toBe(0);
-      expect(before.contactText).toBe("Contact me");
+        await page.goto(`${BASE}/about`, { waitUntil: "domcontentloaded" });
+        await mocks.settingsRequested;
+        await expect(page.locator("footer")).toBeVisible();
 
-      mocks.releaseSettings();
-      await expect(page.locator('footer a[href^="mailto:"]')).toHaveCount(1);
-      const after = await page.evaluate(() => {
-        const rect = document.querySelector("footer")!.getBoundingClientRect();
-        return {
-          height: Math.round(rect.height),
-          footerShifts:
-            (window as unknown as { __layoutMetrics?: Metrics }).__layoutMetrics?.footerShifts ??
-            1,
-        };
+        const fallbackLink = page.locator('footer a[href="/contact"]', { hasText: "Contact me" });
+        await expect(fallbackLink).toBeVisible();
+        const before = await footerGeometry(page);
+        expect(before.footerCount).toBe(1);
+        expect(before.mailtoCount).toBe(0);
+
+        mocks.releaseSettings();
+        await expect(page.locator('footer a[href^="mailto:"]')).toHaveCount(1);
+        await expect(fallbackLink).toHaveCount(0);
+
+        const after = await footerGeometry(page);
+        expect(after.top).toBe(before.top);
+        expect(after.height).toBe(before.height);
+        assertStable(await readLayoutMetrics(page));
+        await context.close();
       });
-      expect(after.height).toBe(before.height);
-      expect(after.footerShifts).toBe(0);
-      await context.close();
-    });
+    }
+  }
+
+  for (const viewport of VIEWPORTS) {
+    for (const theme of THEMES) {
+      test(`focused contact link is not swapped before blur at ${viewport.width}px in ${theme}`, async ({
+        browser,
+      }) => {
+        const context = await browser.newContext({ viewport });
+        await installTheme(context, theme);
+        const mocks = await installMocks(context, { holdSettings: true });
+        await installClsRecorder(context);
+        const page = await context.newPage();
+
+        await page.goto(`${BASE}/about`, { waitUntil: "domcontentloaded" });
+        await mocks.settingsRequested;
+        await expect(page.locator("footer")).toBeVisible();
+
+        const fallbackLink = page.locator('footer a[href="/contact"]', { hasText: "Contact me" });
+        await fallbackLink.focus();
+        const before = await footerGeometry(page);
+
+        mocks.releaseSettings();
+        await expect(page.locator("footer [data-contact-status]")).toHaveText(
+          "Email contact option is now available; it will replace the contact link after this link loses focus.",
+        );
+
+        // Focused link keeps its destination and accessible name until blur.
+        await expect(fallbackLink).toBeFocused();
+        await expect(fallbackLink).toHaveAttribute("href", "/contact");
+        await expect(fallbackLink).toHaveText("Contact me");
+        const during = await footerGeometry(page);
+        expect(during.top).toBe(before.top);
+        expect(during.height).toBe(before.height);
+
+        await page.keyboard.press("Tab");
+        await expect(page.locator('footer a[href^="mailto:"]')).toHaveCount(1);
+        const activeHref = await page.evaluate(
+          () => document.activeElement?.getAttribute("href") ?? null,
+        );
+        expect(activeHref).not.toBe("/contact");
+
+        const after = await footerGeometry(page);
+        expect(after.top).toBe(before.top);
+        expect(after.height).toBe(before.height);
+        assertStable(await readLayoutMetrics(page));
+        await context.close();
+      });
+    }
+  }
+
+  for (const viewport of VIEWPORTS) {
+    for (const theme of THEMES) {
+      test(`footer stays mounted and focused during SPA navigation at ${viewport.width}px in ${theme}`, async ({
+        browser,
+      }) => {
+        const context = await browser.newContext({ viewport });
+        await installTheme(context, theme);
+        const mocks = await installMocks(context, {
+          holdRouteChunk: true,
+          routeChunk: "About-",
+        });
+        await installClsRecorder(context);
+        const page = await context.newPage();
+
+        await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
+        await expect(page.locator("footer")).toBeVisible();
+
+        const aboutLink = page.locator('footer nav[aria-label="Footer"] a[href="/about"]');
+        await aboutLink.focus();
+        await aboutLink.press("Enter");
+        await mocks.routeChunkRequested;
+
+        await expect(page).toHaveURL(`${BASE}/about`);
+        await expect(page.locator('[role="status"][aria-label="Loading page"]')).toHaveCount(1);
+        await expect(page.locator("footer")).toBeVisible();
+        await expect(aboutLink).toBeFocused();
+        const during = await footerGeometry(page);
+        expect(during.footerCount).toBe(1);
+
+        mocks.releaseRouteChunk();
+        await expect(page.locator('[role="status"][aria-label="Loading page"]')).toHaveCount(0);
+        await expect(page.locator("footer")).toBeVisible();
+        await expect(aboutLink).toBeFocused();
+
+        assertStable(await readLayoutMetrics(page));
+        await context.close();
+      });
+    }
   }
 });
