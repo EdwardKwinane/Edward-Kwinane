@@ -58,8 +58,20 @@ export default function App() {
         <SkipToContent />
         <div className="flex min-h-screen flex-col">
           <Navbar />
-          <main id="main" tabIndex={-1} className="flex-1">
-            <Suspense fallback={<PageFallback />}>
+          {/*
+            The footer shares this Suspense boundary with the lazy route so it
+            is never painted against the 50vh loading fallback. Without this,
+            the footer sits in the first viewport and then moves off-screen as
+            soon as the real page height arrives — a site-wide layout shift.
+          */}
+          <Suspense
+            fallback={
+              <main id="main" tabIndex={-1} className="flex-1">
+                <PageFallback />
+              </main>
+            }
+          >
+            <main id="main" tabIndex={-1} className="flex-1">
               <Routes>
                 <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
                 <Route path="/about" element={<ErrorBoundary><About /></ErrorBoundary>} />
@@ -71,9 +83,9 @@ export default function App() {
                 <Route path="/contact" element={<ErrorBoundary><Contact /></ErrorBoundary>} />
                 <Route path="*" element={<ErrorBoundary><NotFound /></ErrorBoundary>} />
               </Routes>
-            </Suspense>
-          </main>
-          <Footer />
+            </main>
+            <Footer />
+          </Suspense>
         </div>
       </SiteSettingsProvider>
     </BrowserRouter>

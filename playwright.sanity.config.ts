@@ -19,7 +19,7 @@ export default defineConfig({
   testDir: "./tests",
   // The Sanity reliability suite runs under this config (see below) with a
   // build against a fake project ID and mocked CMS responses.
-  testMatch: ["sanity-reliability.spec.ts", "cards.spec.ts", "blog.spec.ts"],
+  testMatch: ["sanity-reliability.spec.ts", "cards.spec.ts", "blog.spec.ts", "layout-stability.spec.ts"],
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,

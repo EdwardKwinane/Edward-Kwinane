@@ -20,6 +20,13 @@ export function Footer() {
     { href: settings.linkedinUrl, label: "LinkedIn", Icon: Linkedin },
   ].filter((link) => link.href);
 
+  // The CMS email arrives after first paint. Keep the contact affordance in
+  // this slot from the very first render so the async value can only change
+  // its label/href, never the footer's height. The fallback is a real, working
+  // link to the contact page rather than an empty spacer.
+  const contactClass =
+    "mt-4 inline-flex min-h-[24px] items-center text-sm text-accent-dark hover:underline focus-ring";
+
   return (
     <footer className="border-t border-surface-pale3 bg-surface-alt">
       <Container className="py-14">
@@ -33,13 +40,14 @@ export function Footer() {
               {settings.footerTagline}
             </p>
             {settings.email ? (
-              <a
-                href={`mailto:${settings.email}`}
-                className="mt-4 inline-flex min-h-[24px] items-center text-sm text-accent-dark hover:underline focus-ring"
-              >
+              <a href={`mailto:${settings.email}`} className={contactClass}>
                 {settings.email}
               </a>
-            ) : null}
+            ) : (
+              <Link to="/contact" className={contactClass}>
+                Contact me
+              </Link>
+            )}
           </div>
 
           <nav className="md:col-span-4" aria-label="Footer">

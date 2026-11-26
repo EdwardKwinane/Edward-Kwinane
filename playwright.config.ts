@@ -25,7 +25,12 @@ export default defineConfig({
   // blog.spec.ts) run under their own config (playwright.sanity.config.ts)
   // against a build with a fake project ID and mocked CMS responses; they are
   // ignored here, where the build has no CMS at all.
-  testIgnore: ["**/sanity-reliability.spec.ts", "**/cards.spec.ts", "**/blog.spec.ts"],
+  testIgnore: [
+    "**/sanity-reliability.spec.ts",
+    "**/cards.spec.ts",
+    "**/blog.spec.ts",
+    "**/layout-stability.spec.ts",
+  ],
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,

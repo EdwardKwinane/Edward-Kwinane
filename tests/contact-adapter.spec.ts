@@ -1,7 +1,11 @@
 import { test, expect } from "@playwright/test";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { Readable } from "node:stream";
 import handler from "../api/contact";
 import { MAX_BODY_BYTES } from "../src/lib/contact/rules";
+
+const execFileAsync = promisify(execFile);
 
 /**
  * Adapter-level tests for the Vercel contact function (`api/contact.ts`).
@@ -145,6 +149,18 @@ test.beforeEach(() => {
 
 test.afterEach(() => {
   for (const key of ENV_KEYS) delete process.env[key];
+});
+
+test("adapter compiles in the standalone non-strict mode used by Vercel", async () => {
+  // The project typecheck is strict and skips api/, but Vercel also runs a
+  // standalone `tsc` over the function entry point. Pin that exact mode here
+  // so a discriminated-union narrowing regression fails in CI instead of
+  // surfacing as a non-fatal build warning in Production.
+  const tsc =
+    process.platform === "win32" ? "node_modules\\.bin\\tsc.cmd" : "node_modules/.bin/tsc";
+  await execFileAsync(tsc, ["--noEmit", "--skipLibCheck", "api/contact.ts"], {
+    cwd: process.cwd(),
+  });
 });
 
 test("413 on original request bytes: whitespace padding that JSON.stringify would hide", async () => {

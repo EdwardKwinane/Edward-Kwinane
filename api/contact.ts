@@ -188,7 +188,10 @@ export default async function handler(req: VercelRequestLike, res: VercelRespons
 
     // Genuine byte limit on the ORIGINAL request bytes, before JSON parsing.
     const raw = await readRawBody(req, MAX_BODY_BYTES);
-    if (raw.tooLarge) {
+    // Explicit discriminant comparison narrows the union under both strict and
+    // non-strict TypeScript configs (Vercel's standalone function check uses
+    // the latter), without changing the byte-limit behaviour.
+    if (raw.tooLarge === true) {
       res.setHeader("connection", "close");
       res.status(413).json({ ok: false, error: { code: "too_large" } });
       closeRequestAfterResponse(req, res);
