@@ -150,8 +150,11 @@ function BlogPostCard({ post }: { post: BlogPost }) {
               )}
             </div>
 
+            {/* One line only: the skeleton reserves a single h-6 row. Keeping
+                the meta on one line means a fallback font cannot add another
+                24px line before the webfont arrives. */}
             {meta && (
-              <p className="mt-3 font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/55">
+              <p className="mt-3 truncate font-technical text-[10px] font-semibold uppercase tracking-tech text-ink/55">
                 {meta}
                 {post.placeholder && (
                   <>
