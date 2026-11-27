@@ -3,10 +3,10 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Edward Kwinane — AI Engineer & Digital Architect portfolio",
+  "description": "Edward Kwinane — AI Implementation Specialist portfolio",
   "scripts": {
     "dev": "vite",
-    "build": "npm run typecheck && vite build && node scripts/build-404.mjs",
+    "build": "npm run typecheck && vite build && node scripts/generate-route-html.mjs && node scripts/build-404.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit && tsc -p sanity/tsconfig.json --noEmit",
     "seed": "node scripts/seed-sanity.mjs",

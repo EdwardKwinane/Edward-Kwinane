@@ -267,8 +267,12 @@ export const FloatingIconsHeroSection = React.forwardRef<
       <Container className="relative">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-14">
           <div className="max-w-xl">
+            <p className="font-technical text-[11px] font-bold uppercase tracking-tech text-accent">
+              AI IMPLEMENTATION SPECIALIST
+            </p>
+
             {/* Availability */}
-            <div className="inline-flex items-center gap-2 rounded-pill border border-accent/30 bg-accent/10 py-1.5 pl-2 pr-3">
+            <div className="mt-4 inline-flex items-center gap-2 rounded-pill border border-accent/30 bg-accent/10 py-1.5 pl-2 pr-3">
               <span className="relative flex h-2 w-2">
                 <span
                   className={cn(
@@ -292,15 +296,15 @@ export const FloatingIconsHeroSection = React.forwardRef<
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
               <Button asChild variant="accent" size="lg">
-                <Link to="/portfolio">
-                  View my portfolio
-                  <ArrowRight className="h-4 w-4" />
+                <Link to="/contact">
+                  Discuss an AI opportunity
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </Button>
               <Button asChild variant="white" size="lg">
-                <Link to="/contact">
-                  Let's build something
-                  <ArrowUpRight className="h-4 w-4" />
+                <Link to="/about">
+                  Explore my professional profile
+                  <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </Button>
             </div>

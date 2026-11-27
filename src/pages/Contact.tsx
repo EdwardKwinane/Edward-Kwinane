@@ -9,8 +9,8 @@ export default function Contact() {
   return (
     <>
       <Seo
-        title="Contact"
-        description="Start a project with Edward Kwinane — AI voice agents, RAG systems, AI chatbots, AI agents and full-stack products built from concept to production."
+        title="Contact Edward Kwinane | AI Implementation"
+        description="Discuss an AI opportunity or a professional enquiry with Edward Kwinane."
         path="/contact"
       />
       <PageHero

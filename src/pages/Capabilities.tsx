@@ -48,8 +48,8 @@ export default function Capabilities() {
   return (
     <>
       <Seo
-        title="Capabilities"
-        description="What Edward Kwinane builds: AI voice agents, RAG systems, AI chatbots, AI agents and full-stack products designed around real-world problems."
+        title="AI Implementation Capabilities | Edward Kwinane"
+        description="Areas of focus across AI opportunity, applications, workflow automation, integration, evaluation and optimisation."
         path="/capabilities"
         noindex={phase.kind !== "ready"}
       />

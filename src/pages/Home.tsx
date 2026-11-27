@@ -13,8 +13,8 @@ export default function Home() {
   return (
     <>
       <Seo
-        title="Edward Kwinane — AI Engineer & Digital Architect"
-        description="Edward Kwinane builds AI-native products from concept to production — AI voice agents, RAG systems, AI chatbots, AI agents and rapid full-stack product development."
+        title="Edward Kwinane | AI Implementation Specialist"
+        description="Explore Edward Kwinane's approach to AI implementation, connecting business opportunities with AI strategy, engineering, integration and practical solutions."
         path="/"
       />
       {/* Each section owns its boundary, so one failing section can never

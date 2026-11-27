@@ -10,6 +10,39 @@ import { test, expect } from "./helpers";
 
 const ROUTES = ["/", "/about", "/portfolio", "/capabilities", "/blog", "/contact"];
 
+const EXPECTED: Record<string, { title: string; description: string }> = {
+  "/": {
+    title: "Edward Kwinane | AI Implementation Specialist",
+    description:
+      "Explore Edward Kwinane's approach to AI implementation, connecting business opportunities with AI strategy, engineering, integration and practical solutions.",
+  },
+  "/about": {
+    title: "About Edward Kwinane | AI Implementation Specialist",
+    description:
+      "Explore Edward Kwinane's approach to AI implementation, systems thinking and technical problem-solving.",
+  },
+  "/portfolio": {
+    title: "Projects and AI Explorations | Edward Kwinane",
+    description:
+      "Projects, prototypes and implementation concepts, each presented with its actual status.",
+  },
+  "/capabilities": {
+    title: "AI Implementation Capabilities | Edward Kwinane",
+    description:
+      "Areas of focus across AI opportunity, applications, workflow automation, integration, evaluation and optimisation.",
+  },
+  "/blog": {
+    title: "AI Implementation Insights | Edward Kwinane",
+    description:
+      "Notes on AI implementation, architecture, integration, reliability and responsible adoption.",
+  },
+  "/contact": {
+    title: "Contact Edward Kwinane | AI Implementation",
+    description:
+      "Discuss an AI opportunity or a professional enquiry with Edward Kwinane.",
+  },
+};
+
 test.describe("social and search metadata", () => {
   for (const route of ROUTES) {
     test(`${route} exposes complete, absolute metadata`, async ({ page }) => {
@@ -19,6 +52,10 @@ test.describe("social and search metadata", () => {
       // effect can land after the shell is visible. Wait (auto-retrying) for
       // the canonical to exist so we snapshot a fully-written <head>.
       await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+      // index.html now ships a canonical for every route, so the canonical's
+      // presence alone no longer proves the Seo effect has run. Wait for the
+      // route-specific title before snapshotting the hydrated <head>.
+      await expect(page).toHaveTitle(EXPECTED[route].title);
 
       const meta = await page.evaluate(() => {
         const read = (selector: string) =>
@@ -35,8 +72,12 @@ test.describe("social and search metadata", () => {
           ogImage: read('meta[property="og:image"]'),
           ogImageWidth: read('meta[property="og:image:width"]'),
           ogImageHeight: read('meta[property="og:image:height"]'),
+          ogImageAlt: read('meta[property="og:image:alt"]'),
           twitterCard: read('meta[name="twitter:card"]'),
+          twitterTitle: read('meta[name="twitter:title"]'),
+          twitterDescription: read('meta[name="twitter:description"]'),
           twitterImage: read('meta[name="twitter:image"]'),
+          twitterImageAlt: read('meta[name="twitter:image:alt"]'),
           canonicalCount: document.querySelectorAll('link[rel="canonical"]').length,
           structured: document.getElementById("structured-data")?.textContent ?? null,
         };
@@ -44,13 +85,14 @@ test.describe("social and search metadata", () => {
 
       const origin = new URL(page.url()).origin;
 
-      expect(meta.title.trim().length).toBeGreaterThan(0);
-      expect(meta.description?.trim().length ?? 0).toBeGreaterThan(50);
+      const expected = EXPECTED[route];
+      expect(meta.title).toBe(expected.title);
+      expect(meta.description).toBe(expected.description);
       expect(meta.canonicalCount).toBe(1);
       expect(meta.canonical).toBe(`${origin}${route}`);
 
-      expect(meta.ogTitle?.trim().length ?? 0).toBeGreaterThan(0);
-      expect(meta.ogDescription).toBe(meta.description);
+      expect(meta.ogTitle).toBe(expected.title);
+      expect(meta.ogDescription).toBe(expected.description);
       expect(meta.ogType).toBe("website");
       expect(meta.ogUrl).toBe(meta.canonical);
 
@@ -59,8 +101,12 @@ test.describe("social and search metadata", () => {
       expect(meta.ogImage).toBe(`${origin}/og-image.png`);
       expect(meta.ogImageWidth).toBe("1200");
       expect(meta.ogImageHeight).toBe("630");
+      expect(meta.ogImageAlt).toBe(expected.title);
       expect(meta.twitterCard).toBe("summary_large_image");
+      expect(meta.twitterTitle).toBe(expected.title);
+      expect(meta.twitterDescription).toBe(expected.description);
       expect(meta.twitterImage).toBe(meta.ogImage);
+      expect(meta.twitterImageAlt).toBe(expected.title);
 
       // Structured data must stay parseable and keep the owner's Person node.
       expect(meta.structured).not.toBeNull();

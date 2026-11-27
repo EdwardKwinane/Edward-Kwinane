@@ -129,6 +129,19 @@ const isSiteSettings = (b: ParsedBody) => !!b.query?.includes('_type == "siteSet
 /* Fixtures (raw Sanity document shapes, exactly as GROQ projects them) */
 /* ------------------------------------------------------------------ */
 
+/** Approved Phase 1 identity that must win even when CMS returns stale copy. */
+const APPROVED_IDENTITY = {
+  title: "Edward Kwinane | AI Implementation Specialist",
+  description:
+    "Explore Edward Kwinane's approach to AI implementation, connecting business opportunities with AI strategy, engineering, integration and practical solutions.",
+  headline: "Turning AI opportunities into practical solutions.",
+  subheadline:
+    "I explore how artificial intelligence can solve real problems, improve workflows and support better ways of working. My approach brings together strategic thinking and technical execution — from identifying opportunities and designing solutions to building, integrating and validating them.",
+  role: "AI Implementation Specialist",
+  tagline:
+    "AI strategy, engineering and integration from opportunity to implementation.",
+};
+
 const SITE_SETTINGS = {
   _id: "siteSettings",
   siteTitle: "Edward Kwinane — AI Engineer & Digital Architect",
@@ -417,6 +430,21 @@ test.describe("Sanity reliability", () => {
     const robots = await robotsContents(page);
     expect(isIndexable(robots)).toBe(true);
     expect(mock.count(isPostBySlug)).toBe(1);
+
+    // Static route shells use the same raw headline; authorship stays separate.
+    await expect
+      .poll(async () => {
+        const raw = await page.locator("#structured-data").textContent();
+        const graph = JSON.parse(raw ?? "{}") as { "@graph": Array<Record<string, unknown>> };
+        return graph["@graph"].find((node) => node["@type"] === "Article")?.headline;
+      })
+      .toBe(POST.title);
+    const graph = JSON.parse(
+      (await page.locator("#structured-data").textContent()) ?? "{}"
+    ) as { "@graph": Array<Record<string, unknown>> };
+    const articleNode = graph["@graph"].find((node) => node["@type"] === "Article");
+    expect(articleNode?.headline).not.toContain("— Edward Kwinane");
+    expect(articleNode?.author).toEqual({ "@type": "Person", name: POST.author });
   });
 
   test("missing article renders NotFound + noindex, exactly one request, no retry", async ({
@@ -537,5 +565,72 @@ test.describe("Sanity reliability", () => {
     await page.getByRole("button", { name: "Try again" }).click();
     await expect(page.getByRole("heading", { name: "Reliability Test Project" })).toBeVisible();
     await expect(page.locator('main [role="alert"]')).toHaveCount(0);
+  });
+
+  /* ---------------- approved identity overrides stale CMS ---------------- */
+
+  test("a successful stale siteSettings document cannot restore the old identity", async ({
+    page,
+  }) => {
+    const mock = successMock();
+    mock.install(page);
+    await page.goto("/", { waitUntil: "load" });
+    await dismissConsent(page);
+
+    const hero = page
+      .locator("section")
+      .filter({ has: page.getByRole("heading", { level: 1 }) });
+
+    // Prove the stale CMS document was actually applied: it supplies only two
+    // hero tags, while the code-owned defaults supply five. Once this is true,
+    // the identity assertions below are testing precedence, not just defaults.
+    await expect
+      .poll(async () =>
+        hero
+          .locator("span")
+          .filter({
+            hasText: /^(Voice Agents|RAG Systems|AI Chatbots|AI Agents|Full-Stack)$/,
+          })
+          .count()
+      )
+      .toBe(2);
+    expect(mock.count(isSiteSettings)).toBe(1);
+
+    await expect(hero.getByRole("heading", { level: 1 })).toHaveText(
+      APPROVED_IDENTITY.headline
+    );
+    await expect(hero.getByText(APPROVED_IDENTITY.subheadline)).toBeVisible();
+    await expect(
+      page.locator("header").getByText(APPROVED_IDENTITY.role, { exact: true })
+    ).toBeVisible();
+    await expect(
+      page.locator("footer").getByText(APPROVED_IDENTITY.tagline)
+    ).toBeVisible();
+    await expect(page).toHaveTitle(APPROVED_IDENTITY.title);
+    expect(
+      await page.locator('meta[name="description"]').getAttribute("content")
+    ).toBe(APPROVED_IDENTITY.description);
+
+    const structured = JSON.parse(
+      (await page.locator("#structured-data").textContent()) ?? "{}"
+    ) as { "@graph": Array<Record<string, unknown>> };
+    expect(structured["@graph"].find((node) => node["@type"] === "Person")?.jobTitle).toBe(
+      APPROVED_IDENTITY.role
+    );
+
+    // Explicitly reject every stale string from the mock document.
+    await expect(
+      page.getByText("AI Engineer · Digital Architect", { exact: true })
+    ).toHaveCount(0);
+    await expect(
+      page.getByText("I build AI-native products from concept to production.", {
+        exact: true,
+      })
+    ).toHaveCount(0);
+    await expect(
+      page.getByText("Edward Kwinane — AI Engineer & Digital Architect", {
+        exact: true,
+      })
+    ).toHaveCount(0);
   });
 });

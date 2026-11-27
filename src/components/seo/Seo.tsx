@@ -120,8 +120,12 @@ export default function Seo({
   }, [noindex]);
 
   useEffect(() => {
+    // Page titles that already name the owner (or are the site title) are
+    // complete; only short labels need the owner suffix at runtime.
     const fullTitle =
-      title === settings.siteTitle ? title : `${title} — ${settings.ownerName}`;
+      title === settings.siteTitle || title.includes(settings.ownerName)
+        ? title
+        : `${title} — ${settings.ownerName}`;
     document.title = fullTitle;
 
     // Derived from the live origin rather than hard-coded, so this keeps working
