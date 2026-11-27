@@ -149,7 +149,7 @@ export default function PortfolioDetail() {
         title={project.title}
         description={project.description}
         path={`/portfolio/${project.slug}`}
-        type="article"
+        type="website"
         structuredData={[projectSchema, breadcrumbSchema]}
       />
       <section className="bg-surface pt-32 pb-14 lg:pt-40 lg:pb-20">

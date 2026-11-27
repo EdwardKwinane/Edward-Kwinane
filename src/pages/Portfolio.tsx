@@ -57,8 +57,8 @@ export default function Portfolio() {
   return (
     <>
       <Seo
-        title="Portfolio"
-        description="AI systems, digital products and real engineering by Edward Kwinane — voice agents, RAG systems, AI chatbots and full-stack products built from architecture to production."
+        title="Projects and AI Explorations | Edward Kwinane"
+        description="Projects, prototypes and implementation concepts, each presented with its actual status."
         path="/portfolio"
         noindex={phase.kind !== "ready"}
       />

@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 
 const profileFields = [
   { label: "Name", value: "Edward Kwinane" },
-  { label: "Role", value: "AI Engineer & Digital Architect" },
+  { label: "Role", value: "AI Implementation Specialist" },
   { label: "Focus", value: "AI Engineering" },
   { label: "Specialization", value: "Voice · RAG · Agents · Full-Stack" },
   { label: "Workflow", value: "AI-native development" },
@@ -79,8 +79,8 @@ export default function About() {
   return (
     <>
       <Seo
-        title="About"
-        description="Edward Kwinane is an AI Engineer & Digital Architect building AI-native products with a focus on system design, AI engineering and full-stack development."
+        title="About Edward Kwinane | AI Implementation Specialist"
+        description="Explore Edward Kwinane's approach to AI implementation, systems thinking and technical problem-solving."
         path="/about"
       />
       <PageHero

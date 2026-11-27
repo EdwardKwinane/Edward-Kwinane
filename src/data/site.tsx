@@ -27,18 +27,17 @@ export interface SiteSettings {
  * CMS, so a partially filled document can never blank the site.
  */
 export const siteDefaults: SiteSettings = {
-  siteTitle: "Edward Kwinane — AI Engineer & Digital Architect",
+  siteTitle: "Edward Kwinane | AI Implementation Specialist",
   siteDescription:
-    "Edward Kwinane is an AI Engineer & Digital Architect specializing in AI voice agents, RAG systems, AI chatbots, AI agents and rapid full-stack product development.",
+    "Explore Edward Kwinane's approach to AI implementation, connecting business opportunities with AI strategy, engineering, integration and practical solutions.",
   ownerName: "Edward Kwinane",
-  roleLine: "AI Engineer · Digital Architect",
-  heroHeadline: "I build AI-native products from concept to production.",
+  roleLine: "AI Implementation Specialist",
+  heroHeadline: "Turning AI opportunities into practical solutions.",
   heroSubheadline:
-    "I design and build intelligent software systems across voice agents, RAG pipelines, AI chatbots and full-stack applications — turning complex ideas into production-ready products.",
+    "I explore how artificial intelligence can solve real problems, improve workflows and support better ways of working. My approach brings together strategic thinking and technical execution — from identifying opportunities and designing solutions to building, integrating and validating them.",
   heroTags: ["Voice Agents", "RAG Systems", "AI Chatbots", "AI Agents", "Full-Stack"],
   availabilityText: "Available for select projects",
-  footerTagline:
-    "I build AI-native products from concept to production — voice agents, RAG systems, AI chatbots and full-stack applications.",
+  footerTagline: "AI strategy, engineering and integration from opportunity to implementation.",
   footerText: "Designed & engineered with an AI-native workflow.",
   footerSignoff: "Concept → Architecture → Build → Ship",
   email: "",
@@ -47,6 +46,32 @@ export const siteDefaults: SiteSettings = {
   githubUrl: "https://github.com/edwardkwinane",
   twitterUrl: "",
 };
+
+/**
+ * Approved Phase 1 identity. These fields are owned by the codebase, so a
+ * stale CMS document cannot put the previous role or product-builder copy
+ * back on the public site. Other siteSettings fields still come from Sanity.
+ */
+const IDENTITY_OVERRIDES: Pick<
+  SiteSettings,
+  | "siteTitle"
+  | "siteDescription"
+  | "roleLine"
+  | "heroHeadline"
+  | "heroSubheadline"
+  | "footerTagline"
+> = {
+  siteTitle: siteDefaults.siteTitle,
+  siteDescription: siteDefaults.siteDescription,
+  roleLine: siteDefaults.roleLine,
+  heroHeadline: siteDefaults.heroHeadline,
+  heroSubheadline: siteDefaults.heroSubheadline,
+  footerTagline: siteDefaults.footerTagline,
+};
+
+function applyIdentityOverride(settings: SiteSettings): SiteSettings {
+  return { ...settings, ...IDENTITY_OVERRIDES };
+}
 
 function nonEmpty(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
@@ -70,14 +95,14 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
         `[sanity] site settings unavailable (${result.status}); using built-in defaults`
       );
     }
-    return siteDefaults;
+    return applyIdentityOverride(siteDefaults);
   }
   const doc = result.data;
-  if (!doc) return siteDefaults;
+  if (!doc) return applyIdentityOverride(siteDefaults);
 
   const tags = doc.heroTags?.filter((tag) => typeof tag === "string" && tag.trim().length > 0) ?? [];
 
-  return {
+  return applyIdentityOverride({
     siteTitle: nonEmpty(doc.siteTitle) ?? siteDefaults.siteTitle,
     siteDescription: nonEmpty(doc.siteDescription) ?? siteDefaults.siteDescription,
     ownerName: nonEmpty(doc.ownerName) ?? siteDefaults.ownerName,
@@ -94,7 +119,7 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
     linkedinUrl: nonEmpty(doc.linkedinUrl) ?? "",
     githubUrl: nonEmpty(doc.githubUrl) ?? "",
     twitterUrl: nonEmpty(doc.twitterUrl) ?? "",
-  };
+  });
 }
 
 const SiteSettingsContext = createContext<SiteSettings>(siteDefaults);

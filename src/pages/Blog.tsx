@@ -47,8 +47,8 @@ export default function Blog() {
   return (
     <>
       <Seo
-        title="Blog"
-        description="Technical notes, AI experiments, engineering lessons and practical insights from Edward Kwinane building modern software."
+        title="AI Implementation Insights | Edward Kwinane"
+        description="Notes on AI implementation, architecture, integration, reliability and responsible adoption."
         path="/blog"
         noindex={!indexable}
       />
